@@ -1,0 +1,39 @@
+/* 1) Tailwind本体を先に読み込む */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 2) ここから下は必要最低限だけ base レイヤーで上書き */
+@layer base {
+  :root {
+    /* フォントだけ軽く指定（色や背景はTailwind側で） */
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+      Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji",
+      "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* レイアウトは中央寄せにしない（通常のヘッダー/コンテンツ/フッターに対応） */
+  body {
+    @apply min-h-screen bg-white text-slate-900;
+    margin: 0;
+  }
+
+  /* a, button などは Tailwind ユーティリティで統一 */
+  a {
+    @apply font-medium text-indigo-600 hover:text-indigo-500 no-underline;
+  }
+
+  button {
+    @apply rounded-lg border border-transparent px-4 py-2 text-sm font-medium
+           bg-neutral-900 text-white hover:border-indigo-500
+           focus:outline-none focus:ring-4 focus:ring-indigo-200;
+  }
+}
+
+/* 3) ダークモードを使うなら（任意）
+   - tailwind.config.js に `darkMode: 'class'` を設定
+   - <html class="dark"> で切替（色はTailwindクラスで指定）
+*/
