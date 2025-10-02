@@ -23,7 +23,6 @@ export default function Creator() {
 
   if (isLoading) return <div className="p-6">Loading...</div>
 
-
   return (
     <div className="mx-auto max-w-5xl p-4 space-y-6">
       <div>
@@ -42,7 +41,6 @@ export default function Creator() {
           ))}
         </div>
       </section>
-
 
       <section>
         <h2 className="font-semibold mb-2">投稿</h2>
