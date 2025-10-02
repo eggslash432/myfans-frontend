@@ -61,3 +61,10 @@ const value = useMemo(() => ({ user, loading, login, signup, logout, refreshMe }
 
 return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>
 }
+
+
+export const useAuth = () => {
+const ctx = useContext(AuthCtx)
+if (!ctx) throw new Error('useAuth must be used within AuthProvider')
+return ctx
+}

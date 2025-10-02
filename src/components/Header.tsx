@@ -1,7 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 
-
 export default function Header() {
   const { user, logout } = useAuth()
   const nav = useNavigate()
