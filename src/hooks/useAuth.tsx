@@ -38,10 +38,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const signup = async (email: string, password: string) => {
-    await api.post('/auth/signup', { email, password })
+    await api.post('/auth/signup', { email, password ,role: 'fan' })
     await login(email, password)
   }
-
 
   const logout = () => {
     localStorage.removeItem('access_token')
