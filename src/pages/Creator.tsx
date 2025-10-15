@@ -1,86 +1,84 @@
-// src/pages/Creator.tsx
-import { useParams, Link } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
-import api from '../lib/api'
+import { useEffect, useState } from 'react';
+import { apiGet, apiPost } from '../lib/api';
+import { useParams } from 'react-router-dom';
+ 
+type Plan = {
+  id: string;
+  name: string;
+  priceJpy?: number;
+  price?: number; // BEがpriceで返す場合も考慮
+  interval?: 'month';
+};
+ 
+type Creator = {
+  id: string;
+  displayName: string;
+  bio?: string;
+  plans: Plan[];
+};
+ 
+export default function CreatorPage() {
+  const { id } = useParams();
+  const [creator, setCreator] = useState<Creator | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-type Plan = { id: string; name?: string; price: number; interval?: 'month'|'year' }
-type Post = { id: string; title: string; isFree?: boolean }
-type CreatorDetail = {
-  id: string
-  name?: string
-  displayName?: string
-  bio?: string
-  plans?: Plan[]
-  posts?: Post[] | { items: Post[] }
-}
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await apiGet(`/creators/${id}`);
+        setCreator(data);
+      } catch (e: any) {
+        setError(e.message ?? 'load failed');
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [id]);
 
-export default function Creator() {
-  const { id } = useParams()
+  async function onSubscribe(planId: string) {
+    if (!id) return;
+    try {
+      // BE: POST /creators/:creatorId/plans/:planId/checkout → { url }
+      const { url } = await apiPost(`/creators/${id}/plans/${planId}/checkout`);
+      if (!url) throw new Error('Checkout URL not returned');
+      window.location.href = url; // 直接リダイレクト
+    } catch (e: any) {
+      alert(e?.message ?? 'Checkoutの作成に失敗しました');
+    }
+  }
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['creator-detail', id],
-    queryFn: async () => (await api.get(`/creators/${id}`)).data as CreatorDetail,
-    enabled: !!id,
-    retry: false,
-    staleTime: 60_000,
-  })
-
-  // もしサーバが plans/posts を別エンドポイントで返す設計なら、下記のように追加取得する：
-  // const { data: plansRes } = useQuery({
-  //   queryKey: ['creator-plans', id],
-  //   queryFn: async () => (await api.get(`/creators/${id}/plans`)).data,
-  //   enabled: !!id && (!data?.plans || data.plans.length === 0),
-  // })
-  // const { data: postsRes } = useQuery({
-  //   queryKey: ['creator-posts', id],
-  //   queryFn: async () => (await api.get(`/creators/${id}/posts`)).data,
-  //   enabled: !!id && (!data?.posts || (Array.isArray(data.posts) && data.posts.length === 0)),
-  // })
-
-  if (isLoading) return <div className="p-6">Loading...</div>
-  if (error) return <div className="p-6 text-red-600">エラー：{(error as any)?.message}</div>
-  if (!data) return null
-
-  const title = data.displayName ?? data.name ?? 'クリエイター'
-  // posts は配列 or {items:[]} どちらも吸収
-  const postsArray: Post[] = Array.isArray(data.posts) ? data.posts : (data.posts as any)?.items ?? []
+  if (loading) return <div className="p-6">Loading...</div>;
+  if (error) return <div className="p-6 text-red-600">{error}</div>;
+  if (!creator) return <div className="p-6">Not found</div>;
 
   return (
-    <div className="mx-auto max-w-5xl p-4 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{title}</h1>
-        <p className="text-gray-600">{data.bio ?? ''}</p>
-      </div>
+    <div className="container mx-auto p-6 space-y-6">
+      <header>
+        <h1 className="text-2xl font-bold">{creator.displayName}</h1>
+        {creator.bio && <p className="text-slate-600 mt-2">{creator.bio}</p>}
+      </header>
 
       <section>
-        <h2 className="font-semibold mb-2">プラン</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {(data.plans ?? []).map((p: Plan) => (
-            <Link key={p.id} to={`/creator/${id}/plans`} className="border rounded p-3 hover:shadow">
-              <div className="font-semibold">{p.name ?? '購読プラン'}</div>
-              <div className="text-sm">¥{p.price} / {p.interval ?? 'month'}</div>
-            </Link>
+        <h2 className="text-xl font-semibold mb-3">プラン</h2>
+        {/* これまでのダミー配列は削除。BEのplansをそのまま表示 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {creator.plans?.map((p) => (
+            <div key={p.id} className="rounded-xl border p-4 shadow-sm">
+              <div className="font-semibold">{p.name}</div>
+              <div className="text-2xl mt-1">¥{(p.priceJpy ?? p.price ?? 0).toLocaleString()}/月</div>
+              <button
+                className="mt-4 w-full rounded-lg border px-4 py-2 hover:bg-slate-50"
+                onClick={() => onSubscribe(p.id)}
+              >
+                購読する
+              </button>
+            </div>
           ))}
-          {(!data.plans || data.plans.length === 0) && (
-            <Link to={`/creator/${id}/plans`} className="border rounded p-3 hover:shadow">
-              プランページへ
-            </Link>
-          )}
         </div>
       </section>
 
-      <section>
-        <h2 className="font-semibold mb-2">投稿</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {postsArray.map((post: Post) => (
-            <Link key={post.id} to={`/posts/${post.id}`} className="border rounded p-3 hover:shadow">
-              <div className="font-semibold">{post.title}</div>
-              <div className="text-sm text-gray-500">{post.isFree ? '無料' : '限定/有料'}</div>
-            </Link>
-          ))}
-          {postsArray.length === 0 && <div className="text-gray-500">投稿はまだありません。</div>}
-        </div>
-      </section>
+      {/* TODO: 投稿一覧（必要に応じて実装） */}
     </div>
-  )
+  );
 }
