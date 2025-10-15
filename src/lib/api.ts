@@ -1,18 +1,19 @@
-import axios from 'axios'
+import axios from 'axios';
 
-const api = axios.create({
+// Axiosインスタンス作成
+export const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
-  withCredentials: false,
-})
+  withCredentials: false, // 必要に応じてCookie送信
+});
 
-// アクセストークン付与
-api.interceptors.request.use(cfg => {
-  const token = localStorage.getItem('access_token')
+// リクエスト前にアクセストークンを自動付与
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('access_token'); // ← どちらかに統一
   if (token) {
-    cfg.headers = cfg.headers ?? {}
-    cfg.headers.Authorization = `Bearer ${token}`
+    config.headers = config.headers ?? {};
+    config.headers.Authorization = `Bearer ${token}`;
   }
-  return cfg
-})
+  return config;
+});
 
-export default api
+export default api;
