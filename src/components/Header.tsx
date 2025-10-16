@@ -1,29 +1,27 @@
-import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../hooks/useAuth'
+import { Link } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 export default function Header() {
-  const { user, logout } = useAuth()
-  const nav = useNavigate()
+  const { user, logout } = useAuth();
   return (
-    <header className="border-b">
-      <div className="mx-auto max-w-5xl px-4 py-3 flex items-center gap-4">
-        <Link to="/" className="font-bold text-lg">MyFans Clone</Link>
-        <nav className="ml-auto flex items-center gap-3">
-          <Link to="/" className="hover:underline">Home</Link>
-          {user ? (
-            <>
-              <Link to="/mypage" className="hover:underline">MyPage</Link>
-              {user.role === 'admin' && <Link to="/admin" className="hover:underline">Admin</Link>}
-              <button onClick={() => { logout(); nav('/'); }} className="px-3 py-1 border rounded">Logout</button>
-            </>
-          ) : (
-            <>
-              <Link to="/login" className="hover:underline">Login</Link>
-              <Link to="/signup" className="hover:underline">Signup</Link>
-            </>
-          )}
-        </nav>
-      </div>
+    <header className="flex items-center justify-between p-3 border-b">
+      <Link to="/" className="font-bold">MyFans Clone</Link>
+      <nav className="flex items-center gap-4 text-sm">
+        <Link to="/">ホーム</Link>
+        <Link to="/mypage">マイページ</Link>
+        <Link to="/test" className="opacity-70 hover:opacity-100">検収</Link>
+        {user ? (
+          <>
+            <span className="opacity-70">{user.email} ({user.role})</span>
+            <button className="underline" onClick={logout}>ログアウト</button>
+          </>
+        ) : (
+          <>
+            <Link to="/login">ログイン</Link>
+            <Link to="/signup">新規登録</Link>
+          </>
+        )}
+      </nav>
     </header>
-  )
+  );
 }

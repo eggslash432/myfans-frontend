@@ -11,3 +11,12 @@ export function getStripe(): Promise<StripeJS | null> {
   }
   return stripeP;
 }
+
+// src/lib/stripe.ts
+export async function redirectToCheckoutSafe(sessionId: string) {
+  const stripe = await getStripe();
+  if (!stripe || !('redirectToCheckout' in stripe)) {
+    throw new Error('Stripe failed to initialize');
+  }
+  return (stripe as any).redirectToCheckout({ sessionId });
+}

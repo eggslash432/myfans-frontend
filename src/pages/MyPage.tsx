@@ -1,95 +1,35 @@
-import { useEffect, useMemo, useState } from 'react';
-import { apiGet } from '../lib/api';
-
-type MeSummary = {
-  profile: { id: string; email: string; role: string; displayName?: string; avatarUrl?: string };
-  subscriptions: Array<{
-    id: string;
-    status: 'active' | 'canceled' | 'past_due' | 'incomplete' | string;
-    startedAt?: string;
-    renewAt?: string;
-    planName?: string;
-    creatorName?: string;
-  }>;
-  payments: Array<{
-    id: string;
-    amountJpy: number;
-    status: 'succeeded' | 'failed' | 'pending' | string;
-    title?: string;
-    paidAt?: string;
-    createdAt?: string;
-  }>;
-};
+import { useEffect, useState } from 'react';
+import { api } from '../lib/api';
+import { useAuth } from '../hooks/useAuth';
 
 export default function MyPage() {
-  const [data, setData] = useState<MeSummary | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // ✅ Hooks は常にトップレベルで呼ぶ（早期 return より前）
-  const activeSub = useMemo(
-    () => data?.subscriptions?.find((s) => s.status === 'active') ?? null,
-    [data?.subscriptions]
-  );
+  const {user, ready} = useAuth();
+  const [summary, setSummary] = useState<any>(null);
+  const [err, setErr] = useState<string>('');
 
   useEffect(() => {
+    if (!ready || !user) return;
     (async () => {
-      try {
-        const d = await apiGet('/users/me/summary');
-        setData(d);
-      } catch (e: any) {
-        setError(e.message ?? 'load failed');
-      } finally {
-        setLoading(false);
-      }
+      try { setSummary(await api.meSummary()); } 
+      catch (e: any) { setErr(e.message || 'failed'); }
     })();
-  }, []);
+  }, [ready, user]);
 
-  if (loading) return <div className="p-6">Loading...</div>;
-  if (error) return <div className="p-6 text-red-600">{error}</div>;
-  if (!data) return <div className="p-6">No session</div>;
+  if (!ready) return <div className="p-4">読み込み中...</div>;
+  if (!user) return <div className="p-4">ログインが必要です。右上の「ログイン」からサインインしてください。</div>;
+  if (err) return <div className="p-4 text-red-700">{/Unauthorized|401/i.test(err) ? 'ログインが必要です。右上の「ログイン」からサインインしてください。' : `サマリー取得に失敗: ${err}`}</div>;
+  if (!summary) return <div className="p-4">読み込み中...</div>;
 
   return (
-    <div className="container mx-auto p-6 space-y-8">
-      <section>
-        <h1 className="text-2xl font-bold">マイページ</h1>
-        <p className="text-slate-600 mt-1">{data.profile?.email}</p>
+    <div className="p-4 space-y-3">
+      <h1 className="text-xl font-bold">マイページ</h1>
+      <section className="p-4 rounded border">
+        <h2 className="font-semibold">購読状況</h2>
+        <pre className="bg-gray-100 p-2 rounded overflow-auto">{JSON.stringify(summary.subscriptions || [], null, 2)}</pre>
       </section>
-
-      <section>
-        <h2 className="text-xl font-semibold mb-2">現在の購読</h2>
-        {activeSub ? (
-          <div className="rounded-lg border p-4">
-            <div className="font-semibold">{activeSub.planName ?? '購読中プラン'}</div>
-            <div className="text-slate-600 mt-1">
-              ステータス：{activeSub.status}／ 次回更新：{activeSub.renewAt ?? '-'}
-            </div>
-            <div className="text-slate-600">クリエイター：{activeSub.creatorName ?? '-'}</div>
-          </div>
-        ) : (
-          <div className="rounded-lg border p-4 text-slate-600">アクティブな購読はありません</div>
-        )}
-      </section>
-
-      <section>
-        <h2 className="text-xl font-semibold mb-2">支払い履歴</h2>
-        <div className="rounded-lg border divide-y">
-          {data.payments?.length ? (
-            data.payments.slice(0, 10).map((p) => (
-              <div key={p.id} className="p-4 flex items-center justify-between">
-                <div>
-                  <div className="font-medium">{p.title ?? '購入'}</div>
-                  <div className="text-sm text-slate-500">
-                    {p.createdAt ?? p.paidAt ?? ''} ／ {p.status}
-                  </div>
-                </div>
-                <div className="text-lg">¥{(p.amountJpy ?? 0).toLocaleString()}</div>
-              </div>
-            ))
-          ) : (
-            <div className="p-4 text-slate-600">履歴がありません</div>
-          )}
-        </div>
+      <section className="p-4 rounded border">
+        <h2 className="font-semibold">支払い履歴</h2>
+        <pre className="bg-gray-100 p-2 rounded overflow-auto">{JSON.stringify(summary.payments || [], null, 2)}</pre>
       </section>
     </div>
   );

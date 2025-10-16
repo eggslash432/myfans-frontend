@@ -1,88 +1,67 @@
-import { useParams, useNavigate } from 'react-router-dom';
-import { useEffect, useMemo, useState } from 'react';
-import { apiGet } from '../../lib/http';
-import PostGrid, { type PostItem } from '../../components/PostGrid';
-
-type Creator = {
-  id: string;
-  displayName: string;
-  avatarUrl?: string | null;
-  bio?: string | null;
-};
+import { useEffect, useState } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { api } from '../../lib/api';
+import { getStripe } from '../../lib/stripe';
 
 export default function CreatorPage() {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-
-  const [creator, setCreator] = useState<Creator | null>(null);
-  const [posts, setPosts] = useState<PostItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { id = '' } = useParams();
+  const nav = useNavigate();
+  const [data, setData] = useState<any>(null);
+  const [err, setErr] = useState<string>('');
 
   useEffect(() => {
-    if (!id) return;
     (async () => {
-      try {
-        setLoading(true);
-        // バックエンドのレスポンス形式: { items: [ { id,title,isFree,price } ] }
-        const res = await apiGet<any>(`/creators/${id}/posts`);
-        console.log('APIレスポンス /creators/:id/posts:', res);
-
-        const mapped: PostItem[] = (res.items ?? []).map((p: any) => ({
-          id: String(p.id),
-          title: String(p.title ?? '無題'),
-          coverUrl: p.coverUrl ?? p.thumbnail ?? null,
-          excerpt: p.excerpt ?? p.summary ?? null,
-          isFree: !!p.isFree,
-          isAccessible: !!p.isAccessible, // 未定義なら false → 購入ボタン表示
-          price: typeof p.price === 'number' ? p.price : (p.ppvPrice ?? null),
-        }));
-
-        setPosts(mapped);
-        setCreator({
-          id,
-          displayName: `Creator ${id.slice(0, 6)}`,
-          avatarUrl: null,
-          bio: null,
-        });
-      } catch (e) {
-        console.error(e);
-        alert('投稿一覧の取得に失敗しました');
-      } finally {
-        setLoading(false);
-      }
+      try { setData(await api.getCreator(id)); } catch (e:any) { setErr(e.message||'failed'); }
     })();
   }, [id]);
 
-  const onOpen = (postId: string) => navigate(`/posts/${postId}`);
+  const buyPlan = async (planId: string, planName?: string) => {
+    const origin = window.location.origin;
+    const successUrl = `${origin}/checkout/success?plan=${encodeURIComponent(planName||'')}`;
+    const cancelUrl  = `${origin}/checkout/cancel`;
+    const { sessionId } = await api.createPlanCheckout({ creatorId: id, planId, successUrl, cancelUrl });
+    const stripe = await getStripe();
+    await (stripe as any)?.redirectToCheckout({ sessionId });
+  };
 
-  const header = useMemo(() => {
-    if (!creator) return null;
-    return (
-      <div className="flex items-center gap-3">
-        <img
-          src={creator.avatarUrl || '/avatar.svg'}
-          alt={creator.displayName}
-          className="w-12 h-12 rounded-full object-cover"
-        />
-        <div>
-          <h1 className="text-xl font-bold">{creator.displayName}</h1>
-          {creator.bio && <p className="text-sm text-gray-500">{creator.bio}</p>}
-        </div>
-      </div>
-    );
-  }, [creator]);
+  if (err) return <div className="p-6 text-red-700">取得失敗: {err}</div>;
+  if (!data) return <div className="p-6">読み込み中...</div>;
 
   return (
-    <main className="max-w-5xl mx-auto p-4">
-      {loading && <div className="py-12 text-center">読み込み中…</div>}
-      {!loading && (
-        <>
-          {header}
-          <div className="mt-6">
-            <PostGrid posts={posts} onOpen={onOpen} />
-          </div>
-        </>
-      )}
-    </main>
+    <div className="p-6 space-y-4">
+      <button onClick={() => nav(-1)} className="text-sm underline">← 戻る</button>
+      <h1 className="text-2xl font-bold">{data.creator?.displayName || data.creator?.name}</h1>
+      {data.creator?.bio && <p className="opacity-70">{data.creator.bio}</p>}
+
+      <section>
+        <h2 className="font-semibold mb-2">プラン</h2>
+        <div className="grid md:grid-cols-2 gap-3">
+          {(data.plans || []).map((p:any)=>(
+            <div key={p.id} className="border rounded-xl p-4 flex items-center justify-between">
+              <div>
+                <div className="font-semibold">{p.title}</div>
+                <div className="text-sm opacity-70">¥{p.price} / 月</div>
+              </div>
+              <button className="px-3 py-2 bg-indigo-700 text-white rounded"
+                onClick={()=>buyPlan(p.id, p.title)}>
+                購読する
+              </button>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h2 className="font-semibold mb-2">投稿</h2>
+        <ul className="list-disc pl-5 space-y-1">
+          {(data.posts || []).map((post:any)=>(
+            <li key={post.id}>
+              <Link className="underline" to={`/posts/${post.id}`}>{post.title}</Link>
+              {post.accessType === 'ppv' && <span className="ml-2 text-xs px-2 py-0.5 border rounded">PPV</span>}
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
   );
 }

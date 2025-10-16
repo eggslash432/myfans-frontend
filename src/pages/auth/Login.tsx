@@ -1,6 +1,6 @@
-import { FormEvent, useState } from 'react'
-import { useAuth } from '../hooks/useAuth'
-import { useNavigate } from 'react-router-dom'
+import { type FormEvent, useState } from 'react'
+import { useAuth } from '../../hooks/useAuth'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 
 export default function Login() {
@@ -9,18 +9,23 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null)
   const { login } = useAuth()
   const nav = useNavigate()
+  const location = useLocation()
+  const from = (location.state as any)?.from || '/'
+  const [loading, setLoading] = useState(false);
 
-
-  const onSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-    setError(null)
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
     try {
-      await login(email, password)
-      nav('/mypage')
-    } catch (err: any) {
-      setError(err?.response?.data?.message ?? 'ログインに失敗しました')
+      await login(email, password);
+      nav('/');
+    } catch (e:any) {
+      setError(e.message || 'ログイン失敗');
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
 
   return (
