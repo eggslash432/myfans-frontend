@@ -1,6 +1,6 @@
 // /mypage/hooks/useMe.ts
 import { useEffect, useState } from 'react';
-import api from '../../lib/api';
+import {api} from '../../lib/api';
 
 type Me = {
   id: string;

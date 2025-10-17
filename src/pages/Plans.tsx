@@ -1,7 +1,7 @@
 // src/pages/Plans.tsx
 import { useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import api from '../lib/api'
+import {api} from '../lib/api'
 import { useState } from 'react'
 
 type Plan = { id: string; name?: string; price: number; interval?: 'month'|'year' }

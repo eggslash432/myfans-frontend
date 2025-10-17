@@ -121,6 +121,20 @@ export async function createPostSmart(
   throw new Error(lastErr?.message || 'Post API not found');
 }
 
+// すでにある request() を使ったシンプルなラッパー
+export const apiGet = <T = any>(path: string) =>
+  request<T>(path);
+
+export const apiPost = <T = any>(path: string, body?: any, requireAuth = true) =>
+  request<T>(path, { method: 'POST', body: body !== undefined ? JSON.stringify(body) : undefined }, requireAuth);
+
+// （必要なら）
+export const apiPut = <T = any>(path: string, body?: any, requireAuth = true) =>
+  request<T>(path, { method: 'PUT', body: body !== undefined ? JSON.stringify(body) : undefined }, requireAuth);
+
+export const apiDelete = <T = any>(path: string, requireAuth = true) =>
+  request<T>(path, { method: 'DELETE' }, requireAuth);
+
 
 export const api = {
   // --- 認証系 ---
@@ -147,6 +161,16 @@ export const api = {
 
   me: () => request<{ id: string; email: string; role: string }>('/users/me'),
   meSummary: () => request<any>('/users/me/summary', {}, true),
+
+  // --- 共通GET ---
+  get: <T = any>(path: string) => request<T>(path),
+
+  // ★共通POST（これを追加）
+  post: <T = any>(path: string, body?: any, requireAuth = true) =>
+    request<T>(path, {
+      method: 'POST',
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    }, requireAuth),
 
   // --- クリエイター/投稿 ---
   listCreators: (q?: string) => request<any>(`/creators${q ? `?q=${encodeURIComponent(q)}` : ''}`),
