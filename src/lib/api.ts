@@ -152,6 +152,7 @@ export const api = {
   listCreators: (q?: string) => request<any>(`/creators${q ? `?q=${encodeURIComponent(q)}` : ''}`),
   getCreator: (id: string) => request<any>(`/creators/${id}`),
   getPost: (id: string) => request<any>(`/posts/${id}`),
+  myPosts: () => request<any>('/posts/me', {}, true),
   createPost: (dto: any) => request('/creators/me/posts', { method: 'POST', body: JSON.stringify(dto) }, /* requireAuth= */ true),
 
   // --- 決済 ---
