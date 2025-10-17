@@ -1,44 +1,69 @@
+// src/pages/posts/PostDetail.tsx
+import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { useParams, Link } from 'react-router-dom';
-import { api } from '../lib/api';
+import { api, type ApiError } from '../lib/api';
 
-type Post = { id:string; title:string; bodyMd?:string; visibility:'free'|'plan'|'paid_single'; creatorId:string; planId?:string|null; };
+type Post = {
+  id: string;
+  title: string;
+  body?: string;
+  bodyMd?: string;
+  visibility: 'free' | 'plan' | 'paid_single';
+  creatorId: string;
+  planId?: string | null;
+};
 
 export default function PostDetail() {
-  const { id } = useParams<{id:string}>();
+  const { id } = useParams<{ id: string }>();
 
   const q = useQuery({
     queryKey: ['post', id],
-    queryFn: async () => (await api.get<Post>(`/posts/${id}`)).data,
-    retry: (c, err:any) => err?.response?.status !== 403 && c < 1,
+    queryFn: () => api.getPost(id as string), // ← 直接Postを返す
+    retry: (count, err: any) => {
+      const status = (err as ApiError)?.status;
+      // 403/404/400系はリトライ不要
+      if (status && status >= 400 && status < 500) return false;
+      return count < 1;
+    },
+    staleTime: 60_000,
+    enabled: !!id,
   });
 
-  if (q.isLoading) return <div className="p-6">読み込み中…</div>;
-  const status = (q.error as any)?.response?.status;
+  if (q.isLoading) {
+    return <div className="p-6 text-center text-gray-500">読み込み中…</div>;
+  }
 
-  // 403 なら導線を出す（プラン/PPV共通）
-  if (status === 403) {
-    return (
-      <div className="mx-auto max-w-lg p-6 text-center space-y-3">
-        <div className="text-lg font-semibold">この投稿は有料です</div>
-        <div className="text-sm text-gray-600">ログインまたは購入/プラン加入が必要です</div>
-        <div className="flex gap-2 justify-center">
-          <Link className="px-3 py-2 border rounded" to="/login">ログイン</Link>
-          <Link className="px-3 py-2 border rounded" to="/signup">新規登録</Link>
-          {/* PPV購入ボタンは後続でAPI用意次第ON
-          <button className="px-3 py-2 border rounded" onClick={buyPpv}>単品購入</button>
-          */}
+  if (q.isError) {
+    const status = (q.error as ApiError)?.status;
+    if (status === 403) {
+      // 購読/PPVが必要
+      return (
+        <div className="max-w-lg mx-auto p-6 text-center space-y-3">
+          <div className="text-xl font-semibold">この投稿は有料です</div>
+          <div className="text-sm text-gray-600">ログインして購読プラン加入/PPV購入が必要です</div>
         </div>
+      );
+    }
+    if (status === 404) {
+      return <div className="p-6 text-center text-gray-500">投稿が見つかりませんでした</div>;
+    }
+    return (
+      <div className="p-6 text-center text-red-600">
+        取得に失敗しました：{(q.error as ApiError)?.message ?? 'unknown error'}
       </div>
     );
   }
 
-  if (q.isError) return <div className="p-6 text-red-600">読み込みに失敗しました</div>;
-  const post = q.data!;
+  const post = q.data as Post;
+  const body = post.body ?? post.bodyMd ?? '';
+
   return (
-    <article className="mx-auto max-w-2xl p-6 space-y-4">
+    <div className="max-w-2xl mx-auto p-6 space-y-4">
       <h1 className="text-2xl font-bold">{post.title}</h1>
-      <div className="prose whitespace-pre-wrap">{post.bodyMd ?? '（本文なし）'}</div>
-    </article>
+      <div className="text-sm text-gray-500">
+        可視性: {post.visibility === 'free' ? '無料' : post.visibility === 'plan' ? '購読者限定' : 'PPV'}
+      </div>
+      <article className="prose max-w-none whitespace-pre-wrap">{body}</article>
+    </div>
   );
 }

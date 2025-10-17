@@ -1,6 +1,6 @@
-import { type FormEvent, useState } from 'react'
+import { useState } from 'react'
 import { useAuth } from '../../hooks/useAuth'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 
 export default function Login() {
@@ -9,9 +9,9 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null)
   const { login } = useAuth()
   const nav = useNavigate()
-  const location = useLocation()
-  const from = (location.state as any)?.from || '/'
-  const [loading, setLoading] = useState(false);
+  //const location = useLocation()
+  //const from = (location.state as any)?.from || '/'
+  const [_, setLoading] = useState(false);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

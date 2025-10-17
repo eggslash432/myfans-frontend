@@ -23,11 +23,6 @@ function setTokenMaybe(obj: any) {
   return null;
 }
 
-function authHeader() {
-  const t = getToken();
-  return t ? { Authorization: `Bearer ${t}` } : {};
-}
-
 // ★追加：トークンを必ず用意する（無ければ /auth/refresh を試す）
 async function ensureToken(): Promise<string> {
   const t0 = getToken();

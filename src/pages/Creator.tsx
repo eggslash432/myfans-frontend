@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api, apiGet, apiPost } from '../lib/api';
+import { apiGet, apiPost } from '../lib/api';
 import { useParams } from 'react-router-dom';
  
 type Plan = {

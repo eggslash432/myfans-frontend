@@ -1,6 +1,6 @@
 import ProtectedRoute from '../../components/ProtectedRoute'
 import { useQuery } from '@tanstack/react-query'
-import api from '../../lib/api'
+import {api} from '../../lib/api'
 
 function AdminInner() {
   const { data, isLoading } = useQuery({

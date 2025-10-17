@@ -122,28 +122,32 @@ export default function NewPost() {
   };
 
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
-    setOkMsg(null);
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  setError(null);
+  setOkMsg(null);
 
-    try {
-      if (!title.trim()) throw new Error('タイトルを入力してください');
-      if (!body) throw new Error('本文を入力してください');
+  try {
+    if (!title.trim()) throw new Error('タイトルを入力してください');
+    if (!body) throw new Error('本文を入力してください');
 
-      const payload = buildPayload();
+    const payload = buildPayload();
 
-      setSubmitting(true);
-      const res = await createPost(payload);
-      setOkMsg('投稿が完了しました');
-      // 必要ならここで遷移: navigate(`/posts/${res.post?.id ?? res.id}`)
-      setTitle(''); setBody('');
-    } catch (err: any) {
-      setError(typeof err?.message === 'string' ? err.message : String(err));
-    } finally {
-      setSubmitting(false);
-    }
-  };
+    setSubmitting(true);
+    await createPost(payload);  // ← 修正箇所
+    setOkMsg('投稿が完了しました');
+
+    // 投稿IDが返るなら自動遷移も可能
+    // navigate(`/posts/${res.post?.id ?? res.id}`);
+
+    setTitle('');
+    setBody('');
+  } catch (err: any) {
+    setError(typeof err?.message === 'string' ? err.message : String(err));
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   return (
     <div className="max-w-3xl mx-auto p-6">
