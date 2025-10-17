@@ -6,6 +6,7 @@ export type ApiError = { status: number; message: string };
 function getToken() {
   return localStorage.getItem('access_token');
 }
+
 function setTokenMaybe(obj: any) {
   // レスポンスのキー揺れに対応
   const t =
@@ -27,25 +28,45 @@ function authHeader() {
   return t ? { Authorization: `Bearer ${t}` } : {};
 }
 
-async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
-  // Build headers in a type-safe way (supports Headers, arrays or plain objects)
+// ★追加：トークンを必ず用意する（無ければ /auth/refresh を試す）
+async function ensureToken(): Promise<string> {
+  const t0 = getToken();
+  if (t0) return t0;
+
+  // リフレッシュがある場合だけ試す（無ければそのままエラーへ）
+  try {
+    const r = await fetch(`${BASE}/auth/refresh`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (r.ok) {
+      const raw = await r.text();
+      const data = raw ? (() => { try { return JSON.parse(raw); } catch { return raw; } })() : undefined;
+      const t1 = setTokenMaybe(data);
+      if (t1) return t1;
+    }
+  } catch {}
+
+  throw { status: 401, message: '未ログインです（アクセストークンがありません）' } as ApiError;
+}
+
+export async function request<T>(path: string, init: RequestInit = {}, requireAuth = false): Promise<T> {
+  // 認証が必須ならリフレッシュまで保証、任意ならローカルのトークンだけ使う
+  const token = requireAuth ? await ensureToken() : getToken();   // ← ここを変更
+
   const headers = new Headers(init.headers as HeadersInit);
-  if (!headers.has('Content-Type')) {
-    headers.set('Content-Type', 'application/json');
-  }
-  const auth = authHeader();
-  for (const [k, v] of Object.entries(auth)) {
-    if (v) headers.set(k, String(v));
+  if (!headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
+  if (token && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${token}`);              // ← 常に付与
   }
 
   const res = await fetch(`${BASE}${path}`, {
-    // Cookieベース認証も拾えるよう常に同送
     credentials: 'include',
     ...init,
     headers,
   });
 
-  // 204や空ボディを考慮
   const raw = await res.text();
   const data = raw ? (() => { try { return JSON.parse(raw); } catch { return raw; } })() : undefined;
 
@@ -56,6 +77,51 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   return data as T;
 }
 
+
+// 既存の request はそのまま（または前回のまま）
+// これを追加/置き換えしてください
+export async function createPostSmart(
+  dto: {
+    title: string;
+    content: string;
+    visibility: 'free' | 'paid' | 'ppv';
+    price?: number | null;
+    status?: 'draft' | 'published';
+  },
+  opts?: { creatorId?: string }
+) {
+  const cid = opts?.creatorId;
+
+  // よくある命名を広くカバー
+  const candidates = [
+    { path: '/posts', body: dto },                                  // ① /posts
+    { path: '/creators/me/posts', body: dto },                      // ② /creators/me/posts
+    { path: '/creators/posts', body: dto },                         // ③ /creators/posts
+    ...(cid ? [{ path: `/creators/${cid}/posts`, body: dto }] : []),// ④ /creators/:id/posts
+    { path: '/creator/posts', body: dto },                          // ⑤ /creator/posts（単数）
+  ];
+
+  let lastErr: any = null;
+  for (const c of candidates) {
+    try {
+      const res = await request<any>(c.path, {
+        method: 'POST',
+        body: JSON.stringify(c.body),
+      });
+      return { ok: true, path: c.path, data: res }; // ← どれに当たったか返す
+    } catch (e: any) {
+      lastErr = e;
+      if (e.status !== 404 && e.status !== 405) { // 404/405以外は即エラー
+        throw e;
+      }
+      // 404/405は次候補へ
+    }
+  }
+  // どれも当たらなかった
+  throw new Error(lastErr?.message || 'Post API not found');
+}
+
+
 export const api = {
   // --- 認証系 ---
   signup: (dto: { email: string; password: string; role?: 'fan' | 'creator' }) =>
@@ -63,11 +129,16 @@ export const api = {
 
   login: async (dto: { email: string; password: string }) => {
     const data = await request<any>('/auth/login', { method: 'POST', body: JSON.stringify(dto) });
-    // 1) ボディ内トークン（access_token/accessToken/token/jwt）を保存
     const saved = setTokenMaybe(data);
-    // 2) もしトークンが無くても Cookie でログイン成立している可能性があるので /users/me を試す
-    try { await api.me(); } catch (e) {
-      if (!saved) throw e; // Cookieもダメ → 失敗扱い
+
+    if (!saved) {
+      // Cookieだけ返すAPI構成なら、/auth/refresh を試してみる
+      try {
+        const t = await ensureToken(); // ← 成功すればOK
+        return { ...data, access_token: t };
+      } catch {
+        throw { status: 401, message: 'サーバが access_token を返しませんでした。API を修正するか、/auth/refresh を有効化してください。' } as ApiError;
+      }
     }
     return data;
   },
@@ -75,18 +146,19 @@ export const api = {
   logout: () => request('/auth/logout', { method: 'POST' }).catch(() => {}),
 
   me: () => request<{ id: string; email: string; role: string }>('/users/me'),
-  meSummary: () => request<any>('/users/me/summary'),
+  meSummary: () => request<any>('/users/me/summary', {}, true),
 
   // --- クリエイター/投稿 ---
   listCreators: (q?: string) => request<any>(`/creators${q ? `?q=${encodeURIComponent(q)}` : ''}`),
   getCreator: (id: string) => request<any>(`/creators/${id}`),
   getPost: (id: string) => request<any>(`/posts/${id}`),
+  createPost: (dto: any) => request('/creators/me/posts', { method: 'POST', body: JSON.stringify(dto) }, /* requireAuth= */ true),
 
   // --- 決済 ---
   createPlanCheckout: (dto: { creatorId: string; planId: string; successUrl: string; cancelUrl: string }) =>
     request<{ sessionId: string }>('/payments/checkout/plan', { method: 'POST', body: JSON.stringify(dto) }),
   createPpvCheckout: (dto: { postId: string; priceId: string; successUrl: string; cancelUrl: string }) =>
     request<{ sessionId: string }>('/payments/checkout/ppv', { method: 'POST', body: JSON.stringify(dto) }),
-  mySubscriptions: () => request<any>('/subscriptions/my'),
-  myPayments: () => request<any>('/payments/history'),
+  myPayments: () => request<any>('/payments/history', {}, true),
+  mySubscriptions: () => request<any>('/subscriptions/my', {}, true),
 };

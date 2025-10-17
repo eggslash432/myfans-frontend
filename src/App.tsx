@@ -11,6 +11,7 @@ import Signup from './pages/auth/Signup';
 import Success from './pages/checkout/Success';
 import Cancel from './pages/checkout/Cancel';
 import ProtectedRoute from './components/ProtectedRoute';
+import NewPost from './pages/posts/NewPost';
 
 export default function App() {
   return (
@@ -30,6 +31,14 @@ export default function App() {
             }
           />
           <Route path="/creators/:id" element={<CreatorPage />} />
+          <Route
+            path="/posts/new"
+            element={
+              <ProtectedRoute role="creator">
+                <NewPost />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/posts/:id" element={<PostDetailPage />} />
           <Route path="/checkout/success" element={<Success />} />
           <Route path="/checkout/cancel" element={<Cancel />} />

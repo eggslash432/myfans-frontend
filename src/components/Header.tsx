@@ -9,6 +9,7 @@ export default function Header() {
       <nav className="flex items-center gap-4 text-sm">
         <Link to="/">ホーム</Link>
         <Link to="/mypage">マイページ</Link>
+        {user?.role === 'creator' && <Link to="/posts/new">投稿作成</Link>}
         <Link to="/test" className="opacity-70 hover:opacity-100">検収</Link>
         {user ? (
           <>
