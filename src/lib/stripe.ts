@@ -1,15 +1,16 @@
 // src/lib/stripe.ts
 import { loadStripe } from '@stripe/stripe-js';
-import type { Stripe as StripeJS } from '@stripe/stripe-js';
+import type { Stripe } from '@stripe/stripe-js';
 
-let stripeP: Promise<StripeJS | null>;
+let stripePromise: Promise<Stripe | null> | null = null;
 
-export function getStripe(): Promise<StripeJS | null> {
-  if (!stripeP) {
-    const key = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string;
-    stripeP = loadStripe(key);
+export function getStripe() {
+  if (!stripePromise) {
+    const pk = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string;
+    if (!pk) throw new Error("VITE_STRIPE_PUBLISHABLE_KEY が未設定です");
+    stripePromise = loadStripe(pk);
   }
-  return stripeP;
+  return stripePromise;
 }
 
 // src/lib/stripe.ts

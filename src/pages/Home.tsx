@@ -1,30 +1,49 @@
-import { useEffect, useState } from 'react';
-import { api } from '../lib/api';
-import { Link } from 'react-router-dom';
+// src/pages/Home.tsx
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { api } from "../lib/api";
 
-export default function Home() {
+export default function HomePage() {
   const [creators, setCreators] = useState<any[]>([]);
-  const [err, setErr] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
-      try { setCreators((await api.listCreators())?.items ?? []); } catch (e:any) { setErr(e.message||'failed'); }
+      try {
+        const data = await api.listCreators();
+        setCreators(data.creators || data || []); // API構造に対応
+      } catch (err: any) {
+        setError(err?.message || "取得に失敗しました");
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 
-  if (err) return <div className="p-6 text-red-700">読み込み失敗: {err}</div>;
+  if (loading) return <div className="p-6 text-center">読み込み中...</div>;
+  if (error) return <div className="p-6 text-center text-red-600">{error}</div>;
 
   return (
-    <div className="p-6">
+    <div className="max-w-5xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">クリエイター</h1>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {creators.map((c:any)=>(
-          <Link key={c.id} to={`/creators/${c.id}`} className="border rounded-xl p-4 hover:shadow-md transition">
-            <div className="text-lg font-semibold">{c.displayName || c.name}</div>
-            <div className="opacity-70 text-sm line-clamp-2">{c.bio}</div>
-          </Link>
-        ))}
-      </div>
+      {creators.length === 0 ? (
+        <p className="text-gray-500">現在クリエイターが登録されていません。</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {creators.map((c) => (
+            <Link
+              to={`/creators/${c.id}`}
+              key={c.id}
+              className="border rounded-lg p-4 hover:shadow transition"
+            >
+              <h2 className="font-semibold text-lg">{c.name || c.displayName || `Creator #${c.id}`}</h2>
+              {c.bio && <p className="text-sm text-gray-600 mt-1">{c.bio}</p>}
+              <p className="text-xs text-gray-400 mt-2">{c.email || ""}</p>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
