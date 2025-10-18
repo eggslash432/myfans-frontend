@@ -285,4 +285,15 @@ export const api = {
   myPayments: () => request<any>("/payments/history", { method: "GET" }, true),
 
   mySubscriptions: () => request<any>("/subscriptions/my", { method: "GET" }, true),
+
+  // --- 既存コード後方互換: api.get / api.post を提供 ---
+  get: <T = any>(path: string, requireAuth = false) =>
+    request<T>(path, { method: "GET" }, requireAuth),
+
+  post: <T = any>(path: string, body?: any, requireAuth = true) =>
+    request<T>(
+      path,
+      { method: "POST", body: body !== undefined ? JSON.stringify(body) : undefined },
+      requireAuth
+    ),  
 };
