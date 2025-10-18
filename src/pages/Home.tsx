@@ -3,8 +3,10 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../lib/api";
 
+type Creator = { id: string | number; name?: string; displayName?: string; bio?: string; email?: string };
+
 export default function HomePage() {
-  const [creators, setCreators] = useState<any[]>([]);
+  const [creators, setCreators] = useState<Creator[]>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,15 +33,15 @@ export default function HomePage() {
         <p className="text-gray-500">現在クリエイターが登録されていません。</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {creators.map((c) => (
+          {creators.map((c, i) => (
             <Link
               to={`/creators/${c?.id ?? ""}`}
-              key={c?.id ?? Math.random()}
+              key={c?.id ?? `creator-${i}`}
               className="border rounded-lg p-4 hover:shadow transition"
             >
-              <h2 className="font-semibold text-lg">{c.name || c.displayName || `Creator #${c.id}`}</h2>
-              {c.bio && <p className="text-sm text-gray-600 mt-1">{c.bio}</p>}
-              <p className="text-xs text-gray-400 mt-2">{c.email || ""}</p>
+              <h2 className="font-semibold text-lg">{c?.name || c?.displayName || `Creator #${c?.id ?? i}`}</h2>
+              {c?.bio && <p className="text-sm text-gray-600 mt-1">{c.bio}</p>}
+              <p className="text-xs text-gray-400 mt-2">{c?.email || ""}</p>
             </Link>
           ))}
         </div>

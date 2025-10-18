@@ -35,21 +35,24 @@ function joinUrl(path: string) {
 
 // === Token取得保証（/auth/refresh がある前提で試行） ===
 async function tryRefresh(): Promise<string | null> {
-  try {
-    const r = await fetch(joinUrl("/auth/refresh"), {
-      method: "POST",
-      credentials: "include", // ← Cookieベースのrefresh専用
-      headers: { "Content-Type": "application/json" },
-    });
-    if (!r.ok) return null;
-    const raw = await r.text();
-    if (!raw) return null;
-    let data: any;
-    try { data = JSON.parse(raw); } catch { data = raw; }
-    return setTokenMaybe(data);
-  } catch {
-    return null;
+  const candidates = ["/auth/refresh", "/auth/refresh-token", "/auth/token/refresh"];
+  for (const path of candidates) {
+    try {
+      const r = await fetch(joinUrl(path), {
+        method: "POST",
+        credentials: "include",                // ← Cookieを送受信
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!r.ok) continue;
+      const raw = await r.text();
+      if (!raw) continue;
+      let data: any;
+      try { data = JSON.parse(raw); } catch { data = raw; }
+      const t = setTokenMaybe(data);
+      if (t) return t;
+    } catch {}
   }
+  return null;
 }
 
 async function getJson(url: string) {
@@ -64,6 +67,11 @@ export async function request<T>(
   init: RequestInit = {},
   requireAuth = false
 ): Promise<T> {
+  // 認証系は常に Cookie をやりとり（Set-Cookie も確実に受ける）
+  const isAuthRoute = path.startsWith("/auth/");
+  if (isAuthRoute && !("credentials" in init)) {
+    (init as any).credentials = "include";
+  }  
   // 認証が必須なら、事前にトークンを確保（無ければrefresh）
   if (requireAuth && !getToken()) {
     const t = await tryRefresh();
@@ -228,6 +236,7 @@ export const api = {
     const data = await request<any>("/auth/login", {
       method: "POST",
       body: JSON.stringify(dto),
+      credentials: "include", // ← これが超重要（Set-Cookie を確実に受け取る）
     });
     const saved = setTokenMaybe(data);
     if (!saved) {
@@ -242,7 +251,10 @@ export const api = {
     return data;
   },
 
-  logout: () => request("/auth/logout", { method: "POST" }).catch(() => {}),
+  logout: () => request("/auth/logout", { 
+    method: "POST",
+    credentials: "include"  // ← これが超重要（Cookieを送信）
+  }).catch(() => {}),
 
   // BEが /auth/me の場合に統一（/users/me を使っていた箇所を修正）
   me: () => request<{ id: string; email: string; role: string }>("/auth/me", { method: "GET" }, true),
