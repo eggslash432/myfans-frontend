@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import Header from './components/Header';
-import Home from './pages/Home';
+import HomePage from './pages/Home';
 import MyPage from './pages/MyPage';
 import CreatorPage from './pages/creators/[id]';
 import PostDetailPage from './pages/posts/[id]';
@@ -20,7 +20,7 @@ export default function App() {
       <BrowserRouter>
         <Header />
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route
