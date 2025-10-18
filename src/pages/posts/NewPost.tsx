@@ -1,44 +1,31 @@
 // src/pages/NewPost.tsx
 import React from 'react';
+import { createPostSmart } from '../../lib/api';
+import { getMyPlans } from '../../lib/api';
 
 type Visibility = 'free' | 'plan' | 'paid_single';
 type AgeRating = 'all' | 'r18';
 
 type Plan = { id: string; name: string; priceJpy?: number };
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:3000';
-
 async function createPost(data: any) {
-  const res = await fetch(`${API_BASE}/posts`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('access_token') ?? ''}`,
-    },
-    body: JSON.stringify(data),
+  const res = await createPostSmart({
+    title: data.title,
+    content: data.body,
+    visibility: data.visibility === 'free' ? 'free'
+               : data.visibility === 'plan' ? 'paid'    // ← 用語差異をここで吸収
+               : 'ppv',
+    price: data.ppvPrice ? Number(data.ppvPrice) : null,
+    status: data.isDraft ? 'draft' : 'published',
   });
-  const text = await res.text();
-  if (!res.ok) throw new Error(text || `HTTP ${res.status}`);
-  try { return JSON.parse(text); } catch { return text; }
+  return res.data; // { ok:true, path, data } の data を返す
 }
 
-async function fetchMyPlans(): Promise<Plan[]> {
-  const headers = { Authorization: `Bearer ${localStorage.getItem('access_token') ?? ''}` };
-  // まず creators/me/plans を叩き、404等なら /plans にフォールバック
-  const tryUrls = [`${API_BASE}/creators/me/plans`, `${API_BASE}/plans`];
-  for (const url of tryUrls) {
-    try {
-      const r = await fetch(url, { headers });
-      if (r.ok) {
-        const j = await r.json();
-        // 形だけざっくり吸収
-        if (Array.isArray(j?.plans)) return j.plans;
-        if (Array.isArray(j)) return j;
-        if (j?.items && Array.isArray(j.items)) return j.items;
-      }
-    } catch { /* next */ }
-  }
-  return [];
+async function fetchMyPlans() {
+  try {
+    const r = await getMyPlans();
+    return r.plans ?? [];
+  } catch { return []; }
 }
 
 // 追加：undefined/null/空文字のキーを落とす（ネストにも対応）

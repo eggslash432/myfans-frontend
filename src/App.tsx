@@ -12,6 +12,7 @@ import Success from './pages/checkout/Success';
 import Cancel from './pages/checkout/Cancel';
 import ProtectedRoute from './components/ProtectedRoute';
 import NewPost from './pages/posts/NewPost';
+import MyPlansPage from './pages/Plans';
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/mypage/plans" element={<MyPlansPage />} />
           <Route path="/creators/:id" element={<CreatorPage />} />
           <Route
             path="/posts/new"
