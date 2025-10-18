@@ -52,6 +52,12 @@ async function tryRefresh(): Promise<string | null> {
   }
 }
 
+async function getJson(url: string) {
+  const r = await fetch(url, { credentials: "include" });
+  const text = await r.text();
+  try { return JSON.parse(text); } catch { return text; }
+}
+
 // === メインrequest（401→refresh→1回だけ再試行） ===
 export async function request<T>(
   path: string,
@@ -245,8 +251,13 @@ export const api = {
   meSummary: () => request<any>("/users/me/summary", { method: "GET" }, true),
 
   // --- クリエイター/投稿 ---
-  listCreators: (q?: string) =>
-    request<any>(`/creators${q ? `?q=${encodeURIComponent(q)}` : ""}`),
+  async listCreators(): Promise<any[]> {
+    const data = await getJson(`${BASE}/creators`);
+    if (Array.isArray(data)) return data;
+    if (Array.isArray((data as any)?.creators)) return (data as any).creators;
+    if (Array.isArray((data as any)?.data)) return (data as any).data;
+    return [];
+  },
 
   getCreator: (id: string) => request<any>(`/creators/${id}`),
 

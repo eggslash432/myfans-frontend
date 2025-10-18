@@ -11,8 +11,8 @@ export default function HomePage() {
   useEffect(() => {
     (async () => {
       try {
-        const data = await api.listCreators();
-        setCreators(data.creators || data || []); // API構造に対応
+        const list = await api.listCreators(); 
+        setCreators(list);
       } catch (err: any) {
         setError(err?.message || "取得に失敗しました");
       } finally {
@@ -27,14 +27,14 @@ export default function HomePage() {
   return (
     <div className="max-w-5xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">クリエイター</h1>
-      {creators.length === 0 ? (
+      {!Array.isArray(creators) || creators.length === 0 ? (
         <p className="text-gray-500">現在クリエイターが登録されていません。</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {creators.map((c) => (
             <Link
-              to={`/creators/${c.id}`}
-              key={c.id}
+              to={`/creators/${c?.id ?? ""}`}
+              key={c?.id ?? Math.random()}
               className="border rounded-lg p-4 hover:shadow transition"
             >
               <h2 className="font-semibold text-lg">{c.name || c.displayName || `Creator #${c.id}`}</h2>
