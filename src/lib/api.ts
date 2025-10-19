@@ -2,6 +2,38 @@
 const RAW_BASE = (import.meta.env.VITE_API_BASE_URL as string) || "";
 const BASE = RAW_BASE.replace(/\/+$/, ""); // 末尾スラ削除安全策
 
+// === 追加：候補ルート ===
+const AUTH_BASES = ["", "/api", "/v1", "/v1/api"];
+const LOGIN_PATHS = ["/auth/login", "/auth/signin", "/auth/email/login"];
+const REFRESH_PATHS = ["/auth/refresh", "/auth/refresh-token", "/auth/token/refresh"];
+
+let resolvedLoginPath: string | null = null;
+let resolvedRefreshPath: string | null = null;
+
+function withCreds(init: RequestInit = {}): RequestInit {
+  return { credentials: "include", ...init };
+}
+
+async function probePost(paths: string[], payload: any): Promise<{ path: string; data: any } | null> {
+  for (const basePrefix of AUTH_BASES) {
+    for (const p of paths) {
+      const full = joinUrl(`${basePrefix}${p}`);
+      try {
+        const r = await fetch(full, withCreds({
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }));
+        if (r.status === 404 || r.status === 405) continue; // ルート不在/メソッド違いは次候補へ
+        const text = await r.text();
+        let data: any; try { data = JSON.parse(text); } catch { data = text; }
+        return { path: `${basePrefix}${p}`, data };
+      } catch { /* 次へ */ }
+    }
+  }
+  return null;
+}
+
 export type ApiError = { status: number; message: string };
 
 function getToken() {
@@ -33,24 +65,41 @@ function joinUrl(path: string) {
   return path.startsWith("http") ? path : `${BASE}${path.startsWith("/") ? "" : "/"}${path}`;
 }
 
-// === Token取得保証（/auth/refresh がある前提で試行） ===
+// === 刷新（トークン取得用） ===
 async function tryRefresh(): Promise<string | null> {
-  const candidates = ["/auth/refresh", "/auth/refresh-token", "/auth/token/refresh"];
-  for (const path of candidates) {
+  // 既に見つけていればそれを使う
+  // const payload = {};
+  const candidates = resolvedRefreshPath ? [resolvedRefreshPath] : null;
+
+  if (candidates) {
     try {
-      const r = await fetch(joinUrl(path), {
-        method: "POST",
-        credentials: "include",                // ← Cookieを送受信
-        headers: { "Content-Type": "application/json" },
-      });
-      if (!r.ok) continue;
-      const raw = await r.text();
-      if (!raw) continue;
-      let data: any;
-      try { data = JSON.parse(raw); } catch { data = raw; }
-      const t = setTokenMaybe(data);
-      if (t) return t;
-    } catch {}
+      const r = await fetch(joinUrl(candidates[0]), withCreds({ method: "POST", headers: { "Content-Type": "application/json" } }));
+      if (r.ok) {
+        const raw = await r.text(); if (!raw) return null;
+        let data: any; try { data = JSON.parse(raw); } catch { data = raw; }
+        return setTokenMaybe(data);
+      }
+    } catch { /* 再探索へ */ }
+  }
+
+  // 未解決なら探索
+  for (const basePrefix of AUTH_BASES) {
+    for (const p of REFRESH_PATHS) {
+      try {
+        const r = await fetch(joinUrl(`${basePrefix}${p}`), withCreds({
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        }));
+        if (!r.ok) continue;
+        const text = await r.text(); if (!text) continue;
+        let data: any; try { data = JSON.parse(text); } catch { data = text; }
+        const t = setTokenMaybe(data);
+        if (t) {
+          resolvedRefreshPath = `${basePrefix}${p}`;
+          return t;
+        }
+      } catch {}
+    }
   }
   return null;
 }
@@ -232,29 +281,45 @@ export const api = {
   signup: (dto: { email: string; password: string; role?: "fan" | "creator" }) =>
     request<any>("/auth/signup", { method: "POST", body: JSON.stringify(dto) }),
 
-  login: async (dto: { email: string; password: string }) => {
-    const data = await request<any>("/auth/login", {
-      method: "POST",
-      body: JSON.stringify(dto),
-      credentials: "include", // ← これが超重要（Set-Cookie を確実に受け取る）
-    });
-    const saved = setTokenMaybe(data);
-    if (!saved) {
-      // Cookieだけ返すAPI構成なら refresh を試す
-      const t = await tryRefresh();
-      if (t) return { ...data, access_token: t };
-      throw {
-        status: 401,
-        message: "サーバが access_token を返しませんでした。/auth/refresh の有効化をご確認ください。",
-      } as ApiError;
+  async login(dto: { email: string; password: string }) {
+    // 既に解決済みならそれを使う
+    if (resolvedLoginPath) {
+      const r = await fetch(joinUrl(resolvedLoginPath), withCreds({
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dto),
+      }));
+      if (r.ok) {
+        const raw = await r.text();
+        let data: any; try { data = JSON.parse(raw); } catch { data = raw; }
+        const saved = setTokenMaybe(data) || await tryRefresh();
+        if (!saved) throw { status: 401, message: "トークンが取得できませんでした" } as ApiError;
+        return data;
+      }
+      // 404/405なら再探索へフォールバック
+      if (r.status !== 404 && r.status !== 405) throw { status: r.status, message: await r.text() } as ApiError;
     }
-    return data;
+
+    // 未解決 → 候補を総当たり
+    const hit = await probePost(
+      LOGIN_PATHS.map(p => p),
+      dto
+    );
+    if (!hit) throw new Error("認証APIが見つかりません（/auth/login 等）");
+
+    resolvedLoginPath = hit.path;
+
+    const saved = setTokenMaybe(hit.data) || await tryRefresh();
+    if (!saved) throw new Error("サーバが access_token を返さず、refresh も失敗しました");
+    return hit.data;
   },
 
-  logout: () => request("/auth/logout", { 
-    method: "POST",
-    credentials: "include"  // ← これが超重要（Cookieを送信）
-  }).catch(() => {}),
+  logout: async () => {
+    const cands = ["/auth/logout", "/api/auth/logout", "/v1/auth/logout"];
+    for (const p of cands) {
+      try { await fetch(joinUrl(p), withCreds({ method: "POST" })); break; } catch {}
+    }
+  },
 
   // BEが /auth/me の場合に統一（/users/me を使っていた箇所を修正）
   me: () => request<{ id: string; email: string; role: string }>("/auth/me", { method: "GET" }, true),
