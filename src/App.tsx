@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider } from './hooks/useAuth';
 import Header from './components/Header';
 import Home from './pages/Home';
 import MyPage from './pages/MyPage';

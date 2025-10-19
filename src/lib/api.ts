@@ -216,7 +216,11 @@ export const apiDelete = <T = any>(path: string, requireAuth = true) =>
 export const api = {
   // --- 認証 ---
   signup: (dto: { email: string; password: string; role?: "fan" | "creator" }) =>
-    request<any>("/auth/signup", { method: "POST", body: JSON.stringify(dto) }),
+    request<any>("/auth/signup", { 
+      method: "POST",
+      headers: { "Content-Type": "application/json" }, 
+      body: JSON.stringify(dto) ,
+    }),
 
   login: async (dto: { email: string; password: string }) => {
     const data = await request<any>("/auth/login", {
