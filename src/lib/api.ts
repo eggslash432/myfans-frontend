@@ -297,3 +297,11 @@ export const api = {
       requireAuth
     ),  
 };
+
+export function normalizeList<T = any>(res: any): T[] {
+  if (Array.isArray(res)) return res as T[];
+  if (Array.isArray(res?.creators)) return res.creators as T[];
+  if (Array.isArray(res?.items)) return res.items as T[];
+  if (Array.isArray(res?.data)) return res.data as T[];
+  return [];
+}

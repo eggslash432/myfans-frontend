@@ -1,7 +1,7 @@
 // src/pages/Home.tsx
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { api } from "../lib/api";
+import { api, normalizeList } from "../lib/api";
 
 export default function HomePage() {
   const [creators, setCreators] = useState<any[]>([]);
@@ -11,8 +11,8 @@ export default function HomePage() {
   useEffect(() => {
     (async () => {
       try {
-        const data = await api.listCreators();
-        setCreators(data.creators || data || []); // API構造に対応
+        const list = await api.listCreators();
+        setCreators(normalizeList(list));
       } catch (err: any) {
         setError(err?.message || "取得に失敗しました");
       } finally {

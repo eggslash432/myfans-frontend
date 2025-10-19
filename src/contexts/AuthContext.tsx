@@ -1,7 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { api } from '../lib/api';
 
-type User = { id: string; email: string; role: 'fan'|'creator'|'admin' };
+type Role = 'fan' | 'creator' | 'admin';
+type User = { id: string; email: string; role: Role; creatorId?: number | null };
 type AuthContextType = {
   user: User | null;
   ready: boolean;
@@ -14,6 +15,23 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const getToken = () => localStorage.getItem('access_token');
 
+
+// ❷ /auth/me の形を正規化する関数を追加
+function normalizeMe(raw: any): User | null {
+  if (!raw) return null;
+  // BE: { id:number, email?:string, role?:'user'|'creator'|'admin', creatorId?:number }
+  const idString = String(raw.id);
+  // 役割の表記ゆれを吸収（user→fan）
+  const beRole = (raw.role ?? (raw.creatorId ? 'creator' : 'user')) as string;
+  const role: Role = beRole === 'user' ? 'fan' : (['creator','admin'].includes(beRole) ? beRole as Role : 'fan');
+  return {
+    id: idString,
+    email: raw.email ?? null,
+    role,
+    creatorId: raw.creatorId ?? null,
+  };
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [ready, setReady] = useState(false);
@@ -23,7 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const hasToken = !!getToken();
       if (!hasToken && !force) { setUser(null); setReady(true); return; }
       const me = await api.me();
-      setUser(me as User);
+      setUser(normalizeMe(me));
     } catch {
       localStorage.removeItem('access_token');
       setUser(null);
