@@ -12,7 +12,25 @@ export default function CreatorPage() {
   useEffect(() => {
     (async () => {
       try {
-        setData(await api.getCreator(id));
+        // 詳細＆投稿を合わせて取得
+        const detail = await api.getCreator(id);
+        const postsRes = await api.getCreatorPosts(id);
+        // バックエンドの形に合わせて正規化
+        const posts =
+          Array.isArray(postsRes?.items)
+            ? postsRes.items
+            : Array.isArray(postsRes)
+            ? postsRes
+            : [];
+        setData({
+          creator: {
+            id: detail.id,
+            displayName: detail.displayName ?? detail.name ?? '',
+            bio: detail.bio ?? '',
+          },
+          plans: detail.plans ?? [],
+          posts,
+        });
       } catch (e: any) {
         setErr(e.message || 'failed');
       }

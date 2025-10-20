@@ -266,6 +266,8 @@ export const api = {
   createPost: (dto: any) =>
     request("/creators/me/posts", { method: "POST", body: JSON.stringify(dto) }, true),
 
+  getCreatorPosts: (id: string) => request<any>(`/creators/${id}/posts`),
+
   // --- 決済（必ず requireAuth=true） ---
   createPlanCheckout: (dto: {
     creatorId: string;
