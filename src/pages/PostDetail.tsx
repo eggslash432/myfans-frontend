@@ -2,13 +2,14 @@
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api, type ApiError } from '../lib/api';
+import type { Visibility } from '../shared/prisma-enums';
 
 type Post = {
   id: string;
   title: string;
   body?: string;
   bodyMd?: string;
-  visibility: 'free' | 'plan' | 'paid_single';
+  visibility: Visibility;
   creatorId: string;
   planId?: string | null;
 };

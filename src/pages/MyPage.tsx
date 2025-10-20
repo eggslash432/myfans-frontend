@@ -36,7 +36,7 @@ export default function MyPage() {
           {posts.map((p) => (
             <li key={p.id} className="border-b py-2">
               <strong>{p.title}</strong>
-              {p.isPublished ? (
+              {p.publishedStatus === 'published' ? (
                 <span className="ml-2 text-green-600">公開中</span>
               ) : (
                 <span className="ml-2 text-gray-500">下書き</span>
