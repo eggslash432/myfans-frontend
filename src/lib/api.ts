@@ -1,3 +1,5 @@
+import type { AgeRating, PublishedStatus, Visibility } from "../shared/prisma-enums";
+
 // 共通HTTPクライアント（JWT自動付与・Cookieリフレッシュ対応・エラー整形）
 const RAW_BASE = (import.meta.env.VITE_API_BASE_URL as string) || "";
 const BASE = RAW_BASE.replace(/\/+$/, ""); // 末尾スラ削除安全策
@@ -158,10 +160,13 @@ export async function getCreatorPlans(creatorId: string): Promise<PlansResponse>
 export async function createPostSmart(
   dto: {
     title: string;
-    content: string;
-    visibility: "free" | "paid" | "ppv";
-    price?: number | null;
-    status?: "draft" | "published";
+    body: string;
+    visibility: Visibility
+    priceJpy?: number | null;
+    publishedStatus?: PublishedStatus;
+    ageRating?: AgeRating;
+    planId?: string;
+    accessRules?: any;
   },
   opts?: { creatorId?: string }
 ) {

@@ -2,24 +2,29 @@
 import React from 'react';
 import { createPostSmart } from '../../lib/api';
 import { getMyPlans } from '../../lib/api';
-
-type Visibility = 'free' | 'plan' | 'paid_single';
-type AgeRating = 'all' | 'r18';
+import type { AgeRating, Visibility } from '../../shared/prisma-enums';
 
 type Plan = { id: string; name: string; priceJpy?: number };
 
 async function createPost(data: any) {
-  const res = await createPostSmart({
+
+  const dto: any = {
     title: data.title,
-    content: data.body,
-    visibility: data.visibility === 'free' ? 'free'
-               : data.visibility === 'plan' ? 'paid'    // ← 用語差異をここで吸収
-               : 'ppv',
-    price: data.ppvPrice ? Number(data.ppvPrice) : null,
-    status: data.isDraft ? 'draft' : 'published',
-  });
-  return res.data; // { ok:true, path, data } の data を返す
-}
+    body: data.body,
+    visibility: data.visibility,
+    ageRating: data.ageRating,
+    priceJpy: data.priceJpy ?? data.accessRules?.ppvPriceJpy ?? null,
+    planId: data.planId ?? (data.accessRules?.allowByPlanIds?.[0] ?? undefined),
+    publishedStatus: data.publishedStatus, // ← 後述(B)で入れる
+  };
+
+  // 余計な undefined / null キーは削除
+  Object.keys(dto).forEach(k => (dto[k] == null) && delete dto[k]);
+
+  const res = await createPostSmart(dto);
+  return res.data;  
+
+}  
 
 async function fetchMyPlans() {
   try {
@@ -75,7 +80,7 @@ export default function NewPost() {
       body,
       visibility,           // 'free' | 'plan' | 'paid_single'
       ageRating,            // 'all'  | 'r18'
-      // isDraft は送らない（サーバが受けないので）
+      publishedStatus: isDraft ? 'draft' : 'published',
       accessRules: {
         allowByPlanIds: [],
         allowByPpv: false,
@@ -121,7 +126,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     const payload = buildPayload();
 
     setSubmitting(true);
-    await createPost(payload);  // ← 修正箇所
+    await createPostSmart(payload);  // ← 修正箇所
     setOkMsg('投稿が完了しました');
 
     // 投稿IDが返るなら自動遷移も可能
