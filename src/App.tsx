@@ -13,6 +13,7 @@ import Cancel from './pages/checkout/Cancel';
 import ProtectedRoute from './components/ProtectedRoute';
 import NewPost from './pages/posts/NewPost';
 import MyPlansPage from './pages/Plans';
+import CreatorsAdminPage from './pages/admin/CreatorsAdminPage';
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
         <Header />
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/admin/creators" element={<CreatorsAdminPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route

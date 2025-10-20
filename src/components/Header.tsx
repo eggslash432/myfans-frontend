@@ -11,6 +11,7 @@ export default function Header() {
         <Link to="/">ホーム</Link>
         <Link to="/mypage">マイページ</Link>
         {user?.role === 'creator' && <Link to="/posts/new">投稿作成</Link>}
+        {user?.role === 'admin' && <Link to="/admin/creators">管理</Link>}
         <Link to="/test" className="opacity-70 hover:opacity-100">検収</Link>
         {user ? (
           <>

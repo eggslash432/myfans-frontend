@@ -320,3 +320,13 @@ export function normalizeList<T = any>(res: any): T[] {
   return [];
 }
 
+export const admin = {
+  listPendingCreators: () => request<any>('/admin/creators'),
+  setCreatorListing: (userId: string, isListed: boolean) =>
+    request<any>(`/admin/creators/${encodeURIComponent(userId)}/listing`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isListed }),
+    }),
+};
+
