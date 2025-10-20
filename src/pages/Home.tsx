@@ -12,8 +12,10 @@ export default function HomePage() {
     (async () => {
       try {
         const list = await api.listCreators();
+        console.debug('GET /creators raw:', list);
         setCreators(normalizeList(list));
       } catch (err: any) {
+        console.error('GET /creators failed:', err);
         setError(err?.message || "取得に失敗しました");
       } finally {
         setLoading(false);

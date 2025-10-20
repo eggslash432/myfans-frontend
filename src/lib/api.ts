@@ -308,9 +308,15 @@ export const api = {
 };
 
 export function normalizeList<T = any>(res: any): T[] {
+  if (!res) return [];
   if (Array.isArray(res)) return res as T[];
   if (Array.isArray(res?.creators)) return res.creators as T[];
   if (Array.isArray(res?.items)) return res.items as T[];
   if (Array.isArray(res?.data)) return res.data as T[];
+  // 二段ネスト対応
+  if (Array.isArray(res?.data?.creators)) return res.data.creators as T[];
+  if (Array.isArray(res?.result)) return res.result as T[];
+  if (Array.isArray(res?.rows)) return res.rows as T[];
   return [];
 }
+
