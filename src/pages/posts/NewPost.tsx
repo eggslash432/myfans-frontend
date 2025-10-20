@@ -129,8 +129,11 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 
     setTitle('');
     setBody('');
-  } catch (err: any) {
-    setError(typeof err?.message === 'string' ? err.message : String(err));
+  } catch (e: any) {
+    const msg =
+      e?.message ??
+      (typeof e === "string" ? e : JSON.stringify(e));
+    setError(`投稿失敗: ${msg}`);
   } finally {
     setSubmitting(false);
   }

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
+import PasswordField from '../../components/PasswordField'
 
 
 export default function Login() {
@@ -32,8 +33,20 @@ export default function Login() {
     <div className="mx-auto max-w-md p-6">
       <h1 className="text-xl font-bold mb-4">ログイン</h1>
       <form onSubmit={onSubmit} className="space-y-3">
-        <input className="w-full border p-2 rounded" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} />
-        <input className="w-full border p-2 rounded" placeholder="Password" type="password" value={password} onChange={e=>setPassword(e.target.value)} />
+        <input 
+          className="w-full border p-2 rounded" 
+          placeholder="Email" 
+          value={email} 
+          onChange={e=>setEmail(e.target.value)} 
+        />
+        <PasswordField
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          autoComplete="current-password" // ← ログインではこっち
+          minLength={8}
+          required
+          label="パスワード"
+        />
         {error && <div className="text-red-600 text-sm">{error}</div>}
         <button className="w-full py-2 border rounded">ログイン</button>
       </form>
