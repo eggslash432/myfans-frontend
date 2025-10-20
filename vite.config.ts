@@ -13,6 +13,7 @@ export default defineConfig({
       '/plans': { target: 'http://localhost:3000', changeOrigin: true },
       '/subscriptions': { target: 'http://localhost:3000', changeOrigin: true },
       '/payments': { target: 'http://localhost:3000', changeOrigin: true },
+      '/admin': { target: 'http://localhost:3000', changeOrigin: true }, 
     }
   },
 })

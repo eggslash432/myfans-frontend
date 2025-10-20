@@ -6,25 +6,25 @@ import type { AgeRating, Visibility } from '../../shared/prisma-enums';
 
 type Plan = { id: string; name: string; priceJpy?: number };
 
-async function createPost(data: any) {
+// async function createPost(data: any) {
 
-  const dto: any = {
-    title: data.title,
-    body: data.body,
-    visibility: data.visibility,
-    ageRating: data.ageRating,
-    priceJpy: data.priceJpy ?? data.accessRules?.ppvPriceJpy ?? null,
-    planId: data.planId ?? (data.accessRules?.allowByPlanIds?.[0] ?? undefined),
-    publishedStatus: data.publishedStatus, // ← 後述(B)で入れる
-  };
+//   const dto: any = {
+//     title: data.title,
+//     body: data.body,
+//     visibility: data.visibility,
+//     ageRating: data.ageRating,
+//     priceJpy: data.priceJpy ?? data.accessRules?.ppvPriceJpy ?? null,
+//     planId: data.planId ?? (data.accessRules?.allowByPlanIds?.[0] ?? undefined),
+//     publishedStatus: data.publishedStatus, // ← 後述(B)で入れる
+//   };
 
-  // 余計な undefined / null キーは削除
-  Object.keys(dto).forEach(k => (dto[k] == null) && delete dto[k]);
+//   // 余計な undefined / null キーは削除
+//   Object.keys(dto).forEach(k => (dto[k] == null) && delete dto[k]);
 
-  const res = await createPostSmart(dto);
-  return res.data;  
+//   const res = await createPostSmart(dto);
+//   return res.data;  
 
-}  
+// }  
 
 async function fetchMyPlans() {
   try {
