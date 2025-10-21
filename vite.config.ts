@@ -7,13 +7,12 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/auth': { target: 'http://localhost:3000', changeOrigin: true },
-      '/creators': { target: 'http://localhost:3000', changeOrigin: true },
-      '/posts': { target: 'http://localhost:3000', changeOrigin: true },
-      '/plans': { target: 'http://localhost:3000', changeOrigin: true },
-      '/subscriptions': { target: 'http://localhost:3000', changeOrigin: true },
-      '/payments': { target: 'http://localhost:3000', changeOrigin: true },
-      '/admin': { target: 'http://localhost:3000', changeOrigin: true }, 
-    }
+      // バックエンド側に /api プレフィックスが無い場合は rewrite で外す
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,        
+      },
+    },
+    fs:{ strict:false},
   },
 })
