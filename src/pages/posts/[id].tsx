@@ -44,7 +44,7 @@ export default function PostDetailPage() {
     try {
       const res = await api.checkoutPpvPost(id);
       if (res?.url) {
-        window.location.href = res.url;
+        window.location.assign(res.url);
       } else if (res?.sessionId) {
         await redirectToCheckoutSafe(res.sessionId);
       } else {
