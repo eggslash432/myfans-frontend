@@ -304,6 +304,14 @@ export const api = {
       true
     ),
 
+  // 単発（PPV）購入: POST /posts/checkout/post
+  checkoutPpvPost: (postId: string) =>
+    request<{ sessionId: string; url?: string }>(
+      "/posts/checkout/post",
+      { method: "POST", body: JSON.stringify({ postId }) },
+      true
+    ),    
+
   myPayments: () => request<any>("/payments/history", { method: "GET" }, true),
 
   mySubscriptions: () => request<any>("/subscriptions/my", { method: "GET" }, true),
