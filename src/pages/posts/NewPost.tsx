@@ -1,30 +1,10 @@
 // src/pages/NewPost.tsx
-import React from 'react';
-import { createPostSmart } from '../../lib/api';
+import {useState, useEffect} from 'react';
+import { api, createPostSmart } from '../../lib/api';
 import { getMyPlans } from '../../lib/api';
 import type { AgeRating, Visibility } from '../../shared/prisma-enums';
 
 type Plan = { id: string; name: string; priceJpy?: number };
-
-// async function createPost(data: any) {
-
-//   const dto: any = {
-//     title: data.title,
-//     body: data.body,
-//     visibility: data.visibility,
-//     ageRating: data.ageRating,
-//     priceJpy: data.priceJpy ?? data.accessRules?.ppvPriceJpy ?? null,
-//     planId: data.planId ?? (data.accessRules?.allowByPlanIds?.[0] ?? undefined),
-//     publishedStatus: data.publishedStatus, // ← 後述(B)で入れる
-//   };
-
-//   // 余計な undefined / null キーは削除
-//   Object.keys(dto).forEach(k => (dto[k] == null) && delete dto[k]);
-
-//   const res = await createPostSmart(dto);
-//   return res.data;  
-
-// }  
 
 async function fetchMyPlans() {
   try {
@@ -49,27 +29,31 @@ function prune<T>(obj: T): T {
 }
 
 export default function NewPost() {
-  const [title, setTitle] = React.useState('');
-  const [body, setBody] = React.useState('');
-  const [visibility, setVisibility] = React.useState<Visibility>('free');
-  const [ageRating, setAgeRating] = React.useState<AgeRating>('all');
-  const [isDraft, setIsDraft] = React.useState(false);
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
+  const [visibility, setVisibility] = useState<Visibility>('free');
+  const [ageRating, setAgeRating] = useState<AgeRating>('all');
+  const [isDraft, setIsDraft] = useState(false);
 
-  const [plans, setPlans] = React.useState<Plan[]>([]);
-  const [selectedPlanId, setSelectedPlanId] = React.useState<string>('');
-  const [ppvPrice, setPpvPrice] = React.useState<string>('500');
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [showPlanModal, setShowPlanModal] = useState(false);
+  const [newPlanName, setNewPlanName] = useState('');
+  const [newPlanPrice, setNewPlanPrice] = useState('');
+  const [selectedPlanId, setSelectedPlanId] = useState<string>('');
 
-  const [submitting, setSubmitting] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const [okMsg, setOkMsg] = React.useState<string | null>(null);
+  const [ppvPrice, setPpvPrice] = useState<string>('500');
 
-  React.useEffect(() => {
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [okMsg, setOkMsg] = useState<string | null>(null);
+
+  useEffect(() => {
     // プランを取得（有料購読者限定の時に選択用）
     fetchMyPlans().then(setPlans).catch(() => setPlans([]));
   }, []);
 
   // visibility が変わったら不要な値をクリア
-  React.useEffect(() => {
+  useEffect(() => {
     if (visibility !== 'plan') setSelectedPlanId('');
     if (visibility !== 'paid_single') setPpvPrice('500');
   }, [visibility]);
@@ -113,36 +97,69 @@ export default function NewPost() {
     return prune(base);
   };
 
-
-const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  setError(null);
-  setOkMsg(null);
-
-  try {
-    if (!title.trim()) throw new Error('タイトルを入力してください');
-    if (!body) throw new Error('本文を入力してください');
-
-    const payload = buildPayload();
-
-    setSubmitting(true);
-    await createPostSmart(payload);  // ← 修正箇所
-    setOkMsg('投稿が完了しました');
-
-    // 投稿IDが返るなら自動遷移も可能
-    // navigate(`/posts/${res.post?.id ?? res.id}`);
-
-    setTitle('');
-    setBody('');
-  } catch (e: any) {
-    const msg =
-      e?.message ??
-      (typeof e === "string" ? e : JSON.stringify(e));
-    setError(`投稿失敗: ${msg}`);
-  } finally {
-    setSubmitting(false);
+  // 自分のプラン一覧を取得
+  async function loadPlans() {
+    try {
+      const me = await api.get('/auth/me');
+      const list = await api.get(`/plans?creatorId=${me.id}`);
+      setPlans(list);
+    } catch (e) {
+      console.error('プラン取得失敗', e);
+    }
   }
-};
+
+  useEffect(() => { loadPlans(); }, []);
+
+  // 新規プランを作成
+  async function createPlan() {
+    if (!newPlanName || !newPlanPrice) return;
+    try {
+      const res = await api.post('/plans', {
+        name: newPlanName,
+        priceJpy: parseInt(newPlanPrice, 10),
+      });
+      console.log('プラン作成成功', res);
+      setShowPlanModal(false);
+      setNewPlanName('');
+      setNewPlanPrice('');
+      await loadPlans(); // 再読込
+      setSelectedPlanId(res.id);
+    } catch (e: any) {
+      alert(`プラン作成に失敗：${e.data?.message || e.message}`);
+      console.error(e);
+    }
+  }
+
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError(null);
+    setOkMsg(null);
+
+    try {
+      if (!title.trim()) throw new Error('タイトルを入力してください');
+      if (!body) throw new Error('本文を入力してください');
+
+      const payload = buildPayload();
+
+      setSubmitting(true);
+      await createPostSmart(payload);  // ← 修正箇所
+      setOkMsg('投稿が完了しました');
+
+      // 投稿IDが返るなら自動遷移も可能
+      // navigate(`/posts/${res.post?.id ?? res.id}`);
+
+      setTitle('');
+      setBody('');
+    } catch (e: any) {
+      const msg =
+        e?.message ??
+        (typeof e === "string" ? e : JSON.stringify(e));
+      setError(`投稿失敗: ${msg}`);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className="max-w-3xl mx-auto p-6">
@@ -219,11 +236,75 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                   </option>
                 ))}
               </select>
+              <button
+                type="button"
+                className="text-sm border rounded px-2 py-1 hover:bg-gray-50"
+                onClick={() => setShowPlanModal(true)}
+              >
+                ＋ 新しいプランを作成
+              </button>
               {plans.length === 0 && (
                 <div className="text-sm text-gray-500 mt-1">
                   プランが取得できませんでした。先にプランを作成してください。
                 </div>
               )}
+            </div>
+          )}
+
+          {/* 💬 新規プラン作成ダイアログ */}
+          {showPlanModal && (
+            <div className="fixed inset-0 z-50">
+              {/* 背景オーバーレイ */}
+              <div
+                className="absolute inset-0 bg-black/30"
+                onClick={() => setShowPlanModal(false)}
+              />
+              {/* 本体 */}
+              <div className="relative mx-auto my-24 w-full max-w-md rounded-xl bg-white shadow-lg p-5">
+                <h3 className="text-lg font-semibold mb-4">新しいプランを作成</h3>
+
+                <div className="space-y-3">
+                  <label className="block text-sm">
+                    プラン名
+                    <input
+                      className="mt-1 w-full border rounded px-2 py-1"
+                      value={newPlanName}
+                      onChange={(e) => setNewPlanName(e.target.value)}
+                      placeholder="例：スタンダード"
+                    />
+                  </label>
+
+                  <label className="block text-sm">
+                    月額料金（円）
+                    <input
+                      type="number"
+                      className="mt-1 w-full border rounded px-2 py-1"
+                      value={newPlanPrice}
+                      onChange={(e) => setNewPlanPrice(e.target.value)}
+                      placeholder="例：800"
+                      min={100}
+                    />
+                  </label>
+
+                  <div className="flex justify-end gap-2 pt-2">
+                    <button
+                      type="button"
+                      className="border rounded px-3 py-1"
+                      onClick={() => setShowPlanModal(false)}
+                    >
+                      キャンセル
+                    </button>
+                    <button
+                      type="button"
+                      className="bg-black text-white rounded px-3 py-1 disabled:opacity-50"
+                      onClick={createPlan}
+                      disabled={!newPlanName || !newPlanPrice}
+                    >
+                      作成
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
