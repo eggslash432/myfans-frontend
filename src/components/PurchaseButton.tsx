@@ -9,6 +9,8 @@ type Props = {
   className?: string;
 };
 export default function PurchaseButton({ postId, priceYen, disabled, className }: Props) {
+  // 価格 0 / 未設定で無料判定されるレイアウトの時はボタンを出さない
+  if (priceYen === 0) return null;
   const [loading, setLoading] = useState(false);
 
   const onClick = async () => {

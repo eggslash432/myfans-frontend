@@ -16,12 +16,18 @@ export default function CreatorPage() {
         const detail = await api.getCreator(id);
         const postsRes = await api.getCreatorPosts(id);
         // バックエンドの形に合わせて正規化
-        const posts =
-          Array.isArray(postsRes?.items)
-            ? postsRes.items
-            : Array.isArray(postsRes)
-            ? postsRes
-            : [];
+        const rawPosts =
+          Array.isArray(postsRes?.items) ? postsRes.items
+          : Array.isArray(postsRes) ? postsRes
+          : [];
+        // ← ここで “無料推定” と “accessType” を正規化
+        const posts = rawPosts.map((p: any) => {
+          const visibility = p.visibility ?? (p.accessType === 'ppv' ? 'paid_single' : p.accessType === 'plan' ? 'plan' : 'free');
+          const price = typeof p.price === 'number' ? p.price : (typeof p.priceJpy === 'number' ? p.priceJpy : null);
+          const isFree = typeof p.isFree === 'boolean' ? p.isFree : (visibility === 'free' || price === 0);
+          const accessType = visibility === 'paid_single' ? 'ppv' : (visibility === 'plan' ? 'plan' : 'free');
+          return { ...p, visibility, price, isFree, accessType };
+        }); 
         setData({
           creator: {
             id: detail.id,
@@ -94,7 +100,8 @@ export default function CreatorPage() {
               <Link className="underline" to={`/posts/${post.id}`}>
                 {post.title}
               </Link>
-              {post.accessType === 'ppv' && (
+              {/* 無料はバッジ/購入導線を出さない */}
+              {!post.isFree && post.accessType === 'ppv' && (                
                 <span className="ml-2 text-xs px-2 py-0.5 border rounded">
                   PPV
                 </span>

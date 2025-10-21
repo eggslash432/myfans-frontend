@@ -121,7 +121,18 @@ export async function request<T>(
       const txt2 = await res2.text().catch(() => "");
       throw { status: res2.status, message: txt2 || res2.statusText } as ApiError;
     }
-    // refresh不可
+    // refresh不可 → 公開APIなら "トークン無しで" 1回だけ再試行
+    const isPublicCall = requireAuth === false;
+    if (isPublicCall && headers.has("Authorization")) {
+      headers.delete("Authorization");
+      const res3 = await fetch(joinUrl(path), { ...init, headers });
+      if (res3.ok) {
+        if (res3.status === 204) return undefined as unknown as T;
+        const raw3 = await res3.text();
+        if (!raw3) return undefined as unknown as T;
+        try { return JSON.parse(raw3) as T; } catch { return raw3 as unknown as T; }
+      }
+    }
     clearToken();
   }
 

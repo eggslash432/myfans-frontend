@@ -1,3 +1,4 @@
+import type { Visibility } from '../shared/prisma-enums';
 import PurchaseButton from './PurchaseButton';
 
 export type PostItem = {
@@ -9,10 +10,15 @@ export type PostItem = {
   isAccessible?: boolean | null;
   excerpt?: string | null;
   debugFlags?: string;
+  visibility?: Visibility;
 };
 
 export default function PostCard({ post, onOpen }: { post: PostItem; onOpen: (id: string) => void }) {
-  const isFree = !!post.isFree;
+  const derivedFree =
+    (post.visibility === 'free') ||
+    (typeof post.price === 'number' ? post.price === 0 : false);
+
+  const isFree = typeof post.isFree === 'boolean' ? post.isFree : derivedFree;  // ★ここを変更
   const isAccessible = !!post.isAccessible;
   const canOpen = isFree || isAccessible;
 
@@ -41,7 +47,8 @@ export default function PostCard({ post, onOpen }: { post: PostItem; onOpen: (id
         {canOpen ? (
           <button className="px-4 py-2 rounded-2xl border" onClick={() => onOpen(post.id)}>開く</button>
         ) : (
-          <PurchaseButton postId={post.id} priceYen={post.price ?? undefined} />
+          // 無料なら購入ボタンは出さない（念のため二重ガード）
+          !isFree && <PurchaseButton postId={post.id} priceYen={post.price ?? undefined} />
         )}
         {!isFree && (
           <span className="text-sm text-gray-600">

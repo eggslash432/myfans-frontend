@@ -28,15 +28,23 @@ export default function PostDetailPage() {
   if (err) return <div className="p-4 text-red-700">取得失敗: {err}</div>;
   if (!data) return <div className="p-4">読み込み中...</div>;
 
-  const canView = !!data?.canView;
+  const accessType =
+    data?.accessType ??
+    (data?.visibility === 'paid_single' ? 'ppv'
+     : data?.visibility === 'plan' ? 'plan'
+     : 'free');
+  const canView =
+    data?.visibility === 'free'        // ← 無料は常に閲覧可
+      ? true
+      : !!data?.canView;               // それ以外はサーバの判定に従う
   return (
     <div className="p-4 space-y-3">
       <h1 className="text-xl font-bold">{data.title}</h1>
-      <div className="opacity-75">公開範囲: {data.accessType /* 'plan' | 'ppv' | 'free' */}</div>
+      <div className="opacity-75">公開範囲: {accessType /* 'plan' | 'ppv' | 'free' */}</div>
 
       {canView ? (
         <article className="prose">
-          <p>{data.content ?? '（本文）'}</p>
+          <p>{(data.content ?? data.body ?? data.bodyMd ?? '').trim() || '（本文）'}</p>
         </article>
       ) : (
         <div className="p-4 border rounded bg-yellow-50">

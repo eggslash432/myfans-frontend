@@ -62,7 +62,7 @@ export default function PostDetail() {
     <div className="max-w-2xl mx-auto p-6 space-y-4">
       <h1 className="text-2xl font-bold">{post.title}</h1>
       <div className="text-sm text-gray-500">
-        可視性: {post.visibility === 'free' ? '無料' : post.visibility === 'plan' ? '購読者限定' : 'PPV'}
+        可視性: {post.visibility === 'free' ? '無料' : post.visibility === 'plan' ? '購読者限定' : 'paid_single'}
       </div>
       <article className="prose max-w-none whitespace-pre-wrap">{body}</article>
     </div>
