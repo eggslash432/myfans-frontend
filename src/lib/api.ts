@@ -286,7 +286,7 @@ export const api = {
     successUrl: string;
     cancelUrl: string;
   }) =>
-    request<{ sessionId: string }>(
+    request<{ sessionId: string; url:string }>(
       "/payments/checkout/plan",
       { method: "POST", body: JSON.stringify(dto) },
       true

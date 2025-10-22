@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../../lib/api';
-import { redirectToCheckoutSafe } from '../../lib/stripe';
 
 export default function PostDetailPage() {
   const { id = '' } = useParams();
@@ -46,7 +45,7 @@ export default function PostDetailPage() {
       if (res?.url) {
         window.location.assign(res.url);
       } else if (res?.sessionId) {
-        await redirectToCheckoutSafe(res.sessionId);
+        window.location.href = res?.url? res.url : '/';
       } else {
         alert('購入セッションの作成に失敗しました。');
       }

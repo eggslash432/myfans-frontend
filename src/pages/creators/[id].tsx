@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { api } from '../../lib/api';
-import { redirectToCheckoutSafe } from '../../lib/stripe';
 
 export default function CreatorPage() {
   const { id = '' } = useParams();
@@ -49,8 +48,8 @@ export default function CreatorPage() {
       const successUrl = `${origin}/checkout/success?plan=${encodeURIComponent(planName || '')}`;
       const cancelUrl = `${origin}/checkout/cancel`;
 
-      const { sessionId } = await api.createPlanCheckout({ creatorId: id, planId, successUrl, cancelUrl });
-      await redirectToCheckoutSafe(sessionId);
+      const { url } = await api.createPlanCheckout({ creatorId: id, planId, successUrl, cancelUrl });
+      window.location.href = url;
     } catch (e: any) {
       setErr(e?.message ?? 'Checkoutの起動に失敗しました');
     }
