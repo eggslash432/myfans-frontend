@@ -3,6 +3,7 @@ import type { AgeRating, PublishedStatus, Visibility } from "../shared/prisma-en
 // 共通HTTPクライアント（JWT自動付与・Cookieリフレッシュ対応・エラー整形）
 const RAW_BASE = (import.meta.env.VITE_API_BASE_URL as string) || "";
 const BASE = RAW_BASE.replace(/\/+$/, ""); // 末尾スラ削除安全策
+const API = `${BASE}/api`
 
 export type ApiError = { status: number; message: string };
 
@@ -32,7 +33,10 @@ function clearToken() {
 //   return t ? { Authorization: `Bearer ${t}` } : {};
 // }
 function joinUrl(path: string) {
-  return path.startsWith("http") ? path : `${BASE}${path.startsWith("/") ? "" : "/"}${path}`;
+  if (path.startsWith("http")) return path;
+  // 既に "/api" で始まっているなら一度だけ剥がす（/api/api 事故防止）
+  const p = path.startsWith("/api") ? path.slice(4) : path;
+  return `${API}${p.startsWith("/") ? "" : "/"}${p}`;
 }
 
 // === Token取得保証（/auth/refresh がある前提で試行） ===
