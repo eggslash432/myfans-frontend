@@ -5,7 +5,6 @@ import Home from './pages/Home';
 import MyPage from './pages/MyPage';
 import CreatorPage from './pages/creators/[id]';
 import PostDetailPage from './pages/posts/[id]';
-import TestMidreview from './pages/TestMidreview';
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
 import Success from './pages/checkout/Success';
@@ -46,7 +45,6 @@ export default function App() {
           <Route path="/posts/:id" element={<PostDetailPage />} />
           <Route path="/checkout/success" element={<Success />} />
           <Route path="/checkout/cancel" element={<Cancel />} />
-          <Route path="/test" element={<TestMidreview />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>  

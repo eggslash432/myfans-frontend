@@ -6,13 +6,12 @@ export default function Header() {
   const label = user?.email ?? (user ? `ID:${user.id}` : '');
   return (
     <header className="flex items-center justify-between p-3 border-b">
-      <Link to="/" className="font-bold">MyFans Clone</Link>
+      <Link to="/" className="font-bold">Himefan</Link>
       <nav className="flex items-center gap-4 text-sm">
         <Link to="/">ホーム</Link>
         <Link to="/mypage">マイページ</Link>
         {user?.role === 'creator' && <Link to="/posts/new">投稿作成</Link>}
         {user?.role === 'admin' && <Link to="/admin/creators">管理</Link>}
-        <Link to="/test" className="opacity-70 hover:opacity-100">検収</Link>
         {user ? (
           <>
             <span className="opacity-70">
