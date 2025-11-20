@@ -1,3 +1,5 @@
+// myfans-frontend/src/pages/posts/[id].tsx
+
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../../lib/api';
@@ -13,17 +15,6 @@ export default function PostDetailPage() {
       try { setData(await api.getPost(id)); } catch (e: any) { setErr(e.message || 'failed'); }
     })();
   }, [id]);
-
-  // const buyPPV = async () => {
-  //   const origin = window.location.origin;
-  //   const { sessionId } = await api.createPpvCheckout({
-  //     postId: id,
-  //     priceId: data?.ppvPriceId || 'seed-ppv-price-id',
-  //     successUrl: `${origin}/checkout/success`,
-  //     cancelUrl: `${origin}/checkout/cancel`,
-  //   });
-  //   await redirectToCheckoutSafe(sessionId);
-  // };
 
   if (err) return <div className="p-4 text-red-700">取得失敗: {err}</div>;
   if (!data) return <div className="p-4">読み込み中...</div>;
@@ -69,9 +60,45 @@ export default function PostDetailPage() {
       <div className="opacity-75">公開範囲: {accessType /* 'plan' | 'ppv' | 'free' */}</div>
 
       {canView ? (
-        <article className="prose">
-          <p>{(data.content ?? data.body ?? data.bodyMd ?? '').trim() || '（本文）'}</p>
-        </article>
+        <>
+          <article className="prose">
+            <p>{(data.content ?? data.body ?? data.bodyMd ?? '').trim() || '（本文）'}</p>
+          </article>   
+
+          {/* ▼ メディアがある場合だけ表示 */}
+          {Array.isArray(data.media) && data.media.length > 0 && (
+            <section className="mt-4 border-t pt-4">
+              <h2 className="text-lg font-semibold mb-3">メディア</h2>
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+                {data.media.map((m: any) => (
+                  <div key={m.id} className="border rounded overflow-hidden">
+                    {m.mediaType === 'image' && (
+                      <img
+                        src={m.url}
+                        alt=""
+                        className="w-full h-48 object-cover"
+                      />
+                    )}
+
+                    {m.mediaType === 'video' && (
+                      <video
+                        src={m.url}
+                        controls
+                        className="w-full h-48 object-cover bg-black"
+                      />
+                    )}
+
+                    {m.mediaType === 'audio' && (
+                      <div className="p-3">
+                        <audio src={m.url} controls className="w-full" />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}               
+        </>        
       ) : (
         <div className="p-4 border rounded bg-yellow-50">
           <p>この投稿は有料です。購読またはPPV購入が必要です。</p>

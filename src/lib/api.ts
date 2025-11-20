@@ -1,3 +1,5 @@
+//src/lib/api.ts
+
 import type { AgeRating, PublishedStatus, Visibility } from "../shared/prisma-enums";
 
 // 共通HTTPクライアント（JWT自動付与・Cookieリフレッシュ対応・エラー整形）
@@ -10,6 +12,7 @@ export type ApiError = { status: number; message: string };
 function getToken() {
   return localStorage.getItem("access_token");
 }
+
 function setTokenMaybe(obj: any) {
   // レスポンスのキー揺れに対応
   const t =
@@ -25,13 +28,16 @@ function setTokenMaybe(obj: any) {
   }
   return null;
 }
+
 function clearToken() {
   localStorage.removeItem("access_token");
 }
+
 // function authHeader() {
 //   const t = getToken();
 //   return t ? { Authorization: `Bearer ${t}` } : {};
 // }
+
 function joinUrl(path: string) {
   if (path.startsWith("http")) return path;
   // 既に "/api" で始まっているなら一度だけ剥がす（/api/api 事故防止）
@@ -74,11 +80,17 @@ export async function request<T>(
 
   // ヘッダ生成（GETにContent-Typeは付けない安全策）
   const headers = new Headers(init.headers as HeadersInit);
-  //const method = (init.method || "GET").toUpperCase();
-  const hasBody = !!(init as any).body;
-  if (hasBody && !headers.has("Content-Type")) {
+  const body: any = (init as any).body;
+  const hasBody = body !== undefined && body !== null;
+
+  const isFormData =
+    typeof FormData !== "undefined" && body instanceof FormData;
+
+  // ★ FormData のときは Content-Type を自動で付けない
+  if (hasBody && !isFormData && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
+
   // 認証ヘッダ（任意でも所持していれば付与）
   const token = getToken();
   if (token && !headers.has("Authorization")) {
@@ -149,6 +161,8 @@ export async function request<T>(
   } catch {}
   throw { status: res.status, message: msg } as ApiError;
 }
+
+
 
 // === プランAPI（元の関数は活かしつつ、必要な箇所だけ requireAuth 付与） ===
 export type Plan = {
@@ -221,6 +235,17 @@ export const apiPost = <T = any>(path: string, body?: any, requireAuth = true) =
     { method: "POST", body: body !== undefined ? JSON.stringify(body) : undefined },
     requireAuth
   );
+
+export const apiPostForm = <T = any>(
+  path: string,
+  form: FormData,
+  requireAuth = true,
+) =>
+  request<T>(
+    path,
+    { method: "POST", body: form },
+    requireAuth,
+  );  
 
 export const apiPut = <T = any>(path: string, body?: any, requireAuth = true) =>
   request<T>(
@@ -330,6 +355,14 @@ export const api = {
       { method: "POST", body: body !== undefined ? JSON.stringify(body) : undefined },
       requireAuth
     ),  
+
+  // ★ 追加：FormData版
+  postForm: <T = any>(path: string, form: FormData, requireAuth = true) =>
+    request<T>(
+      path,
+      { method: "POST", body: form },
+      requireAuth
+    ),    
 };
 
 export function normalizeList<T = any>(res: any): T[] {

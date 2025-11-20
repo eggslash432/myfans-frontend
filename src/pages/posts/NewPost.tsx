@@ -1,8 +1,9 @@
-// src/pages/NewPost.tsx
+// src/pages/posts/NewPost.tsx
 import {useState, useEffect} from 'react';
 import { api, createPostSmart } from '../../lib/api';
 import { getMyPlans } from '../../lib/api';
 import type { AgeRating, Visibility } from '../../shared/prisma-enums';
+import MediaUploader from '../../components/MediaUploader';
 
 type Plan = { id: string; name: string; priceJpy?: number };
 
@@ -46,6 +47,9 @@ export default function NewPost() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [okMsg, setOkMsg] = useState<string | null>(null);
+
+  // ★ 追加：作成した投稿のID（これが取れたらメディアアップロード可能）
+  const [createdPostId, setCreatedPostId] = useState<string | null>(null);  
 
   useEffect(() => {
     // プランを取得（有料購読者限定の時に選択用）
@@ -135,6 +139,7 @@ export default function NewPost() {
     e.preventDefault();
     setError(null);
     setOkMsg(null);
+    setCreatedPostId(null); // 新規投稿のたびにリセット
 
     try {
       if (!title.trim()) throw new Error('タイトルを入力してください');
@@ -143,18 +148,33 @@ export default function NewPost() {
       const payload = buildPayload();
 
       setSubmitting(true);
-      await createPostSmart(payload);  // ← 修正箇所
-      setOkMsg('投稿が完了しました');
+      const res:any = await createPostSmart(payload);  // ← 修正箇所
+      console.log('create post result:', res); // デバッグ用（あってもOK）
 
-      // 投稿IDが返るなら自動遷移も可能
-      // navigate(`/posts/${res.post?.id ?? res.id}`);
+      // 取り得るパターンを全部なめる
+      const postId =
+        res?.postId ??
+        res?.post?.id ??
+        res?.id ??
+        res?.data?.postId ??
+        res?.data?.post?.id ??
+        res?.data?.id;
+
+      if (postId) {
+        setCreatedPostId(postId);
+        setOkMsg('投稿が完了しました。続けてメディアをアップロードできます。');
+      } else {
+        // ここではもう throw しない（投稿自体は成功しているので）
+        setOkMsg('投稿が完了しました。（投稿IDの取得にはまだ対応していません）');
+      }
+
+      setCreatedPostId(postId);
+      setOkMsg('投稿が完了しました。続けてメディアをアップロードできます。');
 
       setTitle('');
       setBody('');
     } catch (e: any) {
-      const msg =
-        e?.message ??
-        (typeof e === "string" ? e : JSON.stringify(e));
+      const msg = e?.message ?? (typeof e === 'string' ? e : JSON.stringify(e));
       setError(`投稿失敗: ${msg}`);
     } finally {
       setSubmitting(false);
@@ -387,6 +407,23 @@ export default function NewPost() {
         {error && <div className="text-red-600 whitespace-pre-wrap">投稿失敗: {error}</div>}
         {okMsg && <div className="text-green-700">{okMsg}</div>}
       </form>
+
+      {/* ★ 投稿完了後にだけメディアアップロード UI を表示 */}
+      {createdPostId && (
+        <div className="mt-10 border-t pt-6">
+          <h2 className="text-xl font-semibold mb-3">メディアをアップロード</h2>
+          <p className="text-sm text-gray-600 mb-3">
+            画像や動画をアップロードすると、この投稿に紐づくメディアとして表示されます。
+          </p>
+          <MediaUploader
+            postId={createdPostId}
+            onUploaded={() => {
+              // ここで投稿詳細の再取得などをしたければ追加
+              alert('メディアのアップロードが完了しました');
+            }}
+          />
+        </div>
+      )}      
     </div>
   );
 }
