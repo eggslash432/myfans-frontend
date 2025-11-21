@@ -1,3 +1,4 @@
+// myfans-frontend/src/pages/Creator.tsx
 import { useEffect, useState } from 'react';
 import { apiGet, apiPost } from '../lib/api';
 import { useParams } from 'react-router-dom';
@@ -39,14 +40,23 @@ export default function CreatorPage() {
   async function onSubscribe(planId: string) {
     if (!id) return;
     try {
-      // BE: POST /creators/:creatorId/plans/:planId/checkout → { url }
-      const { url } = await apiPost(`/creators/${id}/plans/${planId}/checkout`);
+      const successUrl = `${window.location.origin}/creators/${id}?subscribed=1`;
+      const cancelUrl  = `${window.location.origin}/creators/${id}`;
+
+      // ← エンドポイントを /payments/checkout に統一
+      const { url } = await apiPost('/payments/checkout', {
+        planId,
+        successUrl,
+        cancelUrl,
+      });
+
       if (!url) throw new Error('Checkout URL not returned');
       window.location.href = url; // 直接リダイレクト
     } catch (e: any) {
       alert(e?.message ?? 'Checkoutの作成に失敗しました');
     }
   }
+
 
   if (loading) return <div className="p-6">Loading...</div>;
   if (error) return <div className="p-6 text-red-600">{error}</div>;

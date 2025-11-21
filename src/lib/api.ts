@@ -162,8 +162,6 @@ export async function request<T>(
   throw { status: res.status, message: msg } as ApiError;
 }
 
-
-
 // === プランAPI（元の関数は活かしつつ、必要な箇所だけ requireAuth 付与） ===
 export type Plan = {
   id: string;
@@ -256,6 +254,36 @@ export const apiPut = <T = any>(path: string, body?: any, requireAuth = true) =>
 
 export const apiDelete = <T = any>(path: string, requireAuth = true) =>
   request<T>(path, { method: "DELETE" }, requireAuth);
+
+export async function createCheckout(input: {
+  planId?: string;
+  postId?: string;
+}) {
+  const token = localStorage.getItem('token'); // いつもの JWT 取り方に合わせて
+
+  const body = {
+    ...input,
+    // DTO が必須にしているので、とりあえず有効なURLを投げる
+    successUrl: window.location.origin + '/mypage?purchase=success',
+    cancelUrl: window.location.origin + '/mypage?purchase=cancel',
+  };
+
+  const res = await fetch(`${API}/payments/checkout`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(body),
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || 'Checkout error');
+  }
+  // { url } が返ってくる想定
+  return data as { url: string };
+}
 
 // === ここから高レベルAPI ===
 export const api = {

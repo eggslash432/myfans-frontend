@@ -26,7 +26,15 @@ export default function PostDetail() {
     if (!id) return;
     try {
       setBusyPpv(true);
-      const res: any = await api.post('/posts/checkout/post', { postId: id });
+
+      const successUrl = window.location.href; // 購入後このページに戻す
+      const cancelUrl  = window.location.href;
+
+      const res: any = await api.post('/payments/checkout', {
+        postId: id,
+        successUrl,
+        cancelUrl,
+      });
 
       // Stripe Checkout URL の取得
       const url =
@@ -38,20 +46,24 @@ export default function PostDetail() {
 
       if (url) {
         window.location.href = url;
-      } else {
-        alert('決済URLの取得に失敗しました');
+        return;
       }
-    } catch (e: any) {
-      const status = e?.response?.status;
 
-      if (status === 401) {
-        alert('ログインが必要です');
-      } else if (status === 400) {
-        alert(e?.response?.data?.message ?? '購入できません');
-      } else {
-        console.error(e);
-        alert('決済の開始に失敗しました');
-      } 
+      // ② sessionId + publishableKey 方式にフォールバック（必要なら）
+      const { sessionId, pubKey, publishableKey } = res || {};
+      const pk = pubKey ?? publishableKey;
+      if (!sessionId || !pk) {
+        throw new Error('Checkout情報が不足しています');
+      }
+      const { loadStripe } = await import('@stripe/stripe-js');
+      const stripe = await loadStripe(pk);
+      if (!stripe) throw new Error('Stripe初期化に失敗しました');
+      await (stripe as any).redirectToCheckout({ sessionId });
+    } catch (e: any) {
+      console.error(e);
+      alert(
+        e?.response?.data?.message ?? '決済の開始に失敗しました',
+      );
     } finally {
       setBusyPpv(false);
     }
@@ -65,12 +77,16 @@ export default function PostDetail() {
     }
     try {
       setBusyPlan(true);
-      const res: any = await api.post(
-        `/creators/${post.creatorId}/plans/${post.planId}/checkout`,
-        {},
-      );
 
-      // ① URL 方式
+      const successUrl = `${window.location.origin}/creators/${post.creatorId}?subscribed=1`;
+      const cancelUrl  = `${window.location.origin}/creators/${post.creatorId}`;
+
+      const res: any = await api.post('/payments/checkout', {
+        planId: post.planId,
+        successUrl,
+        cancelUrl,
+      });
+
       const url =
         res?.url ??
         res?.checkoutUrl ??
@@ -82,7 +98,6 @@ export default function PostDetail() {
         return;
       }
 
-      // ② sessionId + publishableKey 方式
       const { sessionId, pubKey, publishableKey } = res || {};
       const pk = pubKey ?? publishableKey;
       if (!sessionId || !pk) {
@@ -98,12 +113,16 @@ export default function PostDetail() {
         alert('ログインが必要です');
       } else {
         console.error(e);
-        alert(e?.response?.data?.message ?? 'プラン加入の開始に失敗しました');
+        alert(
+          e?.response?.data?.message ??
+            'プラン加入の開始に失敗しました',
+        );
       }
     } finally {
       setBusyPlan(false);
     }
-  };  
+  };
+
 
   if (q.isLoading) {
     return <div className="p-6 text-center text-gray-500">読み込み中…</div>;

@@ -21,26 +21,42 @@ export default function Plans() {
 
   async function subscribe(planId: string) {
     try {
-      setBusy(planId)
-     if (!id) throw new Error('creator id is missing')
-     const { data } = await api.post(`/creators/${id}/plans/${planId}/checkout`)
+      setBusy(planId);
+      if (!id) throw new Error('creator id is missing');
+
+      const successUrl = `${window.location.origin}/creators/${id}?subscribed=1`;
+      const cancelUrl  = `${window.location.origin}/creators/${id}`;
+
+      // ここも /payments/checkout に統一
+      const { data } = await api.post('/payments/checkout', {
+        planId,
+        successUrl,
+        cancelUrl,
+      });
 
       // ① URL 方式
-      if (data?.url) { window.location.href = data.url; return }
+      if (data?.url) {
+        window.location.href = data.url;
+        return;
+      }
 
-      // ② sessionId + publishableKey 方式
-      const { sessionId, pubKey } = data || {}
-      if (!sessionId || !pubKey) throw new Error('Checkout情報が不足しています')
-      const { loadStripe } = await import('@stripe/stripe-js')
-      const stripe = await loadStripe(pubKey)
-      if (!stripe) throw new Error('Stripe初期化に失敗しました')
-      await (stripe as any).redirectToCheckout({ sessionId })
+      // ② sessionId + publishableKey 方式（必要なら残す）
+      const { sessionId, pubKey, publishableKey } = data || {};
+      const pk = pubKey ?? publishableKey;
+      if (!sessionId || !pk)
+        throw new Error('Checkout情報が不足しています');
+      const { loadStripe } = await import('@stripe/stripe-js');
+      const stripe = await loadStripe(pk);
+      if (!stripe) throw new Error('Stripe初期化に失敗しました');
+      await (stripe as any).redirectToCheckout({ sessionId });
     } catch (e: any) {
-      alert(e?.message ?? '決済の開始に失敗しました')
+      console.error(e);
+      alert(e?.response?.data?.message ?? 'プラン加入の開始に失敗しました');
     } finally {
-      setBusy(null)
+      setBusy(null);
     }
   }
+
 
   if (isLoading) return <div className="p-6">読み込み中…</div>
   if (error) return <div className="p-6 text-red-600">エラー：{(error as any)?.message}</div>

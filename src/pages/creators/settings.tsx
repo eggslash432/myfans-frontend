@@ -1,3 +1,4 @@
+// myfans-frontend/src/pages/creators/settings.tsx
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
 
