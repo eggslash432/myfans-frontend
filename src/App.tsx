@@ -16,6 +16,9 @@ import NewPost from './pages/posts/NewPost';
 import MyPlansPage from './pages/Plans';
 import CreatorsAdminPage from './pages/admin/CreatorsAdminPage';
 import CreatorSettingsPage from './pages/creators/settings';
+import PayoutsPage from './pages/creators/PayoutsPage';
+import AdminPayoutsPage from './pages/admin/AdminPayoutsPage';
+import AdminPostsPage from './pages/admin/AdminPostsPage';
 
 export default function App() {
   return (
@@ -25,6 +28,8 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/admin/creators" element={<CreatorsAdminPage />} />
+          <Route path="/admin/payouts" element={<AdminPayoutsPage />} />
+          <Route path="/admin/posts" element={<AdminPostsPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route
@@ -43,6 +48,7 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/creators/payouts" element={<PayoutsPage />} />
           <Route path="/mypage/plans" element={<MyPlansPage />} />
           <Route path="/creators/:id" element={<CreatorPage />} />
           <Route

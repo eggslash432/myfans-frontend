@@ -1,6 +1,7 @@
 // myfans-frontend/src/pages/MyPage.tsx
 
 import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 
@@ -13,6 +14,8 @@ export default function MyPage() {
   // creator: undefined = 読み込み中, null = いない, object = いる
   const [creator, setCreator] = useState<any | null | undefined>(undefined);
   const [loading, setLoading] = useState(false);  
+
+  const navigate = useNavigate();
 
   // --- 共通の Creator 再読み込み関数 ---
   const loadCreator = useCallback(async () => {
@@ -130,6 +133,19 @@ export default function MyPage() {
           </p>
         </section>
       )}
+
+      {creator && (
+        <section className="border rounded p-4 space-y-2">
+          <h2 className="font-semibold">クリエイター向けメニュー</h2>
+          {/* 他のメニュー */}
+          <button
+            onClick={() => navigate('/creator/payouts')}
+            className="px-3 py-2 rounded border"
+          >
+            出金管理
+          </button>
+        </section>
+      )}      
 
       {/* --- 既存のマイ投稿／サマリー --- */}
       <h2 className="text-xl font-bold mb-4">マイ投稿一覧</h2>

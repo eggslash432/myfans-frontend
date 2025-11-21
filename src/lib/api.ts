@@ -381,6 +381,18 @@ export const api = {
       undefined,
       true,
     ),    
+
+  // DELETE
+  delete: <T = any>(path: string, requireAuth = true) =>
+    request<T>(path, { method: "DELETE" }, requireAuth),
+
+  // PATCH
+  patch: <T = any>(path: string, body?: any, requireAuth = true) =>
+    request<T>(
+      path,
+      { method: "PATCH", body: body !== undefined ? JSON.stringify(body) : undefined },
+      requireAuth
+    ),    
 };
 
 export function normalizeList<T = any>(res: any): T[] {

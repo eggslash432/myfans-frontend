@@ -3,9 +3,12 @@ import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import type { Post } from '../shared/types';
+import { useState } from 'react';
 
 export default function PostDetail() {
   const { id } = useParams<{ id: string }>();
+  const [busyPlan, setBusyPlan] = useState(false);
+  const [busyPpv, setBusyPpv] = useState(false);  
 
   const q = useQuery({
     queryKey: ['post', id],
@@ -22,6 +25,7 @@ export default function PostDetail() {
   const buyPpv = async () => {
     if (!id) return;
     try {
+      setBusyPpv(true);
       const res: any = await api.post('/posts/checkout/post', { postId: id });
 
       // Stripe Checkout URL の取得
@@ -47,9 +51,59 @@ export default function PostDetail() {
       } else {
         console.error(e);
         alert('決済の開始に失敗しました');
-      }
+      } 
+    } finally {
+      setBusyPpv(false);
     }
   };
+
+  // ▼ サブスク加入（プラン購読）
+  const subscribePlan = async (post: Post) => {
+    if (!post.creatorId || !post.planId) {
+      alert('この投稿に紐づくプラン情報がありません');
+      return;
+    }
+    try {
+      setBusyPlan(true);
+      const res: any = await api.post(
+        `/creators/${post.creatorId}/plans/${post.planId}/checkout`,
+        {},
+      );
+
+      // ① URL 方式
+      const url =
+        res?.url ??
+        res?.checkoutUrl ??
+        res?.sessionUrl ??
+        res?.data?.url ??
+        null;
+      if (url) {
+        window.location.href = url;
+        return;
+      }
+
+      // ② sessionId + publishableKey 方式
+      const { sessionId, pubKey, publishableKey } = res || {};
+      const pk = pubKey ?? publishableKey;
+      if (!sessionId || !pk) {
+        throw new Error('Checkout情報が不足しています');
+      }
+      const { loadStripe } = await import('@stripe/stripe-js');
+      const stripe = await loadStripe(pk);
+      if (!stripe) throw new Error('Stripe初期化に失敗しました');
+      await (stripe as any).redirectToCheckout({ sessionId });
+    } catch (e: any) {
+      const status = e?.response?.status;
+      if (status === 401) {
+        alert('ログインが必要です');
+      } else {
+        console.error(e);
+        alert(e?.response?.data?.message ?? 'プラン加入の開始に失敗しました');
+      }
+    } finally {
+      setBusyPlan(false);
+    }
+  };  
 
   if (q.isLoading) {
     return <div className="p-6 text-center text-gray-500">読み込み中…</div>;
@@ -57,12 +111,14 @@ export default function PostDetail() {
 
   const errorStatus = (q.error as any)?.response?.status;
 
-  // ★403 → PPV / サブスク未加入時のロック画面
   if (errorStatus === 403) {
+    // バックエンドが 403 を返す設計のとき用のロック画面
     return (
       <div className="mx-auto max-w-lg p-6 text-center space-y-3">
         <div className="text-lg font-semibold">この投稿は有料です</div>
-        <div className="text-sm text-gray-600">購入またはプラン加入が必要です</div>
+        <div className="text-sm text-gray-600">
+          購読または単品購入が必要です
+        </div>
 
         <div className="flex justify-center gap-3 mt-4">
           <Link to="/login" className="px-3 py-2 border rounded">
@@ -73,9 +129,10 @@ export default function PostDetail() {
           </Link>
           <button
             onClick={buyPpv}
-            className="px-3 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+            disabled={busyPpv}
+            className="px-3 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
           >
-            単品購入
+            {busyPpv ? '処理中…' : '単品購入'}
           </button>
         </div>
       </div>
@@ -94,7 +151,7 @@ export default function PostDetail() {
     <article className="mx-auto max-w-2xl p-6 space-y-4">
       <h1 className="text-2xl font-bold">{post.title}</h1>
 
-      {/* ▼ 価格 / タイプラベル */}
+      {/* ▼ 種類・価格ラベル */}
       <div className="text-sm text-gray-600 space-x-2">
         {isPpv && (
           <span>
@@ -108,7 +165,22 @@ export default function PostDetail() {
         {!isPpv && !isPlan && <span>無料投稿</span>}
       </div>
 
-      <div className="prose whitespace-pre-wrap">{post.body}</div>
+      {/* ▼ プラン投稿のときに「このプランに加入する」ボタン */}
+      {isPlan && post.planId && (
+        <div className="mt-3">
+          <button
+            onClick={() => subscribePlan(post)}
+            disabled={busyPlan}
+            className="px-4 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60"
+          >
+            {busyPlan ? '処理中…' : 'このプランに加入する'}
+          </button>
+        </div>
+      )}
+
+      <div className="prose whitespace-pre-wrap">
+        {post.body ?? '（本文なし）'}
+      </div>
     </article>
   );
 }
