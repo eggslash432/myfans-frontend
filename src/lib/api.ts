@@ -363,6 +363,24 @@ export const api = {
       { method: "POST", body: form },
       requireAuth
     ),    
+
+  applyCreator: (body: { publicName: string }) =>
+    apiPost('/creators/apply', body, true),    
+
+  // クリエイター自身の情報取得
+  getCreatorMe: () =>
+    apiGet<{
+      publicName: string;
+      stripeKycStatus?: 'verified' | 'pending' | null;
+    }>('/creators/me', true),
+
+  // KYC開始（Stripe onboarding URLを取得）
+  startCreatorKyc: () =>
+    apiPost<{ url: string; stripeKycStatus?: string }>(
+      '/creators/me/kyc/start',
+      undefined,
+      true,
+    ),    
 };
 
 export function normalizeList<T = any>(res: any): T[] {

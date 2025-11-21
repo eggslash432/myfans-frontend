@@ -1,3 +1,5 @@
+// src/pages/creators/[id].tsx
+
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { api } from '../../lib/api';

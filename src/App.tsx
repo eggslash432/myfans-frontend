@@ -1,3 +1,5 @@
+// src/App.tsx
+
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './hooks/useAuth';
 import Header from './components/Header';
@@ -13,6 +15,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import NewPost from './pages/posts/NewPost';
 import MyPlansPage from './pages/Plans';
 import CreatorsAdminPage from './pages/admin/CreatorsAdminPage';
+import CreatorSettingsPage from './pages/creators/settings';
 
 export default function App() {
   return (
@@ -29,6 +32,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <MyPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/creators/settings"
+            element={
+              <ProtectedRoute role="creator">
+                <CreatorSettingsPage />
               </ProtectedRoute>
             }
           />
