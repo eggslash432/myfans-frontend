@@ -4,14 +4,15 @@ import { api, createPostSmart } from '../../lib/api';
 import { getMyPlans } from '../../lib/api';
 import type { AgeRating, Visibility } from '../../shared/prisma-enums';
 import MediaUploader from '../../components/MediaUploader';
+import type { Plan } from '../../shared/types';
 
-type Plan = { id: string; name: string; priceJpy?: number };
-
-async function fetchMyPlans() {
+async function fetchMyPlans(): Promise<Plan[]> {
   try {
-    const r = await getMyPlans();
-    return r.plans ?? [];
-  } catch { return []; }
+    const plans = await getMyPlans(); // ← これが Plan[]
+    return plans ?? [];
+  } catch {
+    return [];
+  }
 }
 
 // 追加：undefined/null/空文字のキーを落とす（ネストにも対応）
@@ -49,12 +50,35 @@ export default function NewPost() {
   const [okMsg, setOkMsg] = useState<string | null>(null);
 
   // ★ 追加：作成した投稿のID（これが取れたらメディアアップロード可能）
-  const [createdPostId, setCreatedPostId] = useState<string | null>(null);  
+  const [createdPostId, setCreatedPostId] = useState<string | null>(null); 
+  
+  const [creator, setCreator] = useState<any | null>(null);
+  const [creatorErr, setCreatorErr] = useState('');
 
   useEffect(() => {
-    // プランを取得（有料購読者限定の時に選択用）
-    fetchMyPlans().then(setPlans).catch(() => setPlans([]));
+    const loadPlans = async () => {
+      try {
+        const plans = await fetchMyPlans();
+        setPlans(plans ?? []);
+      } catch {
+        setPlans([]);
+      }
+    };
+    loadPlans();
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await api.get('/creators/me');
+        setCreator(res.data);
+      } catch (e: any) {
+        setCreatorErr(
+          e?.response?.data?.message ?? e?.message ?? 'クリエイター情報の取得に失敗しました',
+        );
+      }
+    })();
+  }, []);  
 
   // visibility が変わったら不要な値をクリア
   useEffect(() => {
@@ -181,9 +205,26 @@ export default function NewPost() {
     }
   };
 
+  const kyc = creator?.kyc ?? {};
+  const kycStatus = kyc.status ?? creator?.stripeKycStatus ?? 'pending';
+  const isKycOk = kycStatus === 'verified';  
+
   return (
     <div className="max-w-3xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">新規投稿作成</h1>
+
+      {creatorErr === 'creator not found' && (
+        <div className="p-3 border border-red-400 text-red-700">
+          クリエイター登録がまだ行われていません。
+          マイページからクリエイター登録を行ってください。
+        </div>
+      )}
+
+      {!isKycOk && (
+        <div className="p-3 border border-yellow-400 text-yellow-800">
+          本人確認（KYC）が完了していないため、投稿機能はご利用いただけません。
+        </div>
+      )}      
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
@@ -397,10 +438,10 @@ export default function NewPost() {
         <div>
           <button
             type="submit"
-            disabled={submitting}
-            className="px-4 py-2 rounded bg-indigo-600 text-white disabled:opacity-50"
+            disabled={!isKycOk || submitting}
+            className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
           >
-            {submitting ? '投稿中…' : '投稿する'}
+            {submitting ? '投稿中...' : '投稿する'}
           </button>
         </div>
 

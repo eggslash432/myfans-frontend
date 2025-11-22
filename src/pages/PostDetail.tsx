@@ -1,12 +1,14 @@
 // src/pages/posts/PostDetail.tsx
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { api } from '../lib/api';
+import { api, reportPost } from '../lib/api';
 import type { Post } from '../shared/types';
 import { useState } from 'react';
+import { useAuth } from '../hooks/useAuth';
 
 export default function PostDetail() {
   const { id } = useParams<{ id: string }>();
+  const {user} = useAuth();
   const [busyPlan, setBusyPlan] = useState(false);
   const [busyPpv, setBusyPpv] = useState(false);  
 
@@ -166,6 +168,22 @@ export default function PostDetail() {
   const isPpv = post.visibility === 'paid_single';
   const isPlan = post.visibility === 'plan';
 
+  const handleReport = async () => {
+    if (!user) {
+      alert('通報するにはログインが必要です');
+      // 必要なら /login に飛ばす
+      return;
+    }
+    const reason = window.prompt('通報理由を入力してください（任意）') ?? '';
+    try {
+      await reportPost(post.id, reason);
+      alert('通報を受け付けました。ご協力ありがとうございます。');
+    } catch (e) {
+      console.error(e);
+      alert('通報に失敗しました。時間をおいて再度お試しください。');
+    }
+  };  
+
   return (
     <article className="mx-auto max-w-2xl p-6 space-y-4">
       <h1 className="text-2xl font-bold">{post.title}</h1>
@@ -199,6 +217,10 @@ export default function PostDetail() {
 
       <div className="prose whitespace-pre-wrap">
         {post.body ?? '（本文なし）'}
+      </div>
+
+      <div style={{ marginTop: 16 }}>
+        <button onClick={handleReport}>通報する</button>
       </div>
     </article>
   );

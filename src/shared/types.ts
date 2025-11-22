@@ -40,9 +40,26 @@ export type Creator = {
 }
 
 export type Plan = {
-  id: string
-  title: string
-  price: number // 円
-  interval: 'month' | 'year'
-  creatorId: string
-}
+  id: string;
+  creatorId: string;
+  name: string;
+  priceJpy: number;
+  description?: string | null;
+  isActive: boolean;
+  externalPriceId?: string | null;
+  createdAt: string; // ISO
+  updatedAt: string; // ISO
+};
+
+export type PlansResponse = { ok: true; plans: Plan[] };
+
+export type PayoutStatus = 'requested' | 'approved' | 'paid' | 'rejected';
+
+export type Payout = {
+  id: string;
+  amountJpy: number;
+  payoutStatus: PayoutStatus;
+  requestedAt: string;
+  paidAt?: string | null;
+  note?: string | null;
+};

@@ -2,17 +2,7 @@
 // src/pages/creator/PayoutsPage.tsx
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
-
-type PayoutStatus = 'requested' | 'approved' | 'paid' | 'rejected';
-
-type Payout = {
-  id: string;
-  amountJpy: number;
-  payoutStatus: PayoutStatus;
-  requestedAt: string;
-  paidAt?: string | null;
-  note?: string | null;
-};
+import type { Payout, PayoutStatus } from '../../shared/types';
 
 export default function PayoutsPage() {
   const [balance, setBalance] = useState<number | null>(null);
@@ -21,6 +11,8 @@ export default function PayoutsPage() {
   const [loading, setLoading] = useState(false);
   const [loadingAll, setLoadingAll] = useState(true);
   const [error, setError] = useState<string>('');
+  const [creator, setCreator] = useState<any | null>(null);
+  const [creatorErr, setCreatorErr] = useState('');  
 
   async function loadAll() {
     try {
@@ -83,6 +75,36 @@ export default function PayoutsPage() {
         return s;
     }
   }
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await api.get('/creators/me');
+        setCreator(res.data);
+      } catch (e: any) {
+        setCreatorErr(e?.response?.data?.message ?? e?.message ?? 'クリエイター情報の取得に失敗しました');
+      }
+    })();
+  }, []);
+
+  if (creatorErr === 'creator not found') {
+    return <div>クリエイター登録が必要です…</div>;
+  }
+
+  if (!creator) return <div>読み込み中...</div>;
+
+  const kyc = creator.kyc ?? {};
+  const isKycOk = kyc.status === 'verified' && kyc.payoutsEnabled;
+
+  if (!isKycOk) {
+    return (
+      <div>
+        <h1>出金管理</h1>
+        <p>本人確認（KYC）とStripeの審査が完了していないため、出金機能は利用できません。</p>
+        {kyc.disabledReason && <p>Stripeエラー: {kyc.disabledReason}</p>}
+      </div>
+    );
+  }  
 
   return (
     <div className="mx-auto max-w-3xl p-6 space-y-6">

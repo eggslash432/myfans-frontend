@@ -1,6 +1,7 @@
 //src/lib/api.ts
 
 import type { AgeRating, PublishedStatus, Visibility } from "../shared/prisma-enums";
+import type { Plan, PlansResponse } from "../shared/types";
 
 // 共通HTTPクライアント（JWT自動付与・Cookieリフレッシュ対応・エラー整形）
 const RAW_BASE = (import.meta.env.VITE_API_BASE_URL as string) || "";
@@ -163,22 +164,11 @@ export async function request<T>(
 }
 
 // === プランAPI（元の関数は活かしつつ、必要な箇所だけ requireAuth 付与） ===
-export type Plan = {
-  id: string;
-  creatorId: string;
-  name: string;
-  priceJpy: number;
-  description?: string | null;
-  isActive: boolean;
-  externalPriceId?: string | null;
-  createdAt: string; // ISO
-  updatedAt: string; // ISO
-};
-export type PlansResponse = { ok: true; plans: Plan[] };
-
-export async function getMyPlans(): Promise<PlansResponse> {
-  return request<PlansResponse>("/creators/me/plans", { method: "GET" }, /* requireAuth= */ true);
+export async function getMyPlans(): Promise<Plan[]> {
+  const res = await api.get('/creators/me/plans');
+  return res.data as Plan[];
 }
+
 export async function getCreatorPlans(creatorId: string): Promise<PlansResponse> {
   return request<PlansResponse>(`/creators/${creatorId}/plans`, { method: "GET" });
 }
@@ -283,6 +273,26 @@ export async function createCheckout(input: {
   }
   // { url } が返ってくる想定
   return data as { url: string };
+}
+
+export async function reportPost(postId: string, reason?: string) {
+  return api.post(`/posts/${postId}/report`, { reason });
+}
+
+// 管理用
+export async function getReports() {
+  const res = await api.get('/admin/reports');
+  return res.data;
+}
+
+export async function resolveReport(id: string, action: 'reviewed' | 'dismissed') {
+  const res = await api.patch(`/admin/reports/${id}/resolve`, { action });
+  return res.data;
+}
+
+export async function adminApprovePayout(id: string) {
+  const res = await api.post(`/admin/payouts/${id}/approve`);
+  return res.data;
 }
 
 // === ここから高レベルAPI ===

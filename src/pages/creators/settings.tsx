@@ -2,21 +2,36 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
 
-type CreatorMe = {
+type CreatorMeResponse = {
   publicName: string;
-  stripeKycStatus?: 'verified' | 'pending' | null;
+  stripeKycStatus?: 'verified' | 'pending' | 'rejected' | null;
+  kyc?: {
+    status?: 'verified' | 'pending' | 'rejected' | null;
+    chargesEnabled?: boolean;
+    payoutsEnabled?: boolean;
+    disabledReason?: string | null;
+    errors?: string | null;
+    fieldsDue?: string | null;
+  };
 };
 
 export default function CreatorSettingsPage() {
-  const [me, setMe] = useState<CreatorMe | null>(null);
+  const [creator, setCreator] = useState<CreatorMeResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string>('');
 
+  // クリエイター情報取得
   useEffect(() => {
-    api
-      .getCreatorMe()
-      .then((r) => setMe(r))
-      .catch((e) => setErr(e?.message ?? '取得に失敗しました'));
+    (async () => {
+      try {
+        const res = await api.get('/creators/me');
+        setCreator(res.data);
+      } catch (e: any) {
+        // バックエンド側で "creator not found" を投げている想定
+        const msg = e?.response?.data?.message ?? e?.message ?? '取得に失敗しました';
+        setErr(msg);
+      }
+    })();
   }, []);
 
   const handleStartKyc = async () => {
@@ -25,13 +40,14 @@ export default function CreatorSettingsPage() {
       const { url } = await api.startCreatorKyc();
       window.location.href = url;
     } catch (e: any) {
-      setErr(e?.message ?? 'KYC開始に失敗しました');
+      const msg = e?.response?.data?.message ?? e?.message ?? 'KYC開始に失敗しました';
+      setErr(msg);
     } finally {
       setLoading(false);
     }
   };
 
-  // エラー専用メッセージ（creator未登録対応）
+  // ① クリエイター未登録の場合（特別メッセージ）
   if (err === 'creator not found') {
     return (
       <div className="p-4 text-red-600">
@@ -39,16 +55,30 @@ export default function CreatorSettingsPage() {
         マイページからクリエイター登録を行ってください。
       </div>
     );
-  }  
-  if (err) return <div className="p-4 text-red-600">{err}</div>;
-  if (!me) return <div>読み込み中...</div>;
+  }
 
-  const kycStatus = me.stripeKycStatus ?? 'pending';
+  // ② その他のエラー
+  if (err && !creator) {
+    return <div className="p-4 text-red-600">{err}</div>;
+  }
+
+  // ③ ローディング
+  if (!creator) {
+    return <div>読み込み中...</div>;
+  }
+
+  // ④ KYC 情報の判定
+  const kyc = creator.kyc || {};
+  const kycStatus =
+    kyc.status ?? creator.stripeKycStatus ?? 'pending';
+
+  const isKycOk = kycStatus === 'verified';
 
   return (
     <div className="p-6 space-y-4">
       <h1 className="text-2xl font-bold">クリエイター設定</h1>
 
+      {/* KYC ステータス表示 */}
       <div>
         本人確認ステータス:{' '}
         {kycStatus === 'verified' ? (
@@ -58,11 +88,38 @@ export default function CreatorSettingsPage() {
         )}
       </div>
 
-      {kycStatus !== 'verified' && (
-        <button onClick={handleStartKyc} disabled={loading}>
-          {loading ? '遷移中…' : '本人確認をはじめる'}
-        </button>
+      {/* Stripe 側エラー表示（あれば） */}
+      {kyc.disabledReason && (
+        <div className="p-3 border border-red-400 text-red-700">
+          Stripe 側のエラー / 制限: {kyc.disabledReason}
+        </div>
       )}
+
+      {/* KYC 未完了なら案内＋開始ボタン */}
+      {kycStatus !== 'verified' && (
+        <div className="space-y-2">
+          <p className="text-sm text-gray-700">
+            本人確認を完了すると、投稿・プラン作成・出金が利用できるようになります。
+          </p>
+          <button
+            onClick={handleStartKyc}
+            disabled={loading}
+            className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-60"
+          >
+            {loading ? '遷移中…' : '本人確認をはじめる'}
+          </button>
+        </div>
+      )}
+
+      {/* ここから先のフォームやボタンは isKycOk のときだけ表示 or 有効化 */}
+      <div className="mt-6">
+        <button
+          disabled={!isKycOk}
+          className="px-4 py-2 bg-gray-800 text-white rounded disabled:opacity-50"
+        >
+          プロフィールを更新（ダミー）
+        </button>
+      </div>
     </div>
   );
 }
