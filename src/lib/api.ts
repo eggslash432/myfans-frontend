@@ -1,475 +1,343 @@
-//src/lib/api.ts
+// front/src/lib/api.ts
 
-import type { AgeRating, PublishedStatus, Visibility } from "../shared/prisma-enums";
-import type { Plan, PlansResponse } from "../shared/types";
+import type { KycStatus, PublishedStatus, Visibility } from "../shared/prisma-enums";
+import type { CreatorMeResponse, PostDetail, PostSummary, ReportItem } from "../shared/types";
 
-// 共通HTTPクライアント（JWT自動付与・Cookieリフレッシュ対応・エラー整形）
-const RAW_BASE = (import.meta.env.VITE_API_BASE_URL as string) || "";
-const BASE = RAW_BASE.replace(/\/+$/, ""); // 末尾スラ削除安全策
-const API = `${BASE}/api`
+// API ベースURL
+// 例: VITE_API_BASE_URL = "https://api.example.com"
+// 未指定ならフロントと同じオリジンの /api を使う
+const API_BASE =
+  (import.meta as any).env?.VITE_API_BASE_URL ?? '/api';
 
-export type ApiError = { status: number; message: string };
+export class ApiError extends Error {
+  status: number;
+  body: any;
 
-function getToken() {
-  return localStorage.getItem("access_token");
-}
-
-function setTokenMaybe(obj: any) {
-  // レスポンスのキー揺れに対応
-  const t =
-    obj?.access_token ??
-    obj?.accessToken ??
-    obj?.token ??
-    obj?.jwt ??
-    obj?.data?.access_token ??
-    obj?.data?.accessToken;
-  if (typeof t === "string" && t.length > 0) {
-    localStorage.setItem("access_token", t);
-    return t;
-  }
-  return null;
-}
-
-function clearToken() {
-  localStorage.removeItem("access_token");
-}
-
-// function authHeader() {
-//   const t = getToken();
-//   return t ? { Authorization: `Bearer ${t}` } : {};
-// }
-
-function joinUrl(path: string) {
-  if (path.startsWith("http")) return path;
-  // 既に "/api" で始まっているなら一度だけ剥がす（/api/api 事故防止）
-  const p = path.startsWith("/api") ? path.slice(4) : path;
-  return `${API}${p.startsWith("/") ? "" : "/"}${p}`;
-}
-
-// === Token取得保証（/auth/refresh がある前提で試行） ===
-async function tryRefresh(): Promise<string | null> {
-  try {
-    const r = await fetch(joinUrl("/auth/refresh"), {
-      method: "POST",
-      credentials: "include", // ← Cookieベースのrefresh専用
-      headers: { "Content-Type": "application/json" },
-    });
-    if (!r.ok) return null;
-    const raw = await r.text();
-    if (!raw) return null;
-    let data: any;
-    try { data = JSON.parse(raw); } catch { data = raw; }
-    return setTokenMaybe(data);
-  } catch {
-    return null;
+  constructor(status: number, body: any, message?: string) {
+    super(message ?? body?.message ?? 'API Error');
+    this.status = status;
+    this.body = body;
   }
 }
 
-// === メインrequest（401→refresh→1回だけ再試行） ===
-export async function request<T>(
+// type RequestInitEx = RequestInit & {
+//   // JSON を送るとき true（デフォルト）
+//   json?: boolean;
+// };
+
+// 代わりにこっちを使う
+type RequestOptions = Omit<RequestInit, 'body'> & {
+  body?: any;      // ← ここを BodyInit じゃなく any にする
+  json?: boolean;  // JSON を自動で stringify するフラグ
+};
+
+/**
+ * 共通 request ラッパ
+ * - credentials: 'include' で Cookie ベースのセッションにも対応
+ * - エラー時は ApiError を throw
+ */
+async function request<T = unknown>(
   path: string,
-  init: RequestInit = {},
-  requireAuth = false
+  init: RequestOptions = {},
 ): Promise<T> {
-  // 認証が必須なら、事前にトークンを確保（無ければrefresh）
-  if (requireAuth && !getToken()) {
-    const t = await tryRefresh();
-    if (!t) {
-      throw { status: 401, message: "未ログインです（トークン未取得）" } as ApiError;
-    }
-  }
+  const url =
+    path.startsWith('http') || path.startsWith('/')
+      ? path
+      : `${API_BASE}${path}`;
 
-  // ヘッダ生成（GETにContent-Typeは付けない安全策）
-  const headers = new Headers(init.headers as HeadersInit);
-  const body: any = (init as any).body;
-  const hasBody = body !== undefined && body !== null;
+  const { json = true, headers, body, ...rest } = init;
 
-  const isFormData =
-    typeof FormData !== "undefined" && body instanceof FormData;
-
-  // ★ FormData のときは Content-Type を自動で付けない
-  if (hasBody && !isFormData && !headers.has("Content-Type")) {
-    headers.set("Content-Type", "application/json");
-  }
-
-  // 認証ヘッダ（任意でも所持していれば付与）
-  const token = getToken();
-  if (token && !headers.has("Authorization")) {
-    headers.set("Authorization", `Bearer ${token}`);
-  }
-
-  const res = await fetch(joinUrl(path), {
-    ...init,
-    headers,
-    // 常時 include は避ける。refresh系でのみCookie送信する方針
-  });
-
-  // 成功系：トークンが返ってきたら保存（例：ログイン直後）
-  if (res.ok) {
-    // 204 No Content は bodyなし
-    if (res.status === 204) return undefined as unknown as T;
-    const raw = await res.text();
-    if (!raw) return undefined as unknown as T;
-    let data: any;
-    try { data = JSON.parse(raw); } catch { data = raw; }
-    setTokenMaybe(data);
-    return data as T;
-  }
-
-  // 401 → refresh → 1回だけ再試行
-  if (res.status === 401) {
-    const refreshed = await tryRefresh();
-    if (refreshed) {
-      // 再試行時：Authorizationを付け直し
-      const retryHeaders = new Headers(headers);
-      retryHeaders.set("Authorization", `Bearer ${refreshed}`);
-      const res2 = await fetch(joinUrl(path), { ...init, headers: retryHeaders });
-      if (res2.ok) {
-        if (res2.status === 204) return undefined as unknown as T;
-        const raw2 = await res2.text();
-        if (!raw2) return undefined as unknown as T;
-        let data2: any;
-        try { data2 = JSON.parse(raw2); } catch { data2 = raw2; }
-        setTokenMaybe(data2);
-        return data2 as T;
-      }
-      // 再試行も失敗
-      clearToken();
-      const txt2 = await res2.text().catch(() => "");
-      throw { status: res2.status, message: txt2 || res2.statusText } as ApiError;
-    }
-    // refresh不可 → 公開APIなら "トークン無しで" 1回だけ再試行
-    const isPublicCall = requireAuth === false;
-    if (isPublicCall && headers.has("Authorization")) {
-      headers.delete("Authorization");
-      const res3 = await fetch(joinUrl(path), { ...init, headers });
-      if (res3.ok) {
-        if (res3.status === 204) return undefined as unknown as T;
-        const raw3 = await res3.text();
-        if (!raw3) return undefined as unknown as T;
-        try { return JSON.parse(raw3) as T; } catch { return raw3 as unknown as T; }
-      }
-    }
-    clearToken();
-  }
-
-  // それ以外のエラー
-  const text = await res.text().catch(() => "");
-  let msg: string = text || res.statusText;
-  try {
-    const j = JSON.parse(text);
-    msg = j?.message || j?.error || msg;
-  } catch {}
-  throw { status: res.status, message: msg } as ApiError;
-}
-
-// === プランAPI（元の関数は活かしつつ、必要な箇所だけ requireAuth 付与） ===
-export async function getMyPlans(): Promise<Plan[]> {
-  const res = await api.get('/creators/me/plans');
-  return res.data as Plan[];
-}
-
-export async function getCreatorPlans(creatorId: string): Promise<PlansResponse> {
-  return request<PlansResponse>(`/creators/${creatorId}/plans`, { method: "GET" });
-}
-
-// === Post作成：候補パスに順次POST（要JWT） ===
-export async function createPostSmart(
-  dto: {
-    title: string;
-    body: string;
-    visibility: Visibility
-    priceJpy?: number | null;
-    publishedStatus?: PublishedStatus;
-    ageRating?: AgeRating;
-    planId?: string;
-    accessRules?: any;
-  },
-  opts?: { creatorId?: string }
-) {
-  const cid = opts?.creatorId;
-  const candidates = [
-    { path: "/posts", body: dto },
-    { path: "/creators/me/posts", body: dto },
-    { path: "/creators/posts", body: dto },
-    ...(cid ? [{ path: `/creators/${cid}/posts`, body: dto }] : []),
-    { path: "/creator/posts", body: dto },
-  ];
-
-  let lastErr: any = null;
-  for (const c of candidates) {
-    try {
-      const res = await request<any>(
-        c.path,
-        { method: "POST", body: JSON.stringify(c.body) },
-        /* requireAuth= */ true
-      );
-      return { ok: true, path: c.path, data: res };
-    } catch (e: any) {
-      lastErr = e;
-      if (e?.status !== 404 && e?.status !== 405) throw e; // 404/405以外は即エラー
-    }
-  }
-  throw new Error(lastErr?.message || "Post API not found");
-}
-
-// === 汎用ラッパ ===
-export const apiGet = <T = any>(path: string, requireAuth = false) =>
-  request<T>(path, { method: "GET" }, requireAuth);
-
-export const apiPost = <T = any>(path: string, body?: any, requireAuth = true) =>
-  request<T>(
-    path,
-    { method: "POST", body: body !== undefined ? JSON.stringify(body) : undefined },
-    requireAuth
-  );
-
-export const apiPostForm = <T = any>(
-  path: string,
-  form: FormData,
-  requireAuth = true,
-) =>
-  request<T>(
-    path,
-    { method: "POST", body: form },
-    requireAuth,
-  );  
-
-export const apiPut = <T = any>(path: string, body?: any, requireAuth = true) =>
-  request<T>(
-    path,
-    { method: "PUT", body: body !== undefined ? JSON.stringify(body) : undefined },
-    requireAuth
-  );
-
-export const apiDelete = <T = any>(path: string, requireAuth = true) =>
-  request<T>(path, { method: "DELETE" }, requireAuth);
-
-export async function createCheckout(input: {
-  planId?: string;
-  postId?: string;
-}) {
-  const token = localStorage.getItem('token'); // いつもの JWT 取り方に合わせて
-
-  const body = {
-    ...input,
-    // DTO が必須にしているので、とりあえず有効なURLを投げる
-    successUrl: window.location.origin + '/mypage?purchase=success',
-    cancelUrl: window.location.origin + '/mypage?purchase=cancel',
+  const finalInit: RequestInit = {
+    credentials: 'include',
+    ...rest,
+    headers: {
+      ...(json ? { 'Content-Type': 'application/json' } : {}),
+      ...headers,
+    },
+    body: json && body && typeof body !== 'string'
+      ? JSON.stringify(body)
+      : body,
   };
 
-  const res = await fetch(`${API}/payments/checkout`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify(body),
-  });
+  const res = await fetch(url, finalInit);
 
-  const data = await res.json();
+  const text = await res.text();
+  const data = text ? safeJsonParse(text) : null;
+
   if (!res.ok) {
-    throw new Error(data.message || 'Checkout error');
+    throw new ApiError(res.status, data, data?.message);
   }
-  // { url } が返ってくる想定
-  return data as { url: string };
+
+  return data as T;
 }
 
-export async function reportPost(postId: string, reason?: string) {
-  return api.post(`/posts/${postId}/report`, { reason });
+function safeJsonParse(text: string): any {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
 }
 
-// 管理用
-export async function getReports() {
-  const res = await api.get('/admin/reports');
-  return res.data;
+/* ============================================================
+ * 認証 / 共通
+ * ============================================================ */
+
+// ログイン中ユーザーのサマリ
+export function getMeSummary() {
+  return request('/api/users/me/summary');
 }
 
-export async function resolveReport(id: string, action: 'reviewed' | 'dismissed') {
-  const res = await api.patch(`/admin/reports/${id}/resolve`, { action });
-  return res.data;
+// ログアウト
+export function logout() {
+  return request('/api/auth/logout', {
+    method: 'POST',
+  });
 }
 
-export async function adminApprovePayout(id: string) {
-  const res = await api.post(`/admin/payouts/${id}/approve`);
-  return res.data;
+/* ============================================================
+ * 投稿関連
+ * ============================================================ */
+
+// 公開フィード
+export async function getPublicPosts() {
+  return request<{ items: PostSummary[] }>('/posts');
 }
 
-export async function adminDeletePost(id: string) {
-  return api.delete(`/admin/posts/${id}`);
+// 自分の投稿一覧
+export async function getMyPosts() {
+  return request<{ items: PostSummary[] }>('/posts/me');
 }
 
-export async function adminUpdatePostStatus(id: string, status: string) {
-  return api.patch(`/admin/posts/${id}/status`, { status });
+// 投稿詳細
+export async function getPostDetail(postId: string) {
+  return request<PostDetail>(`/posts/${postId}`);
 }
 
-export async function adminGetReports(id: string) {
-  const res = await api.get(`/admin/posts/${id}/reports`);
-  return res.data;
+// 投稿作成
+export type CreatePostPayload = {
+  title: string;
+  body?: string;
+  visibility: Visibility;
+  planId?: string | null;
+  priceJpy?: number | null;
+  ageRating?: 'all' | 'r18';
+  publishedStatus?: PublishedStatus | 'draft' | 'published' | 'private';
+};
+
+export async function createPost(payload: CreatePostPayload) {
+  // バックエンド側では /posts と /creators/me/posts の両方を受ける実装にしてあるので、
+  // ここでは /posts を叩く
+  return request<{ ok: true; post: PostSummary }>('/posts', {
+    method: 'POST',
+    body: payload,
+  });
 }
 
-export async function adminResolveReport(id: string) {
-  return api.patch(`/admin/posts/reports/${id}/resolve`);
+// 投稿通報
+export async function reportPost(postId: string, reason: string) {
+  return request<{ ok: true }>(`/posts/${postId}/report`, {
+    method: 'POST',
+    body: { reason },
+  });
 }
 
-// === ここから高レベルAPI ===
-export const api = {
-  // --- 認証 ---
-  signup: (dto: { email: string; password: string; role?: "fan" | "creator" }) =>
-    request<any>("/auth/signup", { 
-      method: "POST",
-      headers: { "Content-Type": "application/json" }, 
-      body: JSON.stringify(dto) ,
-    }),
+/* ============================================================
+ * クリエイター関連
+ * ============================================================ */
 
-  login: async (dto: { email: string; password: string }) => {
-    const data = await request<any>("/auth/login", {
-      method: "POST",
-      body: JSON.stringify(dto),
-    });
-    const saved = setTokenMaybe(data);
-    if (!saved) {
-      // Cookieだけ返すAPI構成なら refresh を試す
-      const t = await tryRefresh();
-      if (t) return { ...data, access_token: t };
-      throw {
-        status: 401,
-        message: "サーバが access_token を返しませんでした。/auth/refresh の有効化をご確認ください。",
-      } as ApiError;
-    }
-    return data;
-  },
+// 自分のクリエイター情報（設定画面用）
+export async function getCreatorMe() {
+  return request<CreatorMeResponse>('/api/creators/me');
+}
 
-  logout: () => request("/auth/logout", { method: "POST" }).catch(() => {}),
+// KYC 開始（Stripe Onboarding リンク取得など）
+export async function startCreatorKyc() {
+  return request<{ url: string }>('/api/creators/me/kyc/start', {
+    method: 'POST',
+  });
+}
 
-  // BEが /auth/me の場合に統一（/users/me を使っていた箇所を修正）
-  me: () => request<{ id: string; email: string; role: string }>("/auth/me", { method: "GET" }, true),
+// クリエイタープロフィール更新
+export async function updateCreatorProfile(data: {
+  publicName?: string;
+  bio?: string;
+  avatarUrl?: string;
+}) {
+  return request('/api/creators/me', {
+    method: 'PATCH',
+    body: data,
+  });
+}
 
-  // 必要なら残す（存在しないBEなら呼ばない）
-  meSummary: () => request<any>("/users/me/summary", { method: "GET" }, true),
+// 特定クリエイターの公開プロフィール（プラン一覧など）
+export async function getCreatorPublicProfile(creatorId: string) {
+  return request(`/api/creators/${creatorId}`);
+}
 
-  // --- クリエイター/投稿 ---
-  listCreators: (q?: string) =>
-    request<any>(`/creators${q ? `?q=${encodeURIComponent(q)}` : ""}`),
+/* ============================================================
+ * 決済 / サブスク / PPV
+ * ============================================================ */
 
-  getCreator: (id: string) => request<any>(`/creators/${id}`),
+// サブスク購読用 Checkout セッション作成
+export async function createPlanCheckoutSession(planId: string) {
+  return request<{ url: string }>('/api/payments/checkout/subscription', {
+    method: 'POST',
+    body: { planId },
+  });
+}
 
-  getPost: (id: string) => request<any>(`/posts/${id}`),
+// PPV（単品販売）用 Checkout セッション作成
+export async function createPpvCheckoutSession(postId: string) {
+  return request<{ url: string }>('/api/payments/checkout/one-time', {
+    method: 'POST',
+    body: { postId },
+  });
+}
 
-  myPosts: () => request<any>("/posts/me", { method: "GET" }, true),
+/* ============================================================
+ * 出金（クリエイター側）
+ * ============================================================ */
 
-  createPost: (dto: any) =>
-    request("/creators/me/posts", { method: "POST", body: JSON.stringify(dto) }, true),
+// 出金サマリ
+export async function getCreatorPayoutSummary() {
+  return request('/api/creators/me/payouts/summary');
+}
 
-  getCreatorPosts: (id: string) => request<any>(`/creators/${id}/posts`),
+// 出金リクエスト作成
+export async function requestPayout(amountJpy: number) {
+  return request('/api/creators/me/payouts', {
+    method: 'POST',
+    body: { amountJpy },
+  });
+}
 
-  // --- 決済（必ず requireAuth=true） ---
-  createPlanCheckout: (dto: {
-    creatorId: string;
-    planId: string;
-    successUrl: string;
-    cancelUrl: string;
-  }) =>
-    request<{ sessionId: string; url:string }>(
-      "/payments/checkout/plan",
-      { method: "POST", body: JSON.stringify(dto) },
-      true
-    ),
+// 自分の出金履歴一覧
+export async function getCreatorPayoutHistory() {
+  return request('/api/creators/me/payouts/history');
+}
 
-  createPpvCheckout: (dto: {
-    postId: string;
-    priceId: string;
-    successUrl: string;
-    cancelUrl: string;
-  }) =>
-    request<{ sessionId: string }>(
-      "/payments/checkout/ppv",
-      { method: "POST", body: JSON.stringify(dto) },
-      true
-    ),
+/* ============================================================
+ * 管理画面: クリエイター管理
+ * ============================================================ */
 
-  // 単発（PPV）購入: POST /posts/checkout/post
-  checkoutPpvPost: (postId: string) =>
-    request<{ sessionId: string; url?: string }>(
-      "/posts/checkout/post",
-      { method: "POST", body: JSON.stringify({ postId }) },
-      true
-    ),    
+export async function adminListCreators(params?: {
+  isListed?: boolean;
+  kycStatus?: KycStatus | 'pending' | 'rejected';
+}) {
+  const qs = new URLSearchParams();
+  if (params?.isListed !== undefined) {
+    qs.set('isListed', String(params.isListed));
+  }
+  if (params?.kycStatus) {
+    qs.set('kycStatus', params.kycStatus);
+  }
+  const query = qs.toString();
+  const path = query ? `/api/admin/creators?${query}` : '/api/admin/creators';
 
-  myPayments: () => request<any>("/payments/history", { method: "GET" }, true),
-
-  mySubscriptions: () => request<any>("/subscriptions/my", { method: "GET" }, true),
-
-  // --- 既存コード後方互換: api.get / api.post を提供 ---
-  get: <T = any>(path: string, requireAuth = false) =>
-    request<T>(path, { method: "GET" }, requireAuth),
-
-  post: <T = any>(path: string, body?: any, requireAuth = true) =>
-    request<T>(
-      path,
-      { method: "POST", body: body !== undefined ? JSON.stringify(body) : undefined },
-      requireAuth
-    ),  
-
-  // ★ 追加：FormData版
-  postForm: <T = any>(path: string, form: FormData, requireAuth = true) =>
-    request<T>(
-      path,
-      { method: "POST", body: form },
-      requireAuth
-    ),    
-
-  applyCreator: (body: { publicName: string }) =>
-    apiPost('/creators/apply', body, true),    
-
-  // クリエイター自身の情報取得
-  getCreatorMe: () =>
-    apiGet<{
+  return request<
+    {
+      userId: string;
+      email: string;
       publicName: string;
-      stripeKycStatus?: 'verified' | 'pending' | null;
-    }>('/creators/me', true),
-
-  // KYC開始（Stripe onboarding URLを取得）
-  startCreatorKyc: () =>
-    apiPost<{ url: string; stripeKycStatus?: string }>(
-      '/creators/me/kyc/start',
-      undefined,
-      true,
-    ),    
-
-  // DELETE
-  delete: <T = any>(path: string, requireAuth = true) =>
-    request<T>(path, { method: "DELETE" }, requireAuth),
-
-  // PATCH
-  patch: <T = any>(path: string, body?: any, requireAuth = true) =>
-    request<T>(
-      path,
-      { method: "PATCH", body: body !== undefined ? JSON.stringify(body) : undefined },
-      requireAuth
-    ),        
-};
-
-export function normalizeList<T = any>(res: any): T[] {
-  if (!res) return [];
-  if (Array.isArray(res)) return res as T[];
-  if (Array.isArray(res?.creators)) return res.creators as T[];
-  if (Array.isArray(res?.items)) return res.items as T[];
-  if (Array.isArray(res?.data)) return res.data as T[];
-  // 二段ネスト対応
-  if (Array.isArray(res?.data?.creators)) return res.data.creators as T[];
-  if (Array.isArray(res?.result)) return res.result as T[];
-  if (Array.isArray(res?.rows)) return res.rows as T[];
-  return [];
+      isListed: boolean;
+      stripeKycStatus?: string | null;
+      stripeChargesEnabled: boolean;
+      stripePayoutsEnabled: boolean;
+      createdAt: string;
+      userCreatedAt?: string;
+      postsCount: number;
+      subsCount: number;
+      payoutsCount: number;
+    }[]
+  >(path);
 }
 
-export const admin = {
-  listPendingCreators: () => request<any>('/admin/creators'),
-  setCreatorListing: (userId: string, isListed: boolean) =>
-    request<any>(`/admin/creators/${encodeURIComponent(userId)}/listing`, {
+export async function adminSetCreatorListing(
+  userId: string,
+  isListed: boolean,
+) {
+  return request<{ ok: true; userId: string; isListed: boolean }>(
+    `/api/admin/creators/${userId}/listing`,
+    {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ isListed }),
-    }),
-};
+      body: { isListed },
+    },
+  );
+}
 
+/* ============================================================
+ * 管理画面: 投稿管理
+ * ============================================================ */
+
+export async function adminListPosts() {
+  return request<PostSummary[]>('/api/admin/posts');
+}
+
+export async function adminDeletePost(postId: string) {
+  return request<{ ok: true }>(`/api/admin/posts/${postId}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function adminUpdatePostStatus(
+  postId: string,
+  status: PublishedStatus,
+) {
+  return request(`/api/admin/posts/${postId}/status`, {
+    method: 'PATCH',
+    body: { status },
+  });
+}
+
+export async function adminGetPostReports(postId: string) {
+  return request<ReportItem[]>(`/api/admin/posts/${postId}/reports`);
+}
+
+export async function adminResolvePostReport(reportId: string) {
+  return request<{ ok: true }>(
+    `/api/admin/posts/reports/${reportId}/resolve`,
+    {
+      method: 'PATCH',
+    },
+  );
+}
+
+/* ============================================================
+ * 管理画面: 通報一覧
+ * ============================================================ */
+
+export async function adminListReports() {
+  return request<ReportItem[]>('/api/admin/reports');
+}
+
+export async function adminResolveReport(
+  reportId: string,
+  action: 'reviewed' | 'dismissed' = 'reviewed',
+) {
+  return request(`/api/admin/reports/${reportId}/resolve`, {
+    method: 'PATCH',
+    body: { action },
+  });
+}
+
+/* ============================================================
+ * 管理画面: 出金管理
+ * ============================================================ */
+
+export async function adminListPayoutRequests() {
+  return request('/api/admin/payouts');
+}
+
+export async function adminApprovePayout(payoutId: string) {
+  return request(`/api/admin/payouts/${payoutId}/approve`, {
+    method: 'POST',
+  });
+}
+
+export async function adminRejectPayout(payoutId: string, note?: string) {
+  return request(`/api/admin/payouts/${payoutId}/reject`, {
+    method: 'POST',
+    body: { note },
+  });
+}
