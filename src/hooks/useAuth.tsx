@@ -1,6 +1,6 @@
 // src/hooks/useAuth.tsx
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { api } from '../lib/api'; // ← 既存の api ラッパー（api.me()/login()/signup()/logout()）を想定
+import  api  from '../lib/api'; // ← 既存の api ラッパー（api.me()/login()/signup()/logout()）を想定
 
 // ---- types ----
 type Role = 'fan' | 'creator' | 'admin';

@@ -1,10 +1,10 @@
 // src/shared/types.ts
 
-import type { Visibility } from "./prisma-enums";
+import type { KycStatus, MediaType, PaymentStatus, PayoutStatus, PublishedStatus, Role, SubStatus, Visibility } from "./prisma-enums";
 
 type PostMedia = {
   id: string;
-  mediaType: 'image' | 'video' | 'audio';
+  mediaType: MediaType;
   url: string;
   sortOrder?: number;
 };
@@ -29,7 +29,7 @@ export type User = {
   id: string
   email: string
   nickname?: string
-  role?: 'user' | 'creator' | 'admin'
+  role?: Role
 }
 
 export type Creator = {
@@ -53,8 +53,6 @@ export type Plan = {
 
 export type PlansResponse = { ok: true; plans: Plan[] };
 
-export type PayoutStatus = 'requested' | 'approved' | 'paid' | 'rejected';
-
 export type Payout = {
   id: string;
   amountJpy: number;
@@ -68,7 +66,7 @@ export interface Subscription {
   id: string;
   planName: string;
   nextBillingDate?: string | null;
-  status?: 'active' | 'past_due' | 'canceled' | 'incomplete' | string;
+  status: SubStatus;
 }
 
 export interface Me {
@@ -81,14 +79,10 @@ export interface Me {
 export interface PaymentRecord {
   id: string;
   amountJpy: number;
-  status: 'paid' | 'unpaid' | 'refunded' | string;
+  status: PaymentStatus;
   createdAt: string; // ISO
   paidAt?: string | null;
 }
-
-
-export type PublishedStatus = 'draft' | 'published' | 'private';
-export type KycStatus = 'approved' | 'pending' | 'rejected';
 
 export type PostSummary = {
   id: string;
@@ -120,7 +114,7 @@ export type PostDetail = {
   media: {
     id: string;
     url: string;
-    mediaType: 'image' | 'video' | 'audio';
+    mediaType: MediaType;
     sortOrder: number;
   }[];
   canView?: boolean;

@@ -1,3 +1,6 @@
+//src/shared/prisma-enums.ts
+//schema.prisma の enum 定義を TypeScript 化したもの
+
 export type Role = 'fan' | 'creator' | 'admin';
 
 export type KycStatus = 'pending' | 'approved' | 'rejected';

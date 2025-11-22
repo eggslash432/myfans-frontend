@@ -1,15 +1,14 @@
 // src/pages/posts/NewPost.tsx
 import {useState, useEffect} from 'react';
-import { api, createPostSmart } from '../../lib/api';
-import { getMyPlans } from '../../lib/api';
+import { createPostSmart, getCreatorMe, getMyPlans,createPlan as createPlanApi } from '../../lib/api';
 import type { AgeRating, Visibility } from '../../shared/prisma-enums';
 import MediaUploader from '../../components/MediaUploader';
 import type { Plan } from '../../shared/types';
 
 async function fetchMyPlans(): Promise<Plan[]> {
   try {
-    const plans = await getMyPlans(); // ← これが Plan[]
-    return plans ?? [];
+    const res = await getMyPlans();   // ← PlansResponse { ok, plans }
+    return res?.plans ?? [];
   } catch {
     return [];
   }
@@ -70,11 +69,13 @@ export default function NewPost() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await api.get('/creators/me');
-        setCreator(res.data);
+        const res = await getCreatorMe(); // ← fetch ラッパーを使う
+        setCreator(res);                  // res.data ではなく res
       } catch (e: any) {
         setCreatorErr(
-          e?.response?.data?.message ?? e?.message ?? 'クリエイター情報の取得に失敗しました',
+          e?.response?.data?.message ??
+          e?.message ??
+          'クリエイター情報の取得に失敗しました'
         );
       }
     })();
@@ -128,9 +129,8 @@ export default function NewPost() {
   // 自分のプラン一覧を取得
   async function loadPlans() {
     try {
-      const me = await api.get('/auth/me');
-      const list = await api.get(`/plans?creatorId=${me.id}`);
-      setPlans(list);
+      const res = await getMyPlans();   // PlansResponse { ok, plans }
+      setPlans(res?.plans ?? []);       // Plan[] だけ state に入れる
     } catch (e) {
       console.error('プラン取得失敗', e);
     }
@@ -142,19 +142,17 @@ export default function NewPost() {
   async function createPlan() {
     if (!newPlanName || !newPlanPrice) return;
     try {
-      const res = await api.post('/plans', {
+      const res = await createPlanApi({
         name: newPlanName,
         priceJpy: parseInt(newPlanPrice, 10),
       });
       console.log('プラン作成成功', res);
       setShowPlanModal(false);
-      setNewPlanName('');
-      setNewPlanPrice('');
-      await loadPlans(); // 再読込
-      setSelectedPlanId(res.id);
-    } catch (e: any) {
-      alert(`プラン作成に失敗：${e.data?.message || e.message}`);
-      console.error(e);
+
+      // ついでに一覧を更新したいなら
+      await loadPlans();
+    } catch (e) {
+      console.error('プラン作成失敗', e);
     }
   }
 
