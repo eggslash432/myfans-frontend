@@ -94,7 +94,7 @@ export default function PayoutsPage() {
   if (!creator) return <div>読み込み中...</div>;
 
   const kyc = creator.kyc ?? {};
-  const isKycOk = kyc.status === 'verified' && kyc.payoutsEnabled;
+  const isKycOk = kyc.status === 'approved' && kyc.payoutsEnabled;
 
   if (!isKycOk) {
     return (

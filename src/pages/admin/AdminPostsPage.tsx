@@ -2,35 +2,96 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
 
+type AdminPost = {
+  id: string;
+  title: string;
+  publishedStatus: 'draft' | 'published' | 'private';
+  creator?: {
+    publicName?: string;
+  };
+};
+
+type Report = {
+  id: string;
+  reason: string;
+  resolved: boolean;
+  createdAt: string;
+};
+
 export default function AdminPostsPage() {
-  const [list, setList] = useState<any[]>([]);
+  const [list, setList] = useState<AdminPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState('');
+  const [reports, setReports] = useState<Report[]>([]);
+  const [reportsPostId, setReportsPostId] = useState<string | null>(null);
 
   async function load() {
-    setLoading(true);
-    const res = await api.get('/admin/posts');
-    setList(res);
-    setLoading(false);
+    try {
+      setLoading(true);
+      setErr('');
+      const res = await api.get('/admin/posts');
+      // api は Axios のインスタンス想定なので data を取る
+      setList(res.data);
+    } catch (e: any) {
+      setErr(e?.message ?? '投稿一覧の取得に失敗しました');
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
     load();
   }, []);
 
-  const remove = async (id: string) => {
-    if (!confirm('この投稿を削除しますか？')) return;
-    await api.delete(`/admin/posts/${id}`);
-    await load();
-  };
+  // 投稿削除
+  async function deletePost(id: string) {
+    if (!confirm('この投稿を削除しますか？この操作は元に戻せません。')) return;
+    try {
+      await api.delete(`/admin/posts/${id}`);
+      await load();
+    } catch (e: any) {
+      alert(e?.message ?? '削除に失敗しました');
+    }
+  }
 
-  const setStatus = async (id: string, status: string) => {
-    await api.patch(`/admin/posts/${id}/status`, {
-      publishedStatus: status,
-    });
-    await load();
-  };
+  // 公開状態変更
+  async function updateStatus(id: string, status: 'draft' | 'published' | 'private') {
+    if (!confirm(`この投稿の状態を「${status}」に変更しますか？`)) return;
+    try {
+      await api.patch(`/admin/posts/${id}/status`, { status });
+      await load();
+    } catch (e: any) {
+      alert(e?.message ?? '状態変更に失敗しました');
+    }
+  }
+
+  // 通報一覧を開く
+  async function openReports(postId: string) {
+    try {
+      const res = await api.get(`/admin/posts/${postId}/reports`);
+      setReports(res.data);
+      setReportsPostId(postId);
+    } catch (e: any) {
+      alert(e?.message ?? '通報一覧の取得に失敗しました');
+    }
+  }
+
+  // 通報を対応済みにする
+  async function resolveReport(reportId: string) {
+    try {
+      await api.patch(`/admin/posts/reports/${reportId}/resolve`);
+      if (reportsPostId) {
+        // モーダル内一覧をリロード
+        const res = await api.get(`/admin/posts/${reportsPostId}/reports`);
+        setReports(res.data);
+      }
+    } catch (e: any) {
+      alert(e?.message ?? '通報の更新に失敗しました');
+    }
+  }
 
   if (loading) return <div>読み込み中…</div>;
+  if (err) return <div className="p-4 text-red-600">{err}</div>;
 
   return (
     <div className="mx-auto max-w-4xl p-6 space-y-6">
@@ -51,32 +112,80 @@ export default function AdminPostsPage() {
             <tr key={p.id} className="border-b">
               <td className="py-2">{p.id}</td>
               <td className="py-2">{p.title}</td>
-              <td className="py-2">{p.creator?.publicName}</td>
+              <td className="py-2">{p.creator?.publicName ?? '-'}</td>
               <td className="py-2">{p.publishedStatus}</td>
               <td className="py-2 space-x-2">
                 <button
-                  className="px-2 py-1 border rounded"
-                  onClick={() => setStatus(p.id, 'private')}
+                  onClick={() => deletePost(p.id)}
+                  className="px-3 py-1 bg-red-600 text-white rounded"
+                >
+                  削除
+                </button>
+
+                <button
+                  onClick={() => updateStatus(p.id, 'private')}
+                  className="ml-2 px-3 py-1 bg-gray-600 text-white rounded"
                 >
                   非公開
                 </button>
+
                 <button
-                  className="px-2 py-1 border rounded"
-                  onClick={() => setStatus(p.id, 'published')}
+                  onClick={() => openReports(p.id)}
+                  className="ml-2 px-3 py-1 bg-yellow-600 text-white rounded"
                 >
-                  公開
-                </button>
-                <button
-                  className="px-2 py-1 border rounded bg-red-500 text-white"
-                  onClick={() => remove(p.id)}
-                >
-                  削除
+                  通報
                 </button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      {/* 通報一覧の簡易モーダル */}
+      {reportsPostId && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+          <div className="bg-white rounded shadow p-4 max-w-lg w-full max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-2">
+              <h2 className="font-bold">通報一覧（Post ID: {reportsPostId}）</h2>
+              <button
+                onClick={() => {
+                  setReportsPostId(null);
+                  setReports([]);
+                }}
+              >
+                閉じる
+              </button>
+            </div>
+
+            {reports.length === 0 && <p>通報はありません。</p>}
+
+            {reports.map((r) => (
+              <div key={r.id} className="border-b py-2">
+                <div className="text-xs text-gray-500">
+                  {new Date(r.createdAt).toLocaleString()}
+                </div>
+                <div className="text-sm">理由: {r.reason}</div>
+                <div className="text-xs">
+                  ステータス:{' '}
+                  {r.resolved ? (
+                    <span className="text-green-600">対応済み</span>
+                  ) : (
+                    <span className="text-red-600">未対応</span>
+                  )}
+                </div>
+                {!r.resolved && (
+                  <button
+                    onClick={() => resolveReport(r.id)}
+                    className="mt-1 px-2 py-1 bg-blue-600 text-white text-xs rounded"
+                  >
+                    対応済みにする
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

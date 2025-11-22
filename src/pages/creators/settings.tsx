@@ -1,12 +1,13 @@
 // myfans-frontend/src/pages/creators/settings.tsx
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
+import type { KycStatus } from '../../shared/prisma-enums';
 
 type CreatorMeResponse = {
   publicName: string;
-  stripeKycStatus?: 'verified' | 'pending' | 'rejected' | null;
+  stripeKycStatus?: KycStatus;
   kyc?: {
-    status?: 'verified' | 'pending' | 'rejected' | null;
+    status?: KycStatus;
     chargesEnabled?: boolean;
     payoutsEnabled?: boolean;
     disabledReason?: string | null;
@@ -72,7 +73,7 @@ export default function CreatorSettingsPage() {
   const kycStatus =
     kyc.status ?? creator.stripeKycStatus ?? 'pending';
 
-  const isKycOk = kycStatus === 'verified';
+  const isKycOk = kycStatus === 'approved';
 
   return (
     <div className="p-6 space-y-4">
@@ -81,7 +82,7 @@ export default function CreatorSettingsPage() {
       {/* KYC ステータス表示 */}
       <div>
         本人確認ステータス:{' '}
-        {kycStatus === 'verified' ? (
+        {kycStatus === 'approved' ? (
           <span style={{ color: 'green' }}>承認済み</span>
         ) : (
           <span style={{ color: 'orange' }}>未完了</span>
@@ -96,7 +97,7 @@ export default function CreatorSettingsPage() {
       )}
 
       {/* KYC 未完了なら案内＋開始ボタン */}
-      {kycStatus !== 'verified' && (
+      {kycStatus !== 'approved' && (
         <div className="space-y-2">
           <p className="text-sm text-gray-700">
             本人確認を完了すると、投稿・プラン作成・出金が利用できるようになります。

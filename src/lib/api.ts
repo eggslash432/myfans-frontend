@@ -295,6 +295,23 @@ export async function adminApprovePayout(id: string) {
   return res.data;
 }
 
+export async function adminDeletePost(id: string) {
+  return api.delete(`/admin/posts/${id}`);
+}
+
+export async function adminUpdatePostStatus(id: string, status: string) {
+  return api.patch(`/admin/posts/${id}/status`, { status });
+}
+
+export async function adminGetReports(id: string) {
+  const res = await api.get(`/admin/posts/${id}/reports`);
+  return res.data;
+}
+
+export async function adminResolveReport(id: string) {
+  return api.patch(`/admin/posts/reports/${id}/resolve`);
+}
+
 // === ここから高レベルAPI ===
 export const api = {
   // --- 認証 ---
@@ -430,7 +447,7 @@ export const api = {
       path,
       { method: "PATCH", body: body !== undefined ? JSON.stringify(body) : undefined },
       requireAuth
-    ),    
+    ),        
 };
 
 export function normalizeList<T = any>(res: any): T[] {

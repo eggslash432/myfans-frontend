@@ -207,7 +207,7 @@ export default function NewPost() {
 
   const kyc = creator?.kyc ?? {};
   const kycStatus = kyc.status ?? creator?.stripeKycStatus ?? 'pending';
-  const isKycOk = kycStatus === 'verified';  
+  const isKycOk = kycStatus === 'approved';  
 
   return (
     <div className="max-w-3xl mx-auto p-6">
