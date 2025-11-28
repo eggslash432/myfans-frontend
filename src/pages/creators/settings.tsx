@@ -25,7 +25,7 @@ export default function CreatorSettingsPage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await api.get('/api/creators/me');
+        const res = await api.get('/creators/me');
         setCreator(res.data);
       } catch (e: any) {
         // バックエンド側で "creator not found" を投げている想定

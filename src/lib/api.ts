@@ -60,6 +60,8 @@ async function request<T = unknown>(
     url = `${API_BASE}${p}`;
   }
 
+  console.log('[request]', { API_BASE, path, url }); 
+
   // ★ ここで token を取得
   const token = localStorage.getItem('access_token');  
 
@@ -107,9 +109,8 @@ export function normalizeList<T = any>(raw: any): T[] {
 // axios 互換用: "/creators" → "/api/creators" に揃える
 function normalizeApiPath(path: string): string {
   if (path.startsWith('http')) return path;
-  if (path.startsWith('/api/')) return path;
-  if (path.startsWith('/')) return '/api' + path;
-  return '/api/' + path;
+  if (!path.startsWith('/')) return '/' + path;
+  return path; // 先頭 / だけ保証
 }
 
 /* ============================================================
@@ -118,7 +119,7 @@ function normalizeApiPath(path: string): string {
 
 // ログイン中ユーザーのサマリ
 export function getMeSummary() {
-  return request('/api/users/me/summary');
+  return request('/users/me/summary');
 }
 
 // ★ MyPage.tsx から使う用のラッパー
@@ -128,11 +129,11 @@ export async function meSummary() {
 
 // ログインユーザー情報（/auth/me）
 export function getMe() {
-  return request('/api/auth/me');
+  return request('/auth/me');
 }
 
 export async function login(payload: { email: string; password: string }) {
-  const data = await request<{ access_token?: string }>('/api/auth/login', {
+  const data = await request<{ access_token?: string }>('/auth/login', {
     method: 'POST',
     body: payload,
   });
@@ -150,7 +151,7 @@ export async function signup(payload: {
   password: string;
   role?: 'fan' | 'creator';
 }) {
-  const data = await request<{ access_token?: string }>('/api/auth/signup', {
+  const data = await request<{ access_token?: string }>('/auth/signup', {
     method: 'POST',
     body: payload,
   });
@@ -164,7 +165,7 @@ export async function signup(payload: {
 }
 
 export async function logout() {
-  await request('/api/auth/logout', {
+  await request('/auth/logout', {
     method: 'POST',
   });
   // ★ ログアウト時に token 削除
@@ -179,12 +180,12 @@ export async function logout() {
 
 // 公開フィード
 export async function getPublicPosts() {
-  return request<{ items: PostSummary[] }>('/api/posts');
+  return request<{ items: PostSummary[] }>('/posts');
 }
 
 // 自分の投稿一覧
 export async function getMyPosts() {
-  return request<{ items: PostSummary[] }>('/api/posts/me');
+  return request<{ items: PostSummary[] }>('/posts/me');
 }
 
 // ★ MyPage.tsx から使うためのラッパー
@@ -195,7 +196,7 @@ export async function myPosts(): Promise<PostSummary[]> {
 
 // 投稿詳細
 export async function getPostDetail(postId: string) {
-  return request<PostDetail>(`/api/posts/${postId}`);
+  return request<PostDetail>(`/posts/${postId}`);
 }
 
 // 投稿作成
@@ -212,7 +213,7 @@ export type CreatePostPayload = {
 export async function createPost(payload: CreatePostPayload) {
   // バックエンド側では /posts と /creators/me/posts の両方を受ける実装にしてあるので、
   // ここでは /posts を叩く
-  return request<{ ok: true; post: PostSummary }>('/api/posts', {
+  return request<{ ok: true; post: PostSummary }>('/posts', {
     method: 'POST',
     body: payload,
   });
@@ -236,7 +237,7 @@ export async function createPostSmart(payload: CreatePostPayload) {
 
 // 投稿通報
 export async function reportPost(postId: string, reason: string) {
-  return request<{ ok: true }>(`/api/posts/${postId}/report`, {
+  return request<{ ok: true }>(`/posts/${postId}/report`, {
     method: 'POST',
     body: { reason },
   });
@@ -248,12 +249,12 @@ export async function reportPost(postId: string, reason: string) {
 
 // 自分のクリエイター情報（設定画面用）
 export async function getCreatorMe() {
-  return request<CreatorMeResponse>('/api/creators/me');
+  return request<CreatorMeResponse>('/creators/me');
 }
 
 // KYC 開始（Stripe Onboarding リンク取得など）
 export async function startCreatorKyc() {
-  return request<{ url: string }>('/api/creators/me/kyc/start', {
+  return request<{ url: string }>('/creators/me/kyc/start', {
     method: 'POST',
   });
 }
@@ -264,7 +265,7 @@ export async function updateCreatorProfile(data: {
   bio?: string;
   avatarUrl?: string;
 }) {
-  return request('/api/creators/me', {
+  return request('/creators/me', {
     method: 'PATCH',
     body: data,
   });
@@ -272,21 +273,27 @@ export async function updateCreatorProfile(data: {
 
 // 特定クリエイターの公開プロフィール（プラン一覧など）
 export async function getCreatorPublicProfile(creatorId: string) {
-  return request(`/api/creators/${creatorId}`);
+  return request(`/creators/${creatorId}`);
 }
 
 // 公開クリエイター一覧（TOP 用）
 export async function listCreators() {
   // バックエンドの GET /creators （返り値 {items: [...]}) をそのまま返す
-  return request('/api/creators');
+  return request('/creators');
 }
 
 // --------------------------------------------------
 // クリエイター登録（MyPage.tsx から使われる）
 // --------------------------------------------------
-export async function applyCreator() {
-  return request('/api/creators', {
+// クリエイター登録（MyPage から使用）
+export async function applyCreator(dto: {
+  publicName?: string;
+  displayName?: string;
+  bankAccount?: Record<string, any>;
+}) {
+  return request('/creators', {
     method: 'POST',
+    body: dto,   // ← ★ ここが重要
   });
 }
 
@@ -297,14 +304,14 @@ export async function applyCreator() {
 // 自分のプラン一覧
 export async function getMyPlans(): Promise<PlansResponse> {
   // バックエンド: GET /plans（ログイン中クリエイターのプラン）
-  return request<PlansResponse>('/api/plans');
+  return request<PlansResponse>('/plans');
 }
 
 // 特定クリエイターのプラン一覧
 export async function getCreatorPlans(creatorId: string): Promise<PlansResponse> {
   // バックエンド: GET /plans/me?creatorId=...
   // 実装に合わせてパスを変えるならここを調整
-  return request<PlansResponse>(`/api/plans/me?creatorId=${encodeURIComponent(creatorId)}`);
+  return request<PlansResponse>(`/plans/me?creatorId=${encodeURIComponent(creatorId)}`);
 }
 
 // ★ 新規プラン作成
@@ -314,7 +321,7 @@ export type CreatePlanPayload = {
 };
 
 export async function createPlan(payload: CreatePlanPayload) {
-  return request('/api/plans', {
+  return request('/plans', {
     method: 'POST',
     body: payload,
   });
@@ -326,7 +333,7 @@ export async function createPlan(payload: CreatePlanPayload) {
 
 // サブスク購読用 Checkout セッション作成
 export async function createPlanCheckoutSession(planId: string) {
-  return request<{ url: string }>('/api/payments/checkout/subscription', {
+  return request<{ url: string }>('/payments/checkout/subscription', {
     method: 'POST',
     body: { planId },
   });
@@ -334,7 +341,7 @@ export async function createPlanCheckoutSession(planId: string) {
 
 // PPV（単品販売）用 Checkout セッション作成
 export async function createPpvCheckoutSession(postId: string) {
-  return request<{ url: string }>('/api/payments/checkout/one-time', {
+  return request<{ url: string }>('/payments/checkout/one-time', {
     method: 'POST',
     body: { postId },
   });
@@ -346,12 +353,12 @@ export async function createPpvCheckoutSession(postId: string) {
 
 // 出金サマリ
 export async function getCreatorPayoutSummary() {
-  return request('/api/creators/me/payouts/summary');
+  return request('/creators/me/payouts/summary');
 }
 
 // 出金リクエスト作成
 export async function requestPayout(amountJpy: number) {
-  return request('/api/creators/me/payouts', {
+  return request('/creators/me/payouts', {
     method: 'POST',
     body: { amountJpy },
   });
@@ -359,7 +366,7 @@ export async function requestPayout(amountJpy: number) {
 
 // 自分の出金履歴一覧
 export async function getCreatorPayoutHistory() {
-  return request('/api/creators/me/payouts/history');
+  return request('/creators/me/payouts/history');
 }
 
 /* ============================================================
@@ -378,7 +385,7 @@ export async function adminListCreators(params?: {
     qs.set('kycStatus', params.kycStatus);
   }
   const query = qs.toString();
-  const path = query ? `/api/admin/creators?${query}` : '/api/admin/creators';
+  const path = query ? `/admin/creators?${query}` : '/admin/creators';
 
   return request<
     {
@@ -403,7 +410,7 @@ export async function adminSetCreatorListing(
   isListed: boolean,
 ) {
   return request<{ ok: true; userId: string; isListed: boolean }>(
-    `/api/admin/creators/${userId}/listing`,
+    `/admin/creators/${userId}/listing`,
     {
       method: 'PATCH',
       body: { isListed },
@@ -416,11 +423,11 @@ export async function adminSetCreatorListing(
  * ============================================================ */
 
 export async function adminListPosts() {
-  return request<PostSummary[]>('/api/admin/posts');
+  return request<PostSummary[]>('/admin/posts');
 }
 
 export async function adminDeletePost(postId: string) {
-  return request<{ ok: true }>(`/api/admin/posts/${postId}`, {
+  return request<{ ok: true }>(`/admin/posts/${postId}`, {
     method: 'DELETE',
   });
 }
@@ -429,19 +436,19 @@ export async function adminUpdatePostStatus(
   postId: string,
   status: PublishedStatus,
 ) {
-  return request(`/api/admin/posts/${postId}/status`, {
+  return request(`/admin/posts/${postId}/status`, {
     method: 'PATCH',
     body: { status },
   });
 }
 
 export async function adminGetPostReports(postId: string) {
-  return request<ReportItem[]>(`/api/admin/posts/${postId}/reports`);
+  return request<ReportItem[]>(`/admin/posts/${postId}/reports`);
 }
 
 export async function adminResolvePostReport(reportId: string) {
   return request<{ ok: true }>(
-    `/api/admin/posts/reports/${reportId}/resolve`,
+    `/admin/posts/reports/${reportId}/resolve`,
     {
       method: 'PATCH',
     },
@@ -453,14 +460,14 @@ export async function adminResolvePostReport(reportId: string) {
  * ============================================================ */
 
 export async function adminListReports() {
-  return request<ReportItem[]>('/api/admin/reports');
+  return request<ReportItem[]>('/admin/reports');
 }
 
 export async function adminResolveReport(
   reportId: string,
   action: 'reviewed' | 'dismissed' = 'reviewed',
 ) {
-  return request(`/api/admin/reports/${reportId}/resolve`, {
+  return request(`/admin/reports/${reportId}/resolve`, {
     method: 'PATCH',
     body: { action },
   });
@@ -471,17 +478,17 @@ export async function adminResolveReport(
  * ============================================================ */
 
 export async function adminListPayoutRequests() {
-  return request('/api/admin/payouts');
+  return request('/admin/payouts');
 }
 
 export async function adminApprovePayout(payoutId: string) {
-  return request(`/api/admin/payouts/${payoutId}/approve`, {
+  return request(`/admin/payouts/${payoutId}/approve`, {
     method: 'POST',
   });
 }
 
 export async function adminRejectPayout(payoutId: string, note?: string) {
-  return request(`/api/admin/payouts/${payoutId}/reject`, {
+  return request(`/admin/payouts/${payoutId}/reject`, {
     method: 'POST',
     body: { note },
   });

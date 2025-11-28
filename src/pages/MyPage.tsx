@@ -25,6 +25,7 @@ export default function MyPage() {
       setCreator(c);
     } catch (e: any) {
       const msg = e?.message ?? '';
+      console.error('getCreatorMe failed:', e);
       // 404 / creator not found のときだけ「いない」とみなす
       if (/creator not found/i.test(msg) || /404/.test(msg)) {
         setCreator(null);
@@ -46,11 +47,11 @@ export default function MyPage() {
 
   // --- 投稿 ---
   useEffect(() => {
-    if (!ready || !user) return;
+    if (!ready || !user) return;    
     api
       .myPosts()
-      .then((res) => setPosts(res.items ?? []))
-      .catch((e) => console.error('投稿取得失敗:', e));
+      .then(items => setPosts(items ?? []))
+      .catch(e => console.error('投稿取得失敗:', e));
   }, [ready, user]);
 
   // --- Creator 情報読込 ---
@@ -58,27 +59,30 @@ export default function MyPage() {
     loadCreator();
   }, [loadCreator]);
 
-  // --- クリエイター登録ボタン ---
   const handleApplyCreator = async () => {
     if (!user) return;
     setLoading(true);
     try {
-      // 表示名はとりあえずメールの@前
+      // 表示名はとりあえずメールの @ 前
       const publicName =
         (user as any).displayName ??
         (user.email ? user.email.split('@')[0] : '新しいクリエイター');
 
-      await api.applyCreator({ publicName });
+      // ここで /api/creators に POST
+      await api.applyCreator({ publicName });   
+
       alert('クリエイター登録が完了しました');
 
-      // ★常に /creators/me でもう一度取り直す
+      // 登録後に /api/creators/me を取り直して state を更新
       await loadCreator();
     } catch (e: any) {
+      console.error('applyCreator failed', e);
       alert(e?.message ?? '登録に失敗しました');
     } finally {
       setLoading(false);
     }
   };
+
 
   // --- 各種ガード ---
   if (!ready) return <div className="p-4">読み込み中...</div>;
