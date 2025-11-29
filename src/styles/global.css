@@ -107,29 +107,26 @@ body {
 
 /* ===== ボトムタブナビ ===== */
 
+/* --- Bottom Navigation (Myfans風) --- */
+/* ---------- Bottom Nav (myfans っぽく) ---------- */
+
 .bottom-nav {
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 0;
-  z-index: 40;
-  width: 100%;
-  max-width: 640px;
-  padding: 6px 8px 10px;
-  background: transparent;       /* 外側は透明でOK */
-  pointer-events: none;          /* 内側バーだけクリック可能に */
-}
-
-.bottom-nav-bar {
-  pointer-events: auto;
+  margin-top: auto; /* app-shell の一番下に来るように */
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
   background: #ffffff;
-  border-radius: 9999px;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.25);
-  display: flex;
-  justify-content: space-around;
-  padding: 6px 4px;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
+.bottom-nav-inner {
+  max-width: 480px;
+  margin: 0 auto;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+/* 各タブ */
 .bottom-nav-item {
   flex: 1;
   display: flex;
@@ -137,19 +134,31 @@ body {
   align-items: center;
   justify-content: center;
   gap: 2px;
-  font-size: 0.7rem;
   text-decoration: none;
-  color: var(--color-text-muted);
+  color: #9ca3af; /* グレー */
+  font-size: 11px;
 }
 
-.bottom-nav-item span.icon {
-  font-size: 1.1rem;
+/* ラベルを折り返さない */
+.bottom-nav-label {
+  white-space: nowrap;
 }
 
+/* アイコンサイズ（Heroicons） */
+.bottom-nav-icon {
+  width: 22px;
+  height: 22px;
+}
+
+/* アクティブ時はピンク寄りに */
 .bottom-nav-item-active {
-  color: var(--color-primary);
-  font-weight: 600;
+  color: #ff2f70; /* お好みで調整 */
 }
+
+.bottom-nav-item-active .bottom-nav-icon {
+  stroke: #ff2f70;
+}
+
 
 
 /* フッターは小さめ */
@@ -433,4 +442,15 @@ body {
 
 .auth-link:hover {
   text-decoration: underline;
+}
+
+
+
+/* 下方向の間隔ユーティリティ（Tailwind 風） */
+.space-y-3 > * + * {
+  margin-top: 0.75rem; /* 12px */
+}
+
+.space-y-4 > * + * {
+  margin-top: 1rem; /* 16px */
 }

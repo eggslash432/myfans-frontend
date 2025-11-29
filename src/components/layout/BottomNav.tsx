@@ -1,6 +1,13 @@
 // front/src/components/layout/BottomNav.tsx
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import {
+  HomeIcon,
+  UserIcon,
+  PencilSquareIcon,
+  SparklesIcon,
+  WrenchScrewdriverIcon,
+} from '@heroicons/react/24/outline';
 
 export default function BottomNav() {
   const location = useLocation();
@@ -24,8 +31,8 @@ export default function BottomNav() {
             'bottom-nav-item ' + (isHome ? 'bottom-nav-item-active' : '')
           }
         >
-          <span className="bottom-nav-icon">🏠</span>
-          <span>ホーム</span>
+          <HomeIcon className="bottom-nav-icon" />
+          <span className="bottom-nav-label">ホーム</span>
         </Link>
 
         {/* マイページ */}
@@ -35,19 +42,19 @@ export default function BottomNav() {
             'bottom-nav-item ' + (isMyPage ? 'bottom-nav-item-active' : '')
           }
         >
-          <span className="bottom-nav-icon">👤</span>
-          <span>マイページ</span>
+          <UserIcon className="bottom-nav-icon" />
+          <span className="bottom-nav-label">マイページ</span>
         </Link>
 
-        {/* 新規投稿（クリエイターのみ強調） */}
+        {/* 新規投稿 */}
         <Link
           to="/posts/new"
           className={
             'bottom-nav-item ' + (isNewPost ? 'bottom-nav-item-active' : '')
           }
         >
-          <span className="bottom-nav-icon">✏️</span>
-          <span>投稿作成</span>
+          <PencilSquareIcon className="bottom-nav-icon" />
+          <span className="bottom-nav-label">投稿作成</span>
         </Link>
 
         {/* クリエイター設定 */}
@@ -57,8 +64,8 @@ export default function BottomNav() {
             'bottom-nav-item ' + (isCreator ? 'bottom-nav-item-active' : '')
           }
         >
-          <span className="bottom-nav-icon">⭐</span>
-          <span>クリエイター</span>
+          <SparklesIcon className="bottom-nav-icon" />
+          <span className="bottom-nav-label">クリエイター</span>
         </Link>
 
         {/* 管理者タブ：admin ロールのときだけ表示 */}
@@ -69,8 +76,8 @@ export default function BottomNav() {
               'bottom-nav-item ' + (isAdmin ? 'bottom-nav-item-active' : '')
             }
           >
-            <span className="bottom-nav-icon">🛠</span>
-            <span>管理</span>
+            <WrenchScrewdriverIcon className="bottom-nav-icon" />
+            <span className="bottom-nav-label">管理</span>
           </Link>
         )}
       </div>

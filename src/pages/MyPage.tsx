@@ -6,14 +6,14 @@ import { api } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 
 export default function MyPage() {
-  const {user, ready} = useAuth();
+  const { user, ready } = useAuth();
   const [summary, setSummary] = useState<any>(null);
   const [err, setErr] = useState<string>('');
   const [posts, setPosts] = useState<any[]>([]);
 
   // creator: undefined = 読み込み中, null = いない, object = いる
   const [creator, setCreator] = useState<any | null | undefined>(undefined);
-  const [loading, setLoading] = useState(false);  
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -31,27 +31,29 @@ export default function MyPage() {
         setCreator(null);
       } else {
         console.error('getCreatorMe failed', e);
-        // ここはエラーとして扱いたければ別途表示してもOK
         setCreator(null);
       }
     }
-  }, [ready, user]);    
+  }, [ready, user]);
 
   useEffect(() => {
     if (!ready || !user) return;
     (async () => {
-      try { setSummary(await api.meSummary()); } 
-      catch (e: any) { setErr(e.message || 'failed'); }
+      try {
+        setSummary(await api.meSummary());
+      } catch (e: any) {
+        setErr(e.message || 'failed');
+      }
     })();
   }, [ready, user]);
 
   // --- 投稿 ---
   useEffect(() => {
-    if (!ready || !user) return;    
+    if (!ready || !user) return;
     api
       .myPosts()
-      .then(items => setPosts(items ?? []))
-      .catch(e => console.error('投稿取得失敗:', e));
+      .then((items) => setPosts(items ?? []))
+      .catch((e) => console.error('投稿取得失敗:', e));
   }, [ready, user]);
 
   // --- Creator 情報読込 ---
@@ -63,17 +65,13 @@ export default function MyPage() {
     if (!user) return;
     setLoading(true);
     try {
-      // 表示名はとりあえずメールの @ 前
       const publicName =
         (user as any).displayName ??
         (user.email ? user.email.split('@')[0] : '新しいクリエイター');
 
-      // ここで /api/creators に POST
-      await api.applyCreator({ publicName });   
+      await api.applyCreator({ publicName });
 
       alert('クリエイター登録が完了しました');
-
-      // 登録後に /api/creators/me を取り直して state を更新
       await loadCreator();
     } catch (e: any) {
       console.error('applyCreator failed', e);
@@ -82,7 +80,6 @@ export default function MyPage() {
       setLoading(false);
     }
   };
-
 
   // --- 各種ガード ---
   if (!ready) return <div className="p-4">読み込み中...</div>;
@@ -102,27 +99,51 @@ export default function MyPage() {
     );
   if (!summary) return <div className="p-4">読み込み中...</div>;
 
+  const subscriptionCount = (summary.subscriptions || []).length;
+  const paymentCount = (summary.payments || []).length;
 
   return (
-    <div className="p-4 space-y-3">
-      <h1 className="text-xl font-bold">マイページ</h1>
+    <div className="page space-y-4">
+      {/* ページタイトル */}
+      <h1 className="page-title">マイページ</h1>
 
-      {/* --- クリエイター部分 --- */}
+      {/* アカウント概要 */}
+      <section className="card">
+        <div className="section-title flex items-center justify-between">
+          <span>アカウント情報</span>
+        </div>
+        <p className="section-subtitle mb-3">
+          ご契約中のプランや購入履歴を確認できます。
+        </p>
+        <div className="text-sm space-y-1">
+          <div>
+            <span className="font-semibold">ログイン中のユーザー：</span>
+            {user.email}
+          </div>
+          <div className="text-xs text-gray-500">
+            ※メールアドレスやパスワードの変更は「プロフィール編集」から行えます。
+          </div>
+        </div>
+      </section>
+
+      {/* クリエイター関連エリア */}
       {creator === undefined && (
-        <section className="p-4 rounded border mb-4">クリエイター情報を読み込み中...</section>
+        <section className="card">
+          <div className="section-title">クリエイター情報</div>
+          <p className="section-subtitle">クリエイター情報を読み込み中です...</p>
+        </section>
       )}
 
       {creator === null && (
-        <section className="p-4 rounded border mb-4">
-          <h2 className="font-semibold mb-2">クリエイター登録</h2>
-          <p className="mb-2">
-            まだクリエイター登録が完了していません。<br />
+        <section className="card space-y-3">
+          <div className="section-title">クリエイター登録</div>
+          <p className="section-subtitle">
             クリエイター登録を行うと、投稿の販売やサブスクプランの作成ができるようになります。
           </p>
           <button
             onClick={handleApplyCreator}
             disabled={loading}
-            className="px-4 py-2 bg-indigo-600 text-white rounded"
+            className="btn btn-primary w-full justify-center"
           >
             {loading ? '登録中…' : 'クリエイター登録する'}
           </button>
@@ -130,55 +151,118 @@ export default function MyPage() {
       )}
 
       {creator && (
-        <section className="p-4 rounded border mb-4">
-          <h2 className="font-semibold mb-1">クリエイター情報</h2>
-          <p className="text-sm">
-            表示名：{creator.publicName ?? '(未設定)'}
-          </p>
-        </section>
+        <>
+          <section className="card space-y-2">
+            <div className="section-title">クリエイター情報</div>
+            <p className="section-subtitle">
+              売上や出金、投稿の管理はクリエイターメニューから行えます。
+            </p>
+            <div className="text-sm">
+              <div className="mb-1">
+                <span className="font-semibold">表示名：</span>
+                {creator.publicName ?? '(未設定)'}
+              </div>
+            </div>
+          </section>
+
+          <section className="card space-y-3">
+            <div className="section-title">クリエイターメニュー</div>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <button
+                onClick={() => navigate('/creator/posts')}
+                className="px-3 py-2 rounded border border-gray-200 bg-white text-gray-700"
+              >
+                投稿管理
+              </button>
+              <button
+                onClick={() => navigate('/creator/plans')}
+                className="px-3 py-2 rounded border border-gray-200 bg-white text-gray-700"
+              >
+                プラン設定
+              </button>
+              <button
+                onClick={() => navigate('/creator/payouts')}
+                className="px-3 py-2 rounded border border-gray-200 bg-white text-gray-700"
+              >
+                出金管理
+              </button>
+              <button
+                onClick={() => navigate('/creator/analytics')}
+                className="px-3 py-2 rounded border border-gray-200 bg-white text-gray-700"
+              >
+                売上レポート
+              </button>
+            </div>
+          </section>
+        </>
       )}
 
-      {creator && (
-        <section className="border rounded p-4 space-y-2">
-          <h2 className="font-semibold">クリエイター向けメニュー</h2>
-          {/* 他のメニュー */}
-          <button
-            onClick={() => navigate('/creator/payouts')}
-            className="px-3 py-2 rounded border"
-          >
-            出金管理
-          </button>
-        </section>
-      )}      
-
-      {/* --- 既存のマイ投稿／サマリー --- */}
-      <h2 className="text-xl font-bold mb-4">マイ投稿一覧</h2>
-      {posts.length === 0 && <p>投稿がありません。</p>}
-      <ul>
-        {posts.map((p) => (
-          <li key={p.id} className="border-b py-2">
-            <strong>{p.title}</strong>
-            {p.publishedStatus === 'published' ? (
-              <span className="ml-2 text-green-600">公開中</span>
-            ) : (
-              <span className="ml-2 text-gray-500">下書き</span>
-            )}
-          </li>
-        ))}
-      </ul>
-
-      <section className="p-4 rounded border">
-        <h2 className="font-semibold">購読状況</h2>
-        <pre className="bg-gray-100 p-2 rounded overflow-auto">
-          {JSON.stringify(summary.subscriptions || [], null, 2)}
-        </pre>
+      {/* マイ投稿一覧 */}
+      <section className="card">
+        <div className="section-title">マイ投稿一覧</div>
+        {posts.length === 0 && (
+          <p className="section-subtitle">まだ投稿がありません。</p>
+        )}
+        {posts.length > 0 && (
+          <ul className="divide-y divide-gray-100 mt-2">
+            {posts.map((p) => (
+              <li key={p.id} className="py-2 text-sm flex items-center justify-between">
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium truncate">{p.title}</div>
+                  <div className="text-xs text-gray-500">
+                    {p.publishedStatus === 'published'
+                      ? '公開中'
+                      : '下書き'}
+                  </div>
+                </div>
+                <button
+                  onClick={() => navigate(`/posts/${p.id}`)}
+                  className="ml-3 text-xs text-pink-500 underline"
+                >
+                  詳細
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
-      <section className="p-4 rounded border">
-        <h2 className="font-semibold">支払い履歴</h2>
-        <pre className="bg-gray-100 p-2 rounded overflow-auto">
-          {JSON.stringify(summary.payments || [], null, 2)}
-        </pre>
+      {/* 購読状況 */}
+      <section className="card">
+        <div className="section-title flex items-center justify-between">
+          <span>購読状況</span>
+          <span className="text-xs text-gray-500">
+            現在 {subscriptionCount} 件のプランを購読中
+          </span>
+        </div>
+        {subscriptionCount === 0 ? (
+          <p className="section-subtitle">
+            まだ購読中のプランはありません。お気に入りのクリエイターを探してみましょう。
+          </p>
+        ) : (
+          <pre className="mt-2 bg-gray-50 p-2 rounded text-xs overflow-auto">
+            {JSON.stringify(summary.subscriptions || [], null, 2)}
+          </pre>
+        )}
+      </section>
+
+      {/* 支払い履歴 */}
+      <section className="card mb-4">
+        <div className="section-title flex items-center justify-between">
+          <span>支払い履歴</span>
+          <span className="text-xs text-gray-500">
+            合計 {paymentCount} 件
+          </span>
+        </div>
+        {paymentCount === 0 ? (
+          <p className="section-subtitle">
+            まだ決済履歴がありません。
+          </p>
+        ) : (
+          <pre className="mt-2 bg-gray-50 p-2 rounded text-xs overflow-auto">
+            {JSON.stringify(summary.payments || [], null, 2)}
+          </pre>
+        )}
       </section>
     </div>
   );
