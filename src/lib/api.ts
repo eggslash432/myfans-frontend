@@ -249,7 +249,8 @@ export async function reportPost(postId: string, reason: string) {
 
 // 自分のクリエイター情報（設定画面用）
 export async function getCreatorMe() {
-  return request<CreatorMeResponse>('/creators/me');
+  // api.get は res.data を返す実装にしておく
+  return api.get('/creators/me');
 }
 
 // KYC 開始（Stripe Onboarding リンク取得など）

@@ -17,6 +17,9 @@ export default function MyPage() {
 
   const navigate = useNavigate();
 
+  const role = (user as any)?.role;
+  const isAdmin = role === 'admin';
+
   // --- 共通の Creator 再読み込み関数 ---
   const loadCreator = useCallback(async () => {
     if (!ready || !user) return;
@@ -134,7 +137,7 @@ export default function MyPage() {
         </section>
       )}
 
-      {creator === null && (
+      {!isAdmin && creator === null && (
         <section className="card space-y-3">
           <div className="section-title">クリエイター登録</div>
           <p className="section-subtitle">

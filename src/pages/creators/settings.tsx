@@ -1,20 +1,7 @@
-// myfans-frontend/src/pages/creators/settings.tsx
+// front/src/pages/creators/settings.tsx
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
-import type { KycStatus } from '../../shared/prisma-enums';
-
-type CreatorMeResponse = {
-  publicName: string;
-  stripeKycStatus?: KycStatus;
-  kyc?: {
-    status?: KycStatus;
-    chargesEnabled?: boolean;
-    payoutsEnabled?: boolean;
-    disabledReason?: string | null;
-    errors?: string | null;
-    fieldsDue?: string | null;
-  };
-};
+import type { CreatorMeResponse } from '../../shared/types';
 
 export default function CreatorSettingsPage() {
   const [creator, setCreator] = useState<CreatorMeResponse | null>(null);

@@ -1,4 +1,5 @@
-// src/pages/posts/PostDetail.tsx
+// front/src/pages/posts/PostDetail.tsx
+
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api, reportPost } from '../lib/api';
@@ -6,19 +7,29 @@ import type { Post } from '../shared/types';
 import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 
+type CheckoutResponse = {
+  url?: string;
+  checkoutUrl?: string;
+  sessionUrl?: string;
+  sessionId?: string;
+  pubKey?: string;
+  publishableKey?: string;
+};
+
 export default function PostDetail() {
   const { id } = useParams<{ id: string }>();
-  const {user} = useAuth();
+  const { user } = useAuth();
   const [busyPlan, setBusyPlan] = useState(false);
-  const [busyPpv, setBusyPpv] = useState(false);  
+  const [busyPpv, setBusyPpv] = useState(false);
 
-  const q = useQuery({
+  const q = useQuery<Post>({
     queryKey: ['post', id],
     enabled: !!id,
     queryFn: async () => {
       if (!id) throw new Error('no id');
-      // ★ api.get() は JSON をそのまま返す
-      return await api.get<Post>(`/posts/${id}`);
+      // ✅ Axiosレスポンスではなく data(Post) だけ返す
+      const res = await api.get<Post>(`/posts/${id}`);
+      return res.data;
     },
     retry: (c, err: any) => err?.response?.status !== 403 && c < 1,
   });
@@ -30,20 +41,20 @@ export default function PostDetail() {
       setBusyPpv(true);
 
       const successUrl = window.location.href; // 購入後このページに戻す
-      const cancelUrl  = window.location.href;
+      const cancelUrl = window.location.href;
 
-      const res: any = await api.post('/payments/checkout', {
+      const res = await api.post<CheckoutResponse>('/payments/checkout', {
         postId: id,
         successUrl,
         cancelUrl,
       });
+      const payload = res.data;
 
       // Stripe Checkout URL の取得
       const url =
-        res?.url ??
-        res?.checkoutUrl ??
-        res?.sessionUrl ??
-        res?.data?.url ??
+        payload.url ??
+        payload.checkoutUrl ??
+        payload.sessionUrl ??
         null;
 
       if (url) {
@@ -52,7 +63,7 @@ export default function PostDetail() {
       }
 
       // ② sessionId + publishableKey 方式にフォールバック（必要なら）
-      const { sessionId, pubKey, publishableKey } = res || {};
+      const { sessionId, pubKey, publishableKey } = payload;
       const pk = pubKey ?? publishableKey;
       if (!sessionId || !pk) {
         throw new Error('Checkout情報が不足しています');
@@ -63,9 +74,7 @@ export default function PostDetail() {
       await (stripe as any).redirectToCheckout({ sessionId });
     } catch (e: any) {
       console.error(e);
-      alert(
-        e?.response?.data?.message ?? '決済の開始に失敗しました',
-      );
+      alert(e?.response?.data?.message ?? '決済の開始に失敗しました');
     } finally {
       setBusyPpv(false);
     }
@@ -81,26 +90,26 @@ export default function PostDetail() {
       setBusyPlan(true);
 
       const successUrl = `${window.location.origin}/creators/${post.creatorId}?subscribed=1`;
-      const cancelUrl  = `${window.location.origin}/creators/${post.creatorId}`;
+      const cancelUrl = `${window.location.origin}/creators/${post.creatorId}`;
 
-      const res: any = await api.post('/payments/checkout', {
+      const res = await api.post<CheckoutResponse>('/payments/checkout', {
         planId: post.planId,
         successUrl,
         cancelUrl,
       });
+      const payload = res.data;
 
       const url =
-        res?.url ??
-        res?.checkoutUrl ??
-        res?.sessionUrl ??
-        res?.data?.url ??
+        payload.url ??
+        payload.checkoutUrl ??
+        payload.sessionUrl ??
         null;
       if (url) {
         window.location.href = url;
         return;
       }
 
-      const { sessionId, pubKey, publishableKey } = res || {};
+      const { sessionId, pubKey, publishableKey } = payload;
       const pk = pubKey ?? publishableKey;
       if (!sessionId || !pk) {
         throw new Error('Checkout情報が不足しています');
@@ -124,7 +133,6 @@ export default function PostDetail() {
       setBusyPlan(false);
     }
   };
-
 
   if (q.isLoading) {
     return <div className="p-6 text-center text-gray-500">読み込み中…</div>;
@@ -160,18 +168,18 @@ export default function PostDetail() {
     );
   }
 
-  if (q.isError) {
+  if (q.isError || !q.data) {
     return <div className="p-6 text-red-600">読み込みに失敗しました</div>;
   }
 
-  const post = q.data!;
+  // ✅ ここで Post 型として確定
+  const post = q.data;
   const isPpv = post.visibility === 'paid_single';
   const isPlan = post.visibility === 'plan';
 
   const handleReport = async () => {
     if (!user) {
       alert('通報するにはログインが必要です');
-      // 必要なら /login に飛ばす
       return;
     }
     const reason = window.prompt('通報理由を入力してください（任意）') ?? '';
@@ -182,7 +190,7 @@ export default function PostDetail() {
       console.error(e);
       alert('通報に失敗しました。時間をおいて再度お試しください。');
     }
-  };  
+  };
 
   return (
     <article className="mx-auto max-w-2xl p-6 space-y-4">

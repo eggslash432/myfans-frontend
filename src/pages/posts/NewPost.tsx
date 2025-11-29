@@ -1,4 +1,5 @@
-// src/pages/posts/NewPost.tsx
+// front/src/pages/posts/NewPost.tsx
+
 import {useState, useEffect} from 'react';
 import { createPostSmart, getCreatorMe, getMyPlans,createPlan as createPlanApi } from '../../lib/api';
 import type { AgeRating, Visibility } from '../../shared/prisma-enums';
@@ -66,20 +67,23 @@ export default function NewPost() {
     loadPlans();
   }, []);
 
+  // useEffect 部分
   useEffect(() => {
     (async () => {
       try {
-        const res = await getCreatorMe(); // ← fetch ラッパーを使う
-        setCreator(res);                  // res.data ではなく res
+        const res = await getCreatorMe();
+        setCreator(res);
+        setCreatorErr('');
       } catch (e: any) {
-        setCreatorErr(
+        const msg =
           e?.response?.data?.message ??
           e?.message ??
-          'クリエイター情報の取得に失敗しました'
-        );
+          'クリエイター情報の取得に失敗しました';
+        console.error('getCreatorMe failed:', e);
+        setCreatorErr(msg);
       }
     })();
-  }, []);  
+  }, []); 
 
   // visibility が変わったら不要な値をクリア
   useEffect(() => {
@@ -211,18 +215,18 @@ export default function NewPost() {
     <div className="max-w-3xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">新規投稿作成</h1>
 
-      {creatorErr === 'creator not found' && (
-        <div className="p-3 border border-red-400 text-red-700">
-          クリエイター登録がまだ行われていません。
-          マイページからクリエイター登録を行ってください。
+      {creatorErr && (
+        <div className="p-3 border border-red-400 text-red-700 mb-4 text-sm">
+          クリエイター情報の取得に失敗しました。<br />
+          {creatorErr}
         </div>
       )}
 
-      {!isKycOk && (
-        <div className="p-3 border border-yellow-400 text-yellow-800">
+      {creator && !isKycOk && (
+        <div className="p-3 border border-yellow-400 text-yellow-800 mb-4 text-sm">
           本人確認（KYC）が完了していないため、投稿機能はご利用いただけません。
         </div>
-      )}      
+      )}    
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>

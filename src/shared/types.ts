@@ -123,7 +123,7 @@ export type PostDetail = {
 
 export type CreatorMeResponse = {
   publicName: string;
-  stripeKycStatus?: KycStatus | null;
+  stripeKycStatus?: KycStatus;
   isListed?: boolean;
   kyc?: {
     status?: KycStatus | null;

@@ -2,13 +2,14 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import type { JSX } from 'react';
+import type { Role } from '../shared/prisma-enums';
 
 export default function ProtectedRoute({
   children,
   role,
 }: {
   children: JSX.Element;
-  role?: 'creator' | 'fan' | 'admin';
+  role?: Role;
 }) {
   const { user, ready, restore } = useAuth();
 
