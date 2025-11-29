@@ -1,5 +1,6 @@
 // src/shared/types.ts
 
+import type { ReactNode } from "react";
 import type { KycStatus, MediaType, PaymentStatus, PayoutStatus, PublishedStatus, Role, SubStatus, Visibility } from "./prisma-enums";
 
 type PostMedia = {
@@ -144,4 +145,28 @@ export type ReportItem = {
   reason?: string | null;
   status: string;
   createdAt: string;
+};
+
+export type AdminSummary = {
+  salesMonthly: number;
+  newUsersMonthly: number;
+  reportsPending: number;
+};
+
+export type Props = {
+  children: ReactNode;
+};
+
+export type Props2 = {
+  id?: string;
+  name?: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  placeholder?: string;
+  minLength?: number;
+  required?: boolean;
+  autoComplete?: string; // "new-password" | "current-password" など
+  className?: string;
+  inputClassName?: string;
+  label?: string;
 };

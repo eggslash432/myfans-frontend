@@ -1,18 +1,19 @@
+// front/src/pages/auth/Login.tsx
+
 import { useState } from 'react'
 import { useAuth } from '../../hooks/useAuth'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import PasswordField from '../../components/PasswordField'
 
 
 export default function Login() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
   const { login } = useAuth()
   const nav = useNavigate()
-  //const location = useLocation()
-  //const from = (location.state as any)?.from || '/'
-  const [_, setLoading] = useState(false);
+
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,26 +31,59 @@ export default function Login() {
 
 
   return (
-    <div className="mx-auto max-w-md p-6">
-      <h1 className="text-xl font-bold mb-4">ログイン</h1>
-      <form onSubmit={onSubmit} className="space-y-3">
-        <input 
-          className="w-full border p-2 rounded" 
-          placeholder="Email" 
-          value={email} 
-          onChange={e=>setEmail(e.target.value)} 
-        />
-        <PasswordField
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          autoComplete="current-password" // ← ログインではこっち
-          minLength={8}
-          required
-          label="パスワード"
-        />
-        {error && <div className="text-red-600 text-sm">{error}</div>}
-        <button className="w-full py-2 border rounded">ログイン</button>
-      </form>
+    <div className="page page-auth">
+      <div className="auth-card">
+        <h1 className="page-title text-center">ログイン</h1>
+        <p className="page-description text-center mb-4">
+          メールアドレスとパスワードを入力してください。
+        </p>
+
+        {error && (
+          <div className="auth-error">{error}</div>
+        )}
+
+        <form onSubmit={onSubmit} className="auth-form">
+          <div className="form-field">
+            <label className="form-label">Email</label>
+            <input
+              type="email"
+              className="form-input"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              placeholder="creator1@example.com"
+              required
+            />
+          </div>
+
+          <div className="form-field">
+            <PasswordField
+              label="パスワード"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+              minLength={8}
+              required
+              className="form-input"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="btn-primary w-full"
+            disabled={loading}
+          >
+            {loading ? 'ログイン中…' : 'ログイン'}
+          </button>
+        </form>
+
+        <div className="auth-sub-links">
+          <span>アカウントをお持ちでない方</span>
+          <Link to="/signup" className="auth-link">
+            新規登録
+          </Link>
+        </div>
+      </div>
     </div>
-  )
+  );
 }

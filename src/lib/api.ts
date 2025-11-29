@@ -405,6 +405,11 @@ export async function adminListCreators(params?: {
   >(path);
 }
 
+// ★ 追加：審査待ちクリエイター一覧（kycStatus=pending）
+export async function adminListPendingCreators() {
+  return adminListCreators({ kycStatus: 'pending' });
+}
+
 export async function adminSetCreatorListing(
   userId: string,
   isListed: boolean,
@@ -532,12 +537,38 @@ const api = {
     );
     return { data };
   },
+
+  // ★ ここから追加 ★
+  async patch<T = any>(
+    path: string,
+    body?: any,
+    init?: Omit<RequestOptions, 'method' | 'body'>
+  ) {
+    const data = await request<T>(
+      normalizeApiPath(path),
+      { ...(init ?? {}), method: 'PATCH', body }
+    );
+    return { data };
+  },
+
+  async delete<T = any>(
+    path: string,
+    init?: Omit<RequestOptions, 'method' | 'body'>
+  ) {
+    const data = await request<T>(
+      normalizeApiPath(path),
+      { ...(init ?? {}), method: 'DELETE' }
+    );
+    return { data };
+  },  
 };
 
 // ---- Admin ラッパー ----
 export const admin = {
   listCreators: adminListCreators,
   setCreatorListing: adminSetCreatorListing,
+
+  listPendingCreators : adminListPendingCreators,
 
   listPosts: adminListPosts,
   deletePost: adminDeletePost,

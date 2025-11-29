@@ -1,0 +1,436 @@
+/* front/src/styles/global.css */
+
+:root {
+  --color-bg-root: #020617;
+  --color-app-bg: #f9fafb;
+  --color-surface: #ffffff;
+  --color-primary: #8b5cf6;
+  --color-primary-soft: #ede9fe;
+  --color-text-main: #111827;
+  --color-text-muted: #6b7280;
+  --color-border: #e5e7eb;
+  --shadow-soft: 0 10px 25px rgba(15, 23, 42, 0.08);
+  --radius-lg: 16px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--color-bg-root);
+  color: var(--color-text-main);
+}
+
+/* ===== アプリ全体（中央にスマホ画面） ===== */
+
+/* 背景：ブラウザ全体を薄グレーに */
+.app-root {
+  min-height: 100vh;
+  background: #f2f2f4;
+  display: flex;
+  justify-content: center;
+}
+
+/* スマホ本体っぽい白いパネル */
+.app-shell {
+  width: 100%;
+  max-width: 480px;          /* スマホ横幅の上限 */
+  min-height: 100vh;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+}
+
+/* PC のときだけカードっぽくする */
+@media (min-width: 768px) {
+  .app-shell {
+    margin: 12px 0;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+  }
+}
+
+/* 中身（Routes が入る部分）のスクロール領域 */
+.app-container {
+  flex: 1;
+  padding: 12px 12px 72px; /* 下にボトムナビ分の余白 */
+  overflow-y: auto;
+}
+
+/* コンテンツ部分。下ナビに被らないように余白をとる */
+.app-main {
+  flex: 1;
+  padding: 16px 12px 78px;  /* ← bottom-nav の高さぶん + α */
+}
+
+/* ===== モバイルヘッダー ===== */
+
+.header-mobile {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: rgba(249, 250, 251, 0.96);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.header-mobile-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+}
+
+.header-title {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-logo {
+  font-weight: 700;
+  font-size: 18px;
+  color: #ef4444;         /* Myfans っぽい赤 */
+  text-decoration: none;
+}
+
+.header-sub {
+  margin-left: 6px;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* ===== ボトムタブナビ ===== */
+
+.bottom-nav {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 0;
+  z-index: 40;
+  width: 100%;
+  max-width: 640px;
+  padding: 6px 8px 10px;
+  background: transparent;       /* 外側は透明でOK */
+  pointer-events: none;          /* 内側バーだけクリック可能に */
+}
+
+.bottom-nav-bar {
+  pointer-events: auto;
+  background: #ffffff;
+  border-radius: 9999px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.25);
+  display: flex;
+  justify-content: space-around;
+  padding: 6px 4px;
+}
+
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 0.7rem;
+  text-decoration: none;
+  color: var(--color-text-muted);
+}
+
+.bottom-nav-item span.icon {
+  font-size: 1.1rem;
+}
+
+.bottom-nav-item-active {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+
+/* フッターは小さめ */
+.app-footer {
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 10px;
+  color: #9ca3af;
+  padding: 6px 0 4px;
+}
+
+/* ===== カードなど（おまけ） ===== */
+
+.card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: 16px 18px;
+}
+
+.section-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
+.section-subtitle {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+/* 共通ボタン（Button.tsx で使う） */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border-radius: 9999px;
+  border: none;
+  padding: 0.5rem 1.1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.15s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  color: #fff;
+  box-shadow: 0 10px 25px rgba(147, 51, 234, 0.35);
+}
+
+.btn-outline {
+  background: #fff;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary-soft);
+}
+
+.btn-sm {
+  padding: 0.35rem 0.9rem;
+  font-size: 0.8rem;
+}
+
+.footer-root {
+  margin-top: auto;
+  padding: 8px 0 14px;
+  font-size: 11px;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.footer-main {
+  line-height: 1.4;
+}
+
+.footer-admin {
+  margin-top: 4px;
+}
+
+.footer-admin-link {
+  color: var(--color-text-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+/* --- ページ共通スタイル（中身用） --- */
+.page {
+  padding-top: 8px;
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.page-description {
+  font-size: 13px;
+  color: #4b5563;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* ====== 認証ページ共通レイアウト ====== */
+
+.page-auth {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 32px;
+}
+
+@media (min-width: 768px) {
+  .page-auth {
+    align-items: center;
+  }
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 380px;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 20px 18px 24px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+}
+
+/* 認証用タイトルだけちょっと小さめに */
+.page-auth .page-title {
+  font-size: 18px;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+/* ----- フォーム部品 ----- */
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-label {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.form-input {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  padding: 9px 11px;
+  font-size: 14px;
+  outline: none;
+  background: #f9fafb;
+  transition: border-color 0.15s ease, background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.form-input:focus {
+  border-color: #ff6aa0;               /* Myfansっぽいピンク */
+  background: #ffffff;
+  box-shadow: 0 0 0 1px rgba(255, 106, 160, 0.3);
+}
+
+/* PasswordField 内の input にも適用したい場合 */
+.password-field input {
+  /* PasswordField コンポーネントの root クラス名に合わせて調整 */
+  border-radius: 10px;
+}
+
+/* パスワードフィールド用 */
+
+.form-password {
+  width: 100%;
+}
+
+/* パスワード欄まわり */
+.form-password .password-input-wrapper {
+  position: relative;
+}
+
+.form-password .password-input-wrapper .form-input {
+  padding-right: 2.8rem; /* 右側にアイコン分の余白 */
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.85rem;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;         /* ← Heroicons の stroke 色（グレー） */
+}
+
+/* Heroicons の目アイコンをはっきり見えるサイズにする */
+.password-toggle .password-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+  stroke-width: 1.7;      /* 線を少し太めに */
+}
+
+/* 補足説明のスタイル（既にあれば不要） */
+.form-password .form-hint {
+  margin-top: 4px;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* ----- ボタン ----- */
+
+.btn-primary {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  background: linear-gradient(135deg, #ff4b8b, #ff3366);
+  color: #ffffff;
+  box-shadow: 0 6px 16px rgba(255, 51, 102, 0.35);
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.1s ease;
+}
+
+.btn-primary:active {
+  transform: translateY(1px);
+  box-shadow: 0 3px 10px rgba(255, 51, 102, 0.45);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: default;
+  box-shadow: none;
+}
+
+/* ----- エラー／サブリンク ----- */
+
+.auth-error {
+  margin-top: 4px;
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  color: #b91c1c;
+  background: #fee2e2;
+  border-radius: 10px;
+}
+
+.auth-sub-links {
+  margin-top: 16px;
+  font-size: 12px;
+  color: #6b7280;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.auth-link {
+  color: #ff3366;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+}

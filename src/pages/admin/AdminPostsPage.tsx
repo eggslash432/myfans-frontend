@@ -1,6 +1,6 @@
 // src/pages/admin/AdminPostsPage.tsx
 import { useEffect, useState } from 'react';
-import { api } from '../../lib/api';
+import { api, ApiError } from '../../lib/api';
 
 type AdminPost = {
   id: string;
@@ -29,11 +29,18 @@ export default function AdminPostsPage() {
     try {
       setLoading(true);
       setErr('');
-      const res = await api.get('/admin/posts');
-      // api は Axios のインスタンス想定なので data を取る
+      const res = await api.get<AdminPost[]>('/admin/posts');
       setList(res.data);
     } catch (e: any) {
-      setErr(e?.message ?? '投稿一覧の取得に失敗しました');
+      // ★ 404（API 未実装）のときは「空リスト」として扱う
+      if (e instanceof ApiError && e.status === 404) {
+        console.warn('/admin/posts が未実装のため空リスト扱いにします', e);
+        setList([]);
+        setErr('');
+      } else {
+        console.error(e);
+        setErr(e?.message ?? '投稿一覧の取得に失敗しました');
+      }
     } finally {
       setLoading(false);
     }

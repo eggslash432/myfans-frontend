@@ -1,71 +1,117 @@
+// front/src/pages/admin/CreatorsAdminPage.tsx
+
 import { useEffect, useState } from 'react';
-import { admin } from '../../lib/api';
+import { adminListPendingCreators, adminSetCreatorListing, ApiError } from '../../lib/api';
+
+type PendingCreator = {
+  userId: string;
+  email: string;
+  publicName: string | null;
+  createdAt: string;
+  stripeKycStatus?: string | null;
+};
 
 export default function CreatorsAdminPage() {
-  const [items, setItems] = useState<any[]>([]);
+  const [list, setList] = useState<PendingCreator[]>([]);
   const [loading, setLoading] = useState(true);
-  const [msg, setMsg] = useState<string | null>(null);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useState('');
 
   const load = async () => {
-    setLoading(true);
-    setErr(null);
     try {
-      const res = await admin.listPendingCreators();
-      setItems(Array.isArray(res?.items) ? res.items : []);
+      setLoading(true);
+      setErr('');
+      const data = await adminListPendingCreators();
+      setList(data);
     } catch (e: any) {
-      setErr(e?.message ?? '読み込み失敗');
+      // ★ バックエンド未実装で 404 のときは「審査待ちなし」として扱う
+      if (e instanceof ApiError && e.status === 404) {
+        console.warn('/admin/creators?kycStatus=pending が未実装のため空リスト扱い', e);
+        setList([]);
+        setErr('');
+      } else {
+        console.error(e);
+        setErr(e?.message ?? 'クリエイター一覧の取得に失敗しました');
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    void load();
+  }, []);
 
-  const approve = async (userId: string) => {
+  const handleApprove = async (userId: string) => {
+    if (!confirm('このクリエイターを掲載許可にしますか？')) return;
     try {
-      await admin.setCreatorListing(userId, true);
-      setMsg('掲載に変更しました');
+      await adminSetCreatorListing(userId, true);
       await load();
     } catch (e: any) {
-      setErr(e?.message ?? '承認に失敗しました');
+      console.error(e);
+      alert(e?.message ?? '更新に失敗しました');
     }
   };
-
-  const unlist = async (userId: string) => {
-    try {
-      await admin.setCreatorListing(userId, false);
-      setMsg('非掲載に変更しました');
-      await load();
-    } catch (e: any) {
-      setErr(e?.message ?? '非掲載に失敗しました');
-    }
-  };
-
-  if (loading) return <div className="p-6">読み込み中...</div>;
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">クリエイター承認</h1>
+    <div className="page max-w-md mx-auto">
+      {/* タイトル */}
+      <h1 className="page-title">クリエイター承認</h1>
 
-      {msg && <div className="mb-3 text-green-700">{msg}</div>}
-      {err && <div className="mb-3 text-red-600">{err}</div>}
+      {/* サブ説明文（お好みで） */}
+      <p className="page-description">
+        クリエイターとして登録申請されたユーザーの一覧です。審査のうえ掲載を許可してください。
+      </p>
 
-      {items.length === 0 ? (
-        <p className="text-gray-500">審査待ちはありません。</p>
-      ) : (
-        <div className="space-y-3">
-          {items.map((c) => (
-            <div key={c.id} className="border rounded p-4 flex items-start justify-between">
-              <div>
-                <div className="font-semibold">{c.displayName} <span className="text-xs text-gray-500">({c.email})</span></div>
-                {c.bio && <div className="text-sm text-gray-600 mt-1">{c.bio}</div>}
-                <div className="text-xs text-gray-400 mt-1">登録: {new Date(c.createdAt).toLocaleString()}</div>
+      {/* ステータス表示 */}
+      {loading && (
+        <div className="mt-2 text-xs text-gray-500 text-center">
+          読み込み中...
+        </div>
+      )}
+
+      {err && (
+        <div className="mt-2 text-xs text-red-600 text-center">
+          {err}
+        </div>
+      )}
+
+      {!loading && !err && list.length === 0 && (
+        <div className="mt-4 text-sm text-center text-gray-600">
+          現在、審査待ちのクリエイターはいません。
+        </div>
+      )}
+
+      {/* 一覧カード */}
+      {!loading && list.length > 0 && (
+        <div className="mt-4 space-y-3">
+          {list.map((c) => (
+            <div
+              key={c.userId}
+              className="bg-white border border-gray-100 rounded-lg px-3 py-2 shadow-sm flex justify-between items-center"
+            >
+              <div className="mr-2">
+                <div className="text-sm font-semibold">
+                  {c.publicName || '（表示名未設定）'}
+                </div>
+                <div className="text-[11px] text-gray-500">
+                  {c.email}
+                </div>
+                <div className="mt-1 text-[11px] text-gray-500">
+                  申請日：
+                  {new Date(c.createdAt).toLocaleString()}
+                  <span className="ml-1">
+                    / KYC: {c.stripeKycStatus ?? 'pending'}
+                  </span>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <button className="px-3 py-2 rounded bg-black text-white" onClick={() => approve(c.id)}>掲載にする</button>
-                <button className="px-3 py-2 rounded border" onClick={() => unlist(c.id)}>非掲載にする</button>
-              </div>
+
+              <button
+                type="button"
+                className="flex-shrink-0 px-3 py-1 text-xs rounded-full bg-black text-white"
+                onClick={() => handleApprove(c.userId)}
+              >
+                掲載を許可
+              </button>
             </div>
           ))}
         </div>

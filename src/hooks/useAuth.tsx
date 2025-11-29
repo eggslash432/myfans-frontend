@@ -10,7 +10,7 @@ type AuthContextType = {
   user: User | null;
   ready: boolean;
   login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, role?: 'fan' | 'creator') => Promise<void>;
+  signup: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   restore: (force?: boolean) => Promise<void>;
 };
@@ -74,8 +74,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await restore(true);                  // 直後に /me を再取得してヘッダー反映
   };
 
-  const signup = async (email: string, password: string, role: 'fan' | 'creator' = 'fan') => {
-    await api.signup({ email, password, role });
+  const signup = async (email: string, password: string) => {
+    await api.signup({ email, password, role: 'fan' });
     await login(email, password);         // サインアップ後にそのままログイン
   };
 

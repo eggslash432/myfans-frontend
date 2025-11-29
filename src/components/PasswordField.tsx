@@ -1,99 +1,65 @@
-// components/PasswordField.tsx
-import { useState, useRef } from "react";
+// front/src/components/PasswordField.tsx
+import { useState } from 'react';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 type Props = {
-  id?: string;
-  name?: string;
+  label?: string;
   value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  placeholder?: string;
+  onChange: React.ChangeEventHandler<HTMLInputElement>;
+  autoComplete?: string;
   minLength?: number;
   required?: boolean;
-  autoComplete?: string; // "new-password" | "current-password" など
   className?: string;
-  label?: string;
+  inputClassName?: string;
 };
 
 export default function PasswordField({
-  id = "password",
-  name = "password",
+  label = 'パスワード',
   value,
   onChange,
-  placeholder = "パスワード",
-  minLength = 8,
-  required = true,
-  autoComplete = "new-password",
-  className = "",
-  label = "パスワード",
+  autoComplete,
+  minLength,
+  required,
+  className = '',
+  inputClassName = '',
 }: Props) {
-  const [revealed, setRevealed] = useState(false);
-  const btnRef = useRef<HTMLButtonElement | null>(null);
+  const [show, setShow] = useState(false);
 
-  const show = () => setRevealed(true);
-  const hide = () => setRevealed(false);
+  const handleToggle = () => {
+    setShow((prev) => !prev);
+  };
 
   return (
-    <div className={`w-full ${className}`}>
-      <label htmlFor={id} className="block mb-1 text-sm text-gray-700">
-        {label}
-      </label>
+    <div className={`form-password ${className}`}>
+      {label && <label className="form-label">{label}</label>}
 
-      <div className="relative">
+      <div className="password-input-wrapper">
         <input
-          id={id}
-          name={name}
-          type={revealed ? "text" : "password"}
+          type={show ? 'text' : 'password'}
+          className={`form-input ${inputClassName}`}
           value={value}
           onChange={onChange}
-          placeholder={placeholder}
+          autoComplete={autoComplete}
           minLength={minLength}
           required={required}
-          autoComplete={autoComplete}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
 
-        {/* 目アイコンボタン（長押しで表示 / 離したら非表示） */}
         <button
-          ref={btnRef}
           type="button"
-          onMouseDown={(e) => {
-            e.preventDefault(); // フォーカス移動を防ぐ
-            show();
-          }}
-          onMouseUp={hide}
-          onMouseLeave={hide}
-          onTouchStart={(e) => {
-            e.preventDefault();
-            show();
-          }}
-          onTouchEnd={hide}
-          onBlur={hide}
-          aria-label={revealed ? "パスワードを隠す" : "パスワードを表示"}
-          title="長押しで表示"
-          className="absolute inset-y-0 right-0 flex items-center pr-2 text-gray-500 hover:text-gray-700"
+          className="password-toggle"
+          onClick={handleToggle}
+          aria-label={show ? 'パスワードを隠す' : 'パスワードを表示'}
         >
-          {/* アイコンはSVGで依存なし。revealedで切替 */}
-          {revealed ? (
-            // eye-off
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5"
-              viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M3 3l18 18" />
-              <path d="M10.58 10.58A2 2 0 0012 14a2 2 0 001.42-.58M9.88 4.24A10.94 10.94 0 0121 12a11.05 11.05 0 01-2.17 3.17" />
-              <path d="M6.12 6.12A11.05 11.05 0 003 12a10.94 10.94 0 0011.12 7.76" />
-            </svg>
+          {show ? (
+            <EyeSlashIcon className="password-icon" />
           ) : (
-            // eye
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5"
-              viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
+            <EyeIcon className="password-icon" />
           )}
         </button>
       </div>
 
-      <p className="mt-1 text-xs text-gray-500">
-        目のボタンを<strong>長押し</strong>している間だけ表示されます。
+      <p className="form-hint">
+        目のボタンをタップすると表示／非表示を切り替えられます。
       </p>
     </div>
   );
