@@ -196,6 +196,13 @@ export default function PostDetail() {
     <article className="mx-auto max-w-2xl p-6 space-y-4">
       <h1 className="text-2xl font-bold">{post.title}</h1>
 
+      {/* ▼ 投稿者表示（creator がいなければ「運営」扱い） */}
+      <div className="text-sm text-gray-500">
+        {post.creator?.publicName
+          ? `by ${post.creator.publicName}`
+          : 'by 運営'}
+      </div>      
+
       {/* ▼ 種類・価格ラベル */}
       <div className="text-sm text-gray-600 space-x-2">
         {isPpv && (

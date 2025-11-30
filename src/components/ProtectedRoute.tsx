@@ -7,9 +7,11 @@ import type { Role } from '../shared/prisma-enums';
 export default function ProtectedRoute({
   children,
   role,
+  roles,
 }: {
   children: JSX.Element;
   role?: Role;
+  roles?: Role[];
 }) {
   const { user, ready, restore } = useAuth();
 
@@ -32,6 +34,11 @@ export default function ProtectedRoute({
   if (role && user.role !== role) {
     return <Navigate to="/" replace />;
   }
+
+  // 複数ロール指定
+  if (roles && !roles.includes(user.role)) {
+    return <Navigate to="/" replace />;
+  }  
 
   // OK
   return children;

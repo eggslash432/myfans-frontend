@@ -1,5 +1,3 @@
-// front/src/pages/posts/NewPost.tsx
-
 import { useState, useEffect } from 'react';
 import {
   createPostSmart,
@@ -10,6 +8,7 @@ import {
 import type { AgeRating, Visibility } from '../../shared/prisma-enums';
 import MediaUploader from '../../components/MediaUploader';
 import type { Plan } from '../../shared/types';
+import { useAuth } from '../../hooks/useAuth';   // ★ 追加
 
 async function fetchMyPlans(): Promise<Plan[]> {
   try {
@@ -36,6 +35,10 @@ function prune<T>(obj: T): T {
 }
 
 export default function NewPost() {
+  const { user } = useAuth();                          // ★ 追加
+  const isAdmin = user?.role === 'admin';              // ★ 追加
+  const isCreator = user?.role === 'creator';          // ★ 追加
+
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [visibility, setVisibility] = useState<Visibility>('free');
@@ -60,7 +63,7 @@ export default function NewPost() {
   const [creator, setCreator] = useState<any | null>(null);
   const [creatorErr, setCreatorErr] = useState('');
 
-  // 初回：プラン取得
+  // 初回：プラン取得（admin でも呼んでも害はないが、そのまま）
   useEffect(() => {
     const loadPlansOnce = async () => {
       const plans = await fetchMyPlans();
@@ -69,8 +72,14 @@ export default function NewPost() {
     loadPlansOnce();
   }, []);
 
-  // クリエイター情報取得
+  // クリエイター情報取得（★ admin のときは呼ばない）
   useEffect(() => {
+    if (isAdmin) {
+      setCreator(null);
+      setCreatorErr('');
+      return;
+    }
+
     (async () => {
       try {
         const res = await getCreatorMe();
@@ -85,7 +94,14 @@ export default function NewPost() {
         setCreatorErr(msg);
       }
     })();
-  }, []);
+  }, [isAdmin]);
+
+  // admin の場合は常に free に固定（保険）
+  useEffect(() => {
+    if (isAdmin) {
+      setVisibility('free');
+    }
+  }, [isAdmin]);
 
   // visibility が変わったら不要な値をクリア
   useEffect(() => {
@@ -193,7 +209,7 @@ export default function NewPost() {
 
   const kyc = creator?.kyc ?? {};
   const kycStatus = kyc.status ?? creator?.stripeKycStatus ?? 'pending';
-  const isKycOk = kycStatus === 'approved';
+  const isKycOk = isAdmin ? true : kycStatus === 'approved';   // ★ admin は常にOK扱い
 
   return (
     <div className="page">
@@ -201,8 +217,8 @@ export default function NewPost() {
         {/* タイトル */}
         <h1 className="page-title">新規投稿作成</h1>
 
-        {/* クリエイター取得エラー */}
-        {creatorErr && (
+        {/* クリエイター取得エラー（★ admin のときは表示しない） */}
+        {!isAdmin && creatorErr && (
           <section className="card">
             <div className="text-sm text-red-700">
               <div className="font-semibold mb-1">
@@ -213,7 +229,7 @@ export default function NewPost() {
           </section>
         )}
 
-        {/* KYC 未完了の注意 */}
+        {/* KYC 未完了の注意（★ creator のときだけ効く） */}
         {creator && !isKycOk && (
           <section className="card border border-yellow-300 bg-yellow-50/80">
             <p className="text-sm text-yellow-800">
@@ -270,6 +286,7 @@ export default function NewPost() {
                     name="visibility"
                     checked={visibility === 'plan'}
                     onChange={() => setVisibility('plan')}
+                    disabled={isAdmin}                     // ★ admin は選べない
                   />
                   <span>有料（購読者限定）</span>
                 </label>
@@ -280,10 +297,18 @@ export default function NewPost() {
                     name="visibility"
                     checked={visibility === 'paid_single'}
                     onChange={() => setVisibility('paid_single')}
+                    disabled={isAdmin}                     // ★ admin は選べない
                   />
                   <span>PPV</span>
                 </label>
               </div>
+
+              {/* admin 向けの注記 */}
+              {isAdmin && (
+                <p className="mt-1 text-xs text-gray-500">
+                  管理者アカウントでは無料投稿のみ作成できます（有料販売・購読は不可）。
+                </p>
+              )}
 
               {/* プラン選択 */}
               {visibility === 'plan' && (
@@ -386,12 +411,12 @@ export default function NewPost() {
             <div className="pt-2">
               <button
                 type="submit"
-                disabled={!isKycOk || submitting}
+                disabled={(!isKycOk && !isAdmin) || submitting}   // ★ admin はKYC無視
                 className="btn btn-primary w-full sm:w-auto"
               >
                 {submitting ? '投稿中…' : '投稿する'}
               </button>
-              {!isKycOk && (
+              {!isAdmin && !isKycOk && (
                 <p className="mt-2 text-xs text-gray-500">
                   ※ 本人確認（KYC）が完了すると投稿を公開できるようになります。
                 </p>

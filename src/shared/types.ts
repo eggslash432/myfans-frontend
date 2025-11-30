@@ -21,9 +21,23 @@ export type Post = {
   isPlan: boolean;
   visibility: Visibility;
   creatorId: string;
+  creator?: { publicName?: string | null }
   planId?: string | null;
   priceJpy?: number | null;
   media?: PostMedia[];
+};
+
+export type PostItem = {
+  id: string;
+  title: string;
+  coverUrl?: string | null;
+  isFree?: boolean | null;
+  price?: number | null;          // 円
+  isAccessible?: boolean | null;
+  excerpt?: string | null;
+  debugFlags?: string;
+  visibility?: Visibility;
+  creatorName?: string | null;
 };
 
 export type User = {
@@ -93,7 +107,7 @@ export type PostSummary = {
   publishedStatus: PublishedStatus;
   publishedAt?: string | null;
   createdAt: string;
-  creatorId: string;
+  creatorId?: string | null;
   creatorName?: string;
   reportsCount?: number;
 };
@@ -108,7 +122,7 @@ export type PostDetail = {
   publishedStatus: PublishedStatus;
   publishedAt?: string | null;
   createdAt: string;
-  creatorId: string;
+  creatorId?: string | null;
   creator?: {
     publicName?: string | null;
   };
