@@ -2,14 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { adminListPendingCreators, adminSetCreatorListing, ApiError } from '../../lib/api';
-
-type PendingCreator = {
-  userId: string;
-  email: string;
-  publicName: string | null;
-  createdAt: string;
-  stripeKycStatus?: string | null;
-};
+import type { PendingCreator } from '../../shared/types';
 
 export default function CreatorsAdminPage() {
   const [list, setList] = useState<PendingCreator[]>([]);
@@ -23,7 +16,6 @@ export default function CreatorsAdminPage() {
       const data = await adminListPendingCreators();
       setList(data);
     } catch (e: any) {
-      // ★ バックエンド未実装で 404 のときは「審査待ちなし」として扱う
       if (e instanceof ApiError && e.status === 404) {
         console.warn('/admin/creators?kycStatus=pending が未実装のため空リスト扱い', e);
         setList([]);
@@ -54,15 +46,12 @@ export default function CreatorsAdminPage() {
 
   return (
     <div className="page max-w-md mx-auto">
-      {/* タイトル */}
       <h1 className="page-title">クリエイター承認</h1>
 
-      {/* サブ説明文（お好みで） */}
       <p className="page-description">
         クリエイターとして登録申請されたユーザーの一覧です。審査のうえ掲載を許可してください。
       </p>
 
-      {/* ステータス表示 */}
       {loading && (
         <div className="mt-2 text-xs text-gray-500 text-center">
           読み込み中...
@@ -81,13 +70,13 @@ export default function CreatorsAdminPage() {
         </div>
       )}
 
-      {/* 一覧カード */}
       {!loading && list.length > 0 && (
         <div className="mt-4 space-y-3">
           {list.map((c) => (
             <div
               key={c.userId}
-              className="bg-white border border-gray-100 rounded-lg px-3 py-2 shadow-sm flex justify-between items-center"
+              className="card flex justify-between items-center"
+              style={{ padding: '10px 14px' }} // ちょっとだけ詰める
             >
               <div className="mr-2">
                 <div className="text-sm font-semibold">
@@ -105,9 +94,10 @@ export default function CreatorsAdminPage() {
                 </div>
               </div>
 
+              {/* ★ ここを変更：共通ボタンスタイルを使用 */}
               <button
                 type="button"
-                className="flex-shrink-0 px-3 py-1 text-xs rounded-full bg-black text-white"
+                className="btn btn-primary btn-sm"
                 onClick={() => handleApprove(c.userId)}
               >
                 掲載を許可

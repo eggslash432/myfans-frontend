@@ -376,7 +376,7 @@ export async function getCreatorPayoutHistory() {
 
 export async function adminListCreators(params?: {
   isListed?: boolean;
-  kycStatus?: KycStatus | 'pending' | 'rejected';
+  kycStatus?: KycStatus;
 }) {
   const qs = new URLSearchParams();
   if (params?.isListed !== undefined) {
@@ -408,7 +408,10 @@ export async function adminListCreators(params?: {
 
 // ★ 追加：審査待ちクリエイター一覧（kycStatus=pending）
 export async function adminListPendingCreators() {
-  return adminListCreators({ kycStatus: 'pending' });
+  return adminListCreators({ 
+    isListed: false,
+    kycStatus: 'approved',
+  });
 }
 
 export async function adminSetCreatorListing(

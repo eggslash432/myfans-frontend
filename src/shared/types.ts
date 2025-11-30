@@ -170,3 +170,11 @@ export type Props2 = {
   inputClassName?: string;
   label?: string;
 };
+
+export type PendingCreator = {
+  userId: string;
+  email: string;
+  publicName: string | null;
+  createdAt: string;
+  stripeKycStatus?: string | null;
+};

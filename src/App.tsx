@@ -12,7 +12,7 @@ import Cancel from './pages/checkout/Cancel';
 import ProtectedRoute from './components/ProtectedRoute';
 import NewPost from './pages/posts/NewPost';
 import MyPlansPage from './pages/Plans';
-import CreatorsAdminPage from './pages/admin/CreatorsAdminPage';
+import CreatorsAdminPage from './pages/admin/AdminCreatorsPage';
 import CreatorSettingsPage from './pages/creators/settings';
 import AdminPayoutsPage from './pages/admin/AdminPayoutsPage';
 import AdminPostsPage from './pages/admin/AdminPostsPage';
