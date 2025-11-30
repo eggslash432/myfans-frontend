@@ -1,4 +1,4 @@
-// myfans-frontend/src/pages/MyPage.tsx
+// front/src/pages/MyPage.tsx
 
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -6,7 +6,7 @@ import { api } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 
 export default function MyPage() {
-  const { user, ready } = useAuth();
+  const { user, ready, restore } = useAuth();
   const [summary, setSummary] = useState<any>(null);
   const [err, setErr] = useState<string>('');
   const [posts, setPosts] = useState<any[]>([]);
@@ -72,10 +72,16 @@ export default function MyPage() {
         (user as any).displayName ??
         (user.email ? user.email.split('@')[0] : '新しいクリエイター');
 
-      await api.applyCreator({ publicName });
+      // ★ 戻り値（creator オブジェクト）を受け取る
+      const created = await api.applyCreator({ publicName });  
+      
+      // ★ state を即座に更新して画面を切り替える
+      setCreator(created);    
+      // ★ ここで /auth/me を叩きなおして role=creator を反映
+      await restore(true);        
 
-      alert('クリエイター登録が完了しました');
       await loadCreator();
+      alert('クリエイター登録が完了しました');
     } catch (e: any) {
       console.error('applyCreator failed', e);
       alert(e?.message ?? '登録に失敗しました');

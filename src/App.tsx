@@ -51,9 +51,6 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/creators/payouts" element={<PayoutsPage />} />
-        <Route path="/mypage/plans" element={<MyPlansPage />} />
-        <Route path="/creators/:id" element={<CreatorPage />} />
         <Route
           path="/posts/new"
           element={
@@ -62,6 +59,9 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/creators/payouts" element={<PayoutsPage />} />
+        <Route path="/mypage/plans" element={<MyPlansPage />} />
+        <Route path="/creators/:id" element={<CreatorPage />} />
         <Route path="/posts/:id" element={<PostDetailPage />} />
         <Route path="/checkout/success" element={<Success />} />
         <Route path="/checkout/cancel" element={<Cancel />} />
