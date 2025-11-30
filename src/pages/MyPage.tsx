@@ -108,6 +108,33 @@ export default function MyPage() {
     );
   if (!summary) return <div className="p-4">読み込み中...</div>;
 
+  const creatorMenuItems = [
+    {
+      label: '投稿管理',
+      description: '投稿の一覧・編集・公開設定',
+      path: '/creator/posts',
+      icon: '📝',
+    },
+    {
+      label: 'プラン設定',
+      description: '月額プランの作成・編集',
+      path: '/creator/plans',
+      icon: '📦',
+    },
+    {
+      label: '出金管理',
+      description: '売上の振込口座・出金履歴',
+      path: '/creator/payouts',
+      icon: '💰',
+    },
+    {
+      label: '売上レポート',
+      description: '期間別の売上・購読状況',
+      path: '/creator/analytics',
+      icon: '📊',
+    },
+  ];
+
   const subscriptionCount = (summary.subscriptions || []).length;
   const paymentCount = (summary.payments || []).length;
 
@@ -174,33 +201,28 @@ export default function MyPage() {
             </div>
           </section>
 
+          {/* クリエイターメニュー */}
           <section className="card space-y-3">
             <div className="section-title">クリエイターメニュー</div>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <button
-                onClick={() => navigate('/creator/posts')}
-                className="px-3 py-2 rounded border border-gray-200 bg-white text-gray-700"
-              >
-                投稿管理
-              </button>
-              <button
-                onClick={() => navigate('/creator/plans')}
-                className="px-3 py-2 rounded border border-gray-200 bg-white text-gray-700"
-              >
-                プラン設定
-              </button>
-              <button
-                onClick={() => navigate('/creator/payouts')}
-                className="px-3 py-2 rounded border border-gray-200 bg-white text-gray-700"
-              >
-                出金管理
-              </button>
-              <button
-                onClick={() => navigate('/creator/analytics')}
-                className="px-3 py-2 rounded border border-gray-200 bg-white text-gray-700"
-              >
-                売上レポート
-              </button>
+            <p className="section-subtitle">
+              よく使う機能に素早くアクセスできます。
+            </p>
+
+            <div className="mt-1 space-y-2">
+              {creatorMenuItems.map((item) => (
+                <button
+                  key={item.path}
+                  type="button"
+                  onClick={() => navigate(item.path)}
+                  className="btn btn-outline w-full justify-between"
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="text-lg">{item.icon}</span>
+                    <span className="text-sm font-semibold">{item.label}</span>
+                  </span>
+                  <span className="text-xs text-gray-400">›</span>
+                </button>
+              ))}
             </div>
           </section>
         </>
