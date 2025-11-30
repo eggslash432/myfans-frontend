@@ -1,5 +1,7 @@
 // front/src/pages/creators/settings.tsx
+
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 import type { CreatorMeResponse } from '../../shared/types';
 
@@ -8,6 +10,8 @@ export default function CreatorSettingsPage() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string>('');
 
+  const navigate = useNavigate();
+
   // クリエイター情報取得
   useEffect(() => {
     (async () => {
@@ -15,27 +19,33 @@ export default function CreatorSettingsPage() {
         const res = await api.get('/creators/me');
         setCreator(res.data);
       } catch (e: any) {
-        // バックエンド側で "creator not found" を投げている想定
         const msg = e?.response?.data?.message ?? e?.message ?? '取得に失敗しました';
         setErr(msg);
       }
     })();
   }, []);
 
+  // ★ 本人確認開始：Stripe Connect へ飛ばす
   const handleStartKyc = async () => {
     setLoading(true);
+    setErr('');
     try {
-      const { url } = await api.startCreatorKyc();
+      const { url } = await api.startCreatorKyc();  // POST /creators/me/kyc/start
+      // 戻ってこない前提なので location.href で遷移
       window.location.href = url;
     } catch (e: any) {
-      const msg = e?.response?.data?.message ?? e?.message ?? 'KYC開始に失敗しました';
+      // fetch ラッパ（ApiError）対応
+      const msg =
+        e?.body?.message ??
+        e?.message ??
+        'KYC開始に失敗しました';
       setErr(msg);
     } finally {
       setLoading(false);
     }
   };
 
-  // ① クリエイター未登録の場合（特別メッセージ）
+  // ① クリエイター未登録時
   if (err === 'creator not found') {
     return (
       <div className="p-4 text-red-600">
@@ -45,69 +55,71 @@ export default function CreatorSettingsPage() {
     );
   }
 
-  // ② その他のエラー
+  // ② その他エラー
   if (err && !creator) {
     return <div className="p-4 text-red-600">{err}</div>;
   }
 
   // ③ ローディング
   if (!creator) {
-    return <div>読み込み中...</div>;
+    return <div className="p-4">読み込み中...</div>;
   }
 
-  // ④ KYC 情報の判定
+  // ④ KYC ステータス
   const kyc = creator.kyc || {};
-  const kycStatus =
-    kyc.status ?? creator.stripeKycStatus ?? 'pending';
-
+  const kycStatus = kyc.status ?? creator.stripeKycStatus ?? 'pending';
   const isKycOk = kycStatus === 'approved';
 
   return (
-    <div className="p-6 space-y-4">
-      <h1 className="text-2xl font-bold">クリエイター設定</h1>
+    <div className="p-6 space-y-5 page">
+      <h1 className="page-title">クリエイター設定</h1>
 
-      {/* KYC ステータス表示 */}
-      <div>
-        本人確認ステータス:{' '}
-        {kycStatus === 'approved' ? (
-          <span style={{ color: 'green' }}>承認済み</span>
-        ) : (
-          <span style={{ color: 'orange' }}>未完了</span>
-        )}
-      </div>
+      <section className="card space-y-3">
+        <div className="section-title">本人確認ステータス</div>
 
-      {/* Stripe 側エラー表示（あれば） */}
-      {kyc.disabledReason && (
-        <div className="p-3 border border-red-400 text-red-700">
-          Stripe 側のエラー / 制限: {kyc.disabledReason}
+        <div className="text-sm">
+          {kycStatus === 'approved' ? (
+            <span className="font-semibold text-green-600">承認済み</span>
+          ) : (
+            <span className="font-semibold text-orange-500">未完了</span>
+          )}
         </div>
-      )}
 
-      {/* KYC 未完了なら案内＋開始ボタン */}
-      {kycStatus !== 'approved' && (
-        <div className="space-y-2">
-          <p className="text-sm text-gray-700">
-            本人確認を完了すると、投稿・プラン作成・出金が利用できるようになります。
-          </p>
+        {/* Stripe 側のエラー */}
+        {kyc.disabledReason && (
+          <div className="p-3 border border-red-300 bg-red-50 text-red-700 rounded-lg text-sm">
+            Stripe 側のエラー / 制限：{kyc.disabledReason}
+          </div>
+        )}
+
+        {/* KYC 未完了時のみ表示 */}
+        {kycStatus !== 'approved' && (
+          <div className="space-y-2">
+            <p className="text-sm text-gray-700">
+              本人確認を完了すると、投稿・プラン作成・出金が利用できるようになります。
+            </p>
+
+            <button
+              onClick={handleStartKyc}
+              disabled={loading || isKycOk}
+              className="btn btn-primary w-full"
+            >
+              {loading ? '遷移中…' : '本人確認をはじめる'}
+            </button>
+          </div>
+        )}
+
+        {/* プロフィール更新 */}
+        <div className="pt-3">
           <button
-            onClick={handleStartKyc}
-            disabled={loading}
-            className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-60"
+            disabled={!isKycOk}
+            onClick={() => navigate('/creator/profile')}
+            className="btn btn-outline w-full disabled:opacity-50"
           >
-            {loading ? '遷移中…' : '本人確認をはじめる'}
+            プロフィールを更新
           </button>
         </div>
-      )}
-
-      {/* ここから先のフォームやボタンは isKycOk のときだけ表示 or 有効化 */}
-      <div className="mt-6">
-        <button
-          disabled={!isKycOk}
-          className="px-4 py-2 bg-gray-800 text-white rounded disabled:opacity-50"
-        >
-          プロフィールを更新（ダミー）
-        </button>
-      </div>
+      </section>
     </div>
   );
 }

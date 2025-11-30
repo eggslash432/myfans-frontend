@@ -14,12 +14,17 @@ import NewPost from './pages/posts/NewPost';
 import MyPlansPage from './pages/Plans';
 import CreatorsAdminPage from './pages/admin/CreatorsAdminPage';
 import CreatorSettingsPage from './pages/creators/settings';
-import PayoutsPage from './pages/creators/PayoutsPage';
 import AdminPayoutsPage from './pages/admin/AdminPayoutsPage';
 import AdminPostsPage from './pages/admin/AdminPostsPage';
 import AppLayout from './components/layout/AppLayout';
 import AdminReportsPage from './pages/admin/AdminReportsPage';
 import AdminDashboard from './pages/admin/Dashboard';
+import CreatorPostsPage from './pages/creators/CreatorPostsPage';
+import CreatorPlansPage from './pages/creators/CreatorPlansPage';
+import PayoutsPage from './pages/creators/PayoutsPage';
+import CreatorAnalyticsPage from './pages/creators/CreatorAnalyticsPage';
+import CreatorProfilePage from './pages/creators/CreatorProfilePage';
+import AdminSummaryPage from './pages/admin/AdminSummaryPage';
 
 export default function App() {
   return (
@@ -33,6 +38,7 @@ export default function App() {
         <Route path="/admin/payouts" element={<AdminPayoutsPage />} />
         <Route path="/admin/posts" element={<AdminPostsPage />} />
         <Route path="/admin/reports" element={<AdminReportsPage />} />
+        <Route path="/admin" element={<AdminSummaryPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route
@@ -44,14 +50,6 @@ export default function App() {
           }
         />
         <Route
-          path="/creators/settings"
-          element={
-            <ProtectedRoute role="creator">
-              <CreatorSettingsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
           path="/posts/new"
           element={
             <ProtectedRoute role="creator">
@@ -59,7 +57,55 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/creators/payouts" element={<PayoutsPage />} />
+        {/* クリエイター用ページ */}
+        <Route
+          path="/creators/settings"
+          element={
+            <ProtectedRoute role="creator">
+              <CreatorSettingsPage />
+            </ProtectedRoute>
+          }
+        />        
+        <Route
+          path="/creator/posts"
+          element={
+            <ProtectedRoute role="creator">
+              <CreatorPostsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/creator/plans"
+          element={
+            <ProtectedRoute role="creator">
+              <CreatorPlansPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/creator/payouts"
+          element={
+            <ProtectedRoute role="creator">
+              <PayoutsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/creator/analytics"
+          element={
+            <ProtectedRoute role="creator">
+              <CreatorAnalyticsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/creator/profile"
+          element={
+            <ProtectedRoute role="creator">
+              <CreatorProfilePage />
+            </ProtectedRoute>
+          }
+        />        
         <Route path="/mypage/plans" element={<MyPlansPage />} />
         <Route path="/creators/:id" element={<CreatorPage />} />
         <Route path="/posts/:id" element={<PostDetailPage />} />

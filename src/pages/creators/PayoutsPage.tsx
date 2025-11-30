@@ -2,7 +2,8 @@
 // src/pages/creator/PayoutsPage.tsx
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
-import type { Payout, PayoutStatus } from '../../shared/types';
+import type { Payout } from '../../shared/types';
+import type { PayoutStatus } from '../../shared/prisma-enums';
 
 export default function PayoutsPage() {
   const [balance, setBalance] = useState<number | null>(null);
@@ -18,13 +19,23 @@ export default function PayoutsPage() {
     try {
       setLoadingAll(true);
       setError('');
-      const bal = await api.get<{ balanceJpy: number }>(
+
+      // 残高
+      const balRes = await api.get<{ balanceJpy: number }>(
         '/creators/me/payouts/balance',
       );
-      setBalance(bal.balanceJpy);
+      setBalance(balRes.data.balanceJpy);
 
-      const list = await api.get<Payout[]>('/creators/me/payouts');
-      setItems(list);
+      // 出金履歴
+      const listRes = await api.get<Payout[]>(
+        '/creators/me/payouts',
+      );
+      setItems(listRes.data ?? []);
+
+      // もし creator 情報も取っているならこんな感じ
+      // const creatorRes = await api.get<CreatorMeResponse>('/creators/me');
+      // setCreator(creatorRes.data);
+
     } catch (e: any) {
       console.error(e);
       setError(e?.message ?? '読み込みに失敗しました');
@@ -32,6 +43,7 @@ export default function PayoutsPage() {
       setLoadingAll(false);
     }
   }
+
 
   useEffect(() => {
     loadAll();

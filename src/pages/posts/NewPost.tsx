@@ -1,14 +1,19 @@
 // front/src/pages/posts/NewPost.tsx
 
-import {useState, useEffect} from 'react';
-import { createPostSmart, getCreatorMe, getMyPlans,createPlan as createPlanApi } from '../../lib/api';
+import { useState, useEffect } from 'react';
+import {
+  createPostSmart,
+  getCreatorMe,
+  getMyPlans,
+  createPlan as createPlanApi,
+} from '../../lib/api';
 import type { AgeRating, Visibility } from '../../shared/prisma-enums';
 import MediaUploader from '../../components/MediaUploader';
 import type { Plan } from '../../shared/types';
 
 async function fetchMyPlans(): Promise<Plan[]> {
   try {
-    const res = await getMyPlans();   // ← PlansResponse { ok, plans }
+    const res = await getMyPlans(); // PlansResponse { ok, plans }
     return res?.plans ?? [];
   } catch {
     return [];
@@ -18,7 +23,7 @@ async function fetchMyPlans(): Promise<Plan[]> {
 // 追加：undefined/null/空文字のキーを落とす（ネストにも対応）
 function prune<T>(obj: T): T {
   if (Array.isArray(obj)) {
-    return obj.map(prune).filter(v => v !== undefined && v !== null) as any;
+    return obj.map(prune).filter((v) => v !== undefined && v !== null) as any;
   } else if (obj && typeof obj === 'object') {
     const out: any = {};
     for (const [k, v] of Object.entries(obj)) {
@@ -49,25 +54,22 @@ export default function NewPost() {
   const [error, setError] = useState<string | null>(null);
   const [okMsg, setOkMsg] = useState<string | null>(null);
 
-  // ★ 追加：作成した投稿のID（これが取れたらメディアアップロード可能）
-  const [createdPostId, setCreatedPostId] = useState<string | null>(null); 
-  
+  // 作成した投稿のID（これが取れたらメディアアップロード可能）
+  const [createdPostId, setCreatedPostId] = useState<string | null>(null);
+
   const [creator, setCreator] = useState<any | null>(null);
   const [creatorErr, setCreatorErr] = useState('');
 
+  // 初回：プラン取得
   useEffect(() => {
-    const loadPlans = async () => {
-      try {
-        const plans = await fetchMyPlans();
-        setPlans(plans ?? []);
-      } catch {
-        setPlans([]);
-      }
+    const loadPlansOnce = async () => {
+      const plans = await fetchMyPlans();
+      setPlans(plans ?? []);
     };
-    loadPlans();
+    loadPlansOnce();
   }, []);
 
-  // useEffect 部分
+  // クリエイター情報取得
   useEffect(() => {
     (async () => {
       try {
@@ -83,7 +85,7 @@ export default function NewPost() {
         setCreatorErr(msg);
       }
     })();
-  }, []); 
+  }, []);
 
   // visibility が変わったら不要な値をクリア
   useEffect(() => {
@@ -95,20 +97,14 @@ export default function NewPost() {
     const base: any = {
       title: title.trim(),
       body,
-      visibility,           // 'free' | 'plan' | 'paid_single'
-      ageRating,            // 'all'  | 'r18'
+      visibility, // 'free' | 'plan' | 'paid_single'
+      ageRating, // 'all'  | 'r18'
       publishedStatus: isDraft ? 'draft' : 'published',
       accessRules: {
         allowByPlanIds: [],
         allowByPpv: false,
-        // ppvPriceJpy は paid_single の時だけ付ける
       },
     };
-
-    if (visibility === 'free') {
-      // 余計なキーは持たせない
-      // planId / priceJpy は付けない
-    }
 
     if (visibility === 'plan') {
       if (!selectedPlanId) throw new Error('プランを選択してください');
@@ -126,23 +122,20 @@ export default function NewPost() {
       base.accessRules.ppvPriceJpy = price;
     }
 
-    // ← ここが重要：不要キーを完全除去してから返す
     return prune(base);
   };
 
-  // 自分のプラン一覧を取得
+  // 自分のプラン一覧を再取得（新規作成後用）
   async function loadPlans() {
     try {
-      const res = await getMyPlans();   // PlansResponse { ok, plans }
-      setPlans(res?.plans ?? []);       // Plan[] だけ state に入れる
+      const res = await getMyPlans(); // PlansResponse { ok, plans }
+      setPlans(res?.plans ?? []);
     } catch (e) {
       console.error('プラン取得失敗', e);
     }
   }
 
-  useEffect(() => { loadPlans(); }, []);
-
-  // 新規プランを作成
+  // 新規プラン作成
   async function createPlan() {
     if (!newPlanName || !newPlanPrice) return;
     try {
@@ -152,20 +145,17 @@ export default function NewPost() {
       });
       console.log('プラン作成成功', res);
       setShowPlanModal(false);
-
-      // ついでに一覧を更新したいなら
       await loadPlans();
     } catch (e) {
       console.error('プラン作成失敗', e);
     }
   }
 
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     setOkMsg(null);
-    setCreatedPostId(null); // 新規投稿のたびにリセット
+    setCreatedPostId(null);
 
     try {
       if (!title.trim()) throw new Error('タイトルを入力してください');
@@ -174,10 +164,8 @@ export default function NewPost() {
       const payload = buildPayload();
 
       setSubmitting(true);
-      const res:any = await createPostSmart(payload);  // ← 修正箇所
-      console.log('create post result:', res); // デバッグ用（あってもOK）
+      const res: any = await createPostSmart(payload);
 
-      // 取り得るパターンを全部なめる
       const postId =
         res?.postId ??
         res?.post?.id ??
@@ -190,12 +178,8 @@ export default function NewPost() {
         setCreatedPostId(postId);
         setOkMsg('投稿が完了しました。続けてメディアをアップロードできます。');
       } else {
-        // ここではもう throw しない（投稿自体は成功しているので）
         setOkMsg('投稿が完了しました。（投稿IDの取得にはまだ対応していません）');
       }
-
-      setCreatedPostId(postId);
-      setOkMsg('投稿が完了しました。続けてメディアをアップロードできます。');
 
       setTitle('');
       setBody('');
@@ -209,264 +193,296 @@ export default function NewPost() {
 
   const kyc = creator?.kyc ?? {};
   const kycStatus = kyc.status ?? creator?.stripeKycStatus ?? 'pending';
-  const isKycOk = kycStatus === 'approved';  
+  const isKycOk = kycStatus === 'approved';
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">新規投稿作成</h1>
+    <div className="page">
+      <div className="max-w-3xl mx-auto space-y-4">
+        {/* タイトル */}
+        <h1 className="page-title">新規投稿作成</h1>
 
-      {creatorErr && (
-        <div className="p-3 border border-red-400 text-red-700 mb-4 text-sm">
-          クリエイター情報の取得に失敗しました。<br />
-          {creatorErr}
-        </div>
-      )}
+        {/* クリエイター取得エラー */}
+        {creatorErr && (
+          <section className="card">
+            <div className="text-sm text-red-700">
+              <div className="font-semibold mb-1">
+                クリエイター情報の取得に失敗しました。
+              </div>
+              <div className="text-xs whitespace-pre-wrap">{creatorErr}</div>
+            </div>
+          </section>
+        )}
 
-      {creator && !isKycOk && (
-        <div className="p-3 border border-yellow-400 text-yellow-800 mb-4 text-sm">
-          本人確認（KYC）が完了していないため、投稿機能はご利用いただけません。
-        </div>
-      )}    
+        {/* KYC 未完了の注意 */}
+        {creator && !isKycOk && (
+          <section className="card border border-yellow-300 bg-yellow-50/80">
+            <p className="text-sm text-yellow-800">
+              本人確認（KYC）が未完了のため、投稿の公開や販売機能が制限されます。
+              先に「クリエイター設定」から本人確認を完了してください。
+            </p>
+          </section>
+        )}
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div>
-          <input
-            type="text"
-            placeholder="タイトル"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full rounded border p-3"
-          />
-        </div>
-
-        <div>
-          <textarea
-            placeholder="本文（Markdown可）"
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            rows={8}
-            className="w-full rounded border p-3"
-          />
-        </div>
-
-        {/* 可視性 */}
-        <div className="space-y-2">
-          <div className="font-semibold">公開範囲</div>
-          <div className="flex items-center gap-6">
-            <label className="flex items-center gap-2">
+        {/* 投稿フォーム本体 */}
+        <section className="card">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* タイトル */}
+            <div className="form-field">
+              <label className="form-label">タイトル</label>
               <input
-                type="radio"
-                name="visibility"
-                checked={visibility === 'free'}
-                onChange={() => setVisibility('free')}
+                type="text"
+                placeholder="タイトルを入力"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="form-input"
               />
-              <span>無料</span>
-            </label>
+            </div>
 
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                name="visibility"
-                checked={visibility === 'plan'}
-                onChange={() => setVisibility('plan')}
+            {/* 本文 */}
+            <div className="form-field">
+              <label className="form-label">本文（Markdown可）</label>
+              <textarea
+                placeholder="本文を入力してください"
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+                rows={8}
+                className="form-input"
               />
-              <span>有料（購読者限定）</span>
-            </label>
+            </div>
 
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                name="visibility"
-                checked={visibility === 'paid_single'}
-                onChange={() => setVisibility('paid_single')}
-              />
-              <span>PPV</span>
-            </label>
-          </div>
+            {/* 公開範囲 */}
+            <div className="space-y-2">
+              <div className="font-semibold text-sm">公開範囲</div>
+              <div className="flex flex-wrap items-center gap-4 text-sm">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="visibility"
+                    checked={visibility === 'free'}
+                    onChange={() => setVisibility('free')}
+                  />
+                  <span>無料</span>
+                </label>
 
-          {/* visibility=plan のときだけプラン選択 */}
-          {visibility === 'plan' && (
-            <div className="mt-2">
-              <select
-                className="rounded border p-2 min-w-[240px]"
-                value={selectedPlanId}
-                onChange={(e) => setSelectedPlanId(e.target.value)}
-              >
-                <option value="">プランを選択</option>
-                {plans.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}{p.priceJpy ? `（¥${p.priceJpy} /月）` : ''}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                className="text-sm border rounded px-2 py-1 hover:bg-gray-50"
-                onClick={() => setShowPlanModal(true)}
-              >
-                ＋ 新しいプランを作成
-              </button>
-              {plans.length === 0 && (
-                <div className="text-sm text-gray-500 mt-1">
-                  プランが取得できませんでした。先にプランを作成してください。
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="visibility"
+                    checked={visibility === 'plan'}
+                    onChange={() => setVisibility('plan')}
+                  />
+                  <span>有料（購読者限定）</span>
+                </label>
+
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="visibility"
+                    checked={visibility === 'paid_single'}
+                    onChange={() => setVisibility('paid_single')}
+                  />
+                  <span>PPV</span>
+                </label>
+              </div>
+
+              {/* プラン選択 */}
+              {visibility === 'plan' && (
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <select
+                    className="form-input w-full sm:w-auto sm:min-w-[240px]"
+                    value={selectedPlanId}
+                    onChange={(e) => setSelectedPlanId(e.target.value)}
+                  >
+                    <option value="">プランを選択</option>
+                    {plans.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
+                        {p.priceJpy ? `（¥${p.priceJpy} /月）` : ''}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    className="btn btn-outline btn-sm"
+                    onClick={() => setShowPlanModal(true)}
+                  >
+                    ＋ 新しいプランを作成
+                  </button>
+                  {plans.length === 0 && (
+                    <div className="text-xs text-gray-500">
+                      まだプランがありません。先にプランを作成してください。
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* PPV 価格 */}
+              {visibility === 'paid_single' && (
+                <div className="mt-2 flex items-center gap-2 text-sm">
+                  <label className="form-label mb-0">PPV 価格（円）</label>
+                  <input
+                    type="number"
+                    min={100}
+                    step={100}
+                    value={ppvPrice}
+                    onChange={(e) => setPpvPrice(e.target.value)}
+                    className="form-input w-32"
+                  />
                 </div>
               )}
             </div>
-          )}
 
-          {/* 💬 新規プラン作成ダイアログ */}
-          {showPlanModal && (
-            <div className="fixed inset-0 z-50">
-              {/* 背景オーバーレイ */}
-              <div
-                className="absolute inset-0 bg-black/30"
-                onClick={() => setShowPlanModal(false)}
-              />
-              {/* 本体 */}
-              <div className="relative mx-auto my-24 w-full max-w-md rounded-xl bg-white shadow-lg p-5">
-                <h3 className="text-lg font-semibold mb-4">新しいプランを作成</h3>
+            {/* 年齢区分 */}
+            <div className="space-y-2">
+              <div className="font-semibold text-sm">年齢区分</div>
+              <div className="flex items-center gap-6 text-sm">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="agerating"
+                    checked={ageRating === 'all'}
+                    onChange={() => setAgeRating('all')}
+                  />
+                  <span>一般（all）</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="agerating"
+                    checked={ageRating === 'r18'}
+                    onChange={() => setAgeRating('r18')}
+                  />
+                  <span>R18</span>
+                </label>
+              </div>
+            </div>
 
-                <div className="space-y-3">
-                  <label className="block text-sm">
-                    プラン名
-                    <input
-                      className="mt-1 w-full border rounded px-2 py-1"
-                      value={newPlanName}
-                      onChange={(e) => setNewPlanName(e.target.value)}
-                      placeholder="例：スタンダード"
-                    />
-                  </label>
+            {/* 公開 or 下書き */}
+            <div className="space-y-2">
+              <div className="font-semibold text-sm">公開設定</div>
+              <div className="flex items-center gap-6 text-sm">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="status"
+                    checked={!isDraft}
+                    onChange={() => setIsDraft(false)}
+                  />
+                  <span>公開</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="status"
+                    checked={isDraft}
+                    onChange={() => setIsDraft(true)}
+                  />
+                  <span>下書き</span>
+                </label>
+              </div>
+            </div>
 
-                  <label className="block text-sm">
-                    月額料金（円）
-                    <input
-                      type="number"
-                      className="mt-1 w-full border rounded px-2 py-1"
-                      value={newPlanPrice}
-                      onChange={(e) => setNewPlanPrice(e.target.value)}
-                      placeholder="例：800"
-                      min={100}
-                    />
-                  </label>
+            {/* 送信ボタン */}
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={!isKycOk || submitting}
+                className="btn btn-primary w-full sm:w-auto"
+              >
+                {submitting ? '投稿中…' : '投稿する'}
+              </button>
+              {!isKycOk && (
+                <p className="mt-2 text-xs text-gray-500">
+                  ※ 本人確認（KYC）が完了すると投稿を公開できるようになります。
+                </p>
+              )}
+            </div>
 
-                  <div className="flex justify-end gap-2 pt-2">
-                    <button
-                      type="button"
-                      className="border rounded px-3 py-1"
-                      onClick={() => setShowPlanModal(false)}
-                    >
-                      キャンセル
-                    </button>
-                    <button
-                      type="button"
-                      className="bg-black text-white rounded px-3 py-1 disabled:opacity-50"
-                      onClick={createPlan}
-                      disabled={!newPlanName || !newPlanPrice}
-                    >
-                      作成
-                    </button>
-                  </div>
+            {/* メッセージ */}
+            {error && (
+              <div className="mt-2 text-sm text-red-600 whitespace-pre-wrap">
+                {error}
+              </div>
+            )}
+            {okMsg && (
+              <div className="mt-2 text-sm text-green-700">{okMsg}</div>
+            )}
+          </form>
+        </section>
+
+        {/* メディアアップロードカード */}
+        {createdPostId && (
+          <section className="card space-y-3">
+            <div className="section-title">メディアをアップロード</div>
+            <p className="section-subtitle">
+              画像や動画をアップロードすると、この投稿に紐づくメディアとして表示されます。
+            </p>
+            <MediaUploader
+              postId={createdPostId}
+              onUploaded={() => {
+                alert('メディアのアップロードが完了しました');
+              }}
+            />
+          </section>
+        )}
+
+        {/* 新規プラン作成モーダル */}
+        {showPlanModal && (
+          <div className="fixed inset-0 z-50">
+            <div
+              className="absolute inset-0 bg-black/30"
+              onClick={() => setShowPlanModal(false)}
+            />
+            <div className="relative mx-auto my-24 w-full max-w-md rounded-xl bg-white shadow-lg p-5">
+              <h3 className="text-lg font-semibold mb-4">
+                新しいプランを作成
+              </h3>
+
+              <div className="space-y-3">
+                <label className="form-field">
+                  <span className="form-label">プラン名</span>
+                  <input
+                    className="form-input"
+                    value={newPlanName}
+                    onChange={(e) => setNewPlanName(e.target.value)}
+                    placeholder="例：スタンダード"
+                  />
+                </label>
+
+                <label className="form-field">
+                  <span className="form-label">月額料金（円）</span>
+                  <input
+                    type="number"
+                    className="form-input"
+                    value={newPlanPrice}
+                    onChange={(e) => setNewPlanPrice(e.target.value)}
+                    placeholder="例：800"
+                    min={100}
+                  />
+                </label>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    className="btn btn-outline btn-sm"
+                    onClick={() => setShowPlanModal(false)}
+                  >
+                    キャンセル
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    onClick={createPlan}
+                    disabled={!newPlanName || !newPlanPrice}
+                  >
+                    作成
+                  </button>
                 </div>
               </div>
             </div>
-          )}
-
-          {/* visibility=paid_single のときだけ価格入力 */}
-          {visibility === 'paid_single' && (
-            <div className="mt-2 flex items-center gap-2">
-              <label className="text-sm text-gray-700">PPV 価格（円）</label>
-              <input
-                type="number"
-                min={100}
-                step={100}
-                value={ppvPrice}
-                onChange={(e) => setPpvPrice(e.target.value)}
-                className="rounded border p-2 w-40"
-              />
-            </div>
-          )}
-        </div>
-
-        {/* 年齢区分 */}
-        <div className="space-y-2">
-          <div className="font-semibold">年齢区分</div>
-          <div className="flex items-center gap-6">
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                name="agerating"
-                checked={ageRating === 'all'}
-                onChange={() => setAgeRating('all')}
-              />
-              <span>一般（all）</span>
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                name="agerating"
-                checked={ageRating === 'r18'}
-                onChange={() => setAgeRating('r18')}
-              />
-              <span>R18</span>
-            </label>
           </div>
-        </div>
-
-        {/* 公開 or 下書き */}
-        <div className="space-y-2">
-          <div className="font-semibold">公開設定</div>
-          <div className="flex items-center gap-6">
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                name="status"
-                checked={!isDraft}
-                onChange={() => setIsDraft(false)}
-              />
-              <span>公開</span>
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                name="status"
-                checked={isDraft}
-                onChange={() => setIsDraft(true)}
-              />
-              <span>下書き</span>
-            </label>
-          </div>
-        </div>
-
-        <div>
-          <button
-            type="submit"
-            disabled={!isKycOk || submitting}
-            className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
-          >
-            {submitting ? '投稿中...' : '投稿する'}
-          </button>
-        </div>
-
-        {error && <div className="text-red-600 whitespace-pre-wrap">投稿失敗: {error}</div>}
-        {okMsg && <div className="text-green-700">{okMsg}</div>}
-      </form>
-
-      {/* ★ 投稿完了後にだけメディアアップロード UI を表示 */}
-      {createdPostId && (
-        <div className="mt-10 border-t pt-6">
-          <h2 className="text-xl font-semibold mb-3">メディアをアップロード</h2>
-          <p className="text-sm text-gray-600 mb-3">
-            画像や動画をアップロードすると、この投稿に紐づくメディアとして表示されます。
-          </p>
-          <MediaUploader
-            postId={createdPostId}
-            onUploaded={() => {
-              // ここで投稿詳細の再取得などをしたければ追加
-              alert('メディアのアップロードが完了しました');
-            }}
-          />
-        </div>
-      )}      
+        )}
+      </div>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+// front/src/pages/admin/AdminReportsPage.tsx
 import { useEffect, useState } from 'react';
 import { admin, ApiError } from '../../lib/api';
 import type { ReportItem } from '../../shared/types';
@@ -11,11 +12,10 @@ export default function AdminReportsPage() {
     try {
       setLoading(true);
       setErr('');
-      const data = await admin.listReports(); // ← api.ts の admin オブジェクト
+      const data = await admin.listReports();
       setReports(data ?? []);
     } catch (e: any) {
       if (e instanceof ApiError) {
-        // ★ API 未実装で 404 のときは「通報なし」として扱う
         if (e.status === 404) {
           console.warn('/admin/reports が 404 のため空リスト扱いにします', e);
           setReports([]);
@@ -60,76 +60,106 @@ export default function AdminReportsPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">通報一覧</h1>
-        <button
-          type="button"
-          onClick={load}
-          className="px-3 py-1 text-xs border rounded"
+    <div className="page">
+      <div className="max-w-4xl mx-auto space-y-4">
+        {/* タイトル行 */}
+        <div
+          className="flex items-center justify-between"
+          style={{ marginBottom: '4px' }}
         >
-          再読み込み
-        </button>
+          <h1 className="page-title" style={{ marginBottom: 0, textAlign: 'left' }}>
+            通報一覧
+          </h1>
+
+          <button
+            type="button"
+            onClick={load}
+            className="btn btn-outline btn-sm"
+          >
+            ⟳ 再読み込み
+          </button>
+        </div>
+
+        {loading && (
+          <div className="page-description" style={{ marginBottom: 0 }}>
+            読み込み中…
+          </div>
+        )}
+
+        {err && (
+          <div className="auth-error">
+            {err}
+          </div>
+        )}
+
+        {!loading && !err && reports.length === 0 && (
+          <div className="page-description" style={{ marginBottom: 0 }}>
+            現在、通報はありません。
+          </div>
+        )}
+
+        {!loading && reports.length > 0 && (
+          <div className="space-y-3">
+            {reports.map((r) => (
+              <div
+                key={r.id}
+                className="card"
+                style={{ padding: '12px 14px', fontSize: '13px' }}
+              >
+                <div style={{ fontWeight: 600, marginBottom: 4 }}>
+                  通報ID: {r.id}
+                </div>
+                <div>
+                  投稿: {r.postTitle || '（タイトルなし）'}{' '}
+                  {r.postId && (
+                    <span style={{ fontSize: 11, color: '#9ca3af' }}>
+                      ID: {r.postId}
+                    </span>
+                  )}
+                </div>
+                <div>通報者: {r.reporterEmail || '（不明）'}</div>
+                <div>理由: {r.reason || '(未入力)'}</div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: '#9ca3af',
+                    marginTop: 4,
+                  }}
+                >
+                  日時:{' '}
+                  {r.createdAt
+                    ? new Date(r.createdAt).toLocaleString()
+                    : '(不明)'}
+                </div>
+
+                <div
+                  style={{
+                    marginTop: 10,
+                    display: 'flex',
+                    gap: 8,
+                    justifyContent: 'flex-end',
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => handleResolve(r.id, 'reviewed')}
+                    className="btn btn-primary btn-sm"
+                  >
+                    対応済みにする
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleResolve(r.id, 'dismissed')}
+                    className="btn btn-outline btn-sm"
+                  >
+                    却下
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-
-      {loading && <div className="text-sm text-gray-500">読み込み中...</div>}
-
-      {err && (
-        <div className="text-sm text-red-600">
-          {err}
-        </div>
-      )}
-
-      {!loading && !err && reports.length === 0 && (
-        <div className="text-sm text-gray-600">
-          現在、通報はありません。
-        </div>
-      )}
-
-      {!loading && reports.length > 0 && (
-        <div className="space-y-3 text-sm">
-          {reports.map((r) => (
-            <div
-              key={r.id}
-              className="border rounded p-3 flex flex-col gap-1 bg-white"
-            >
-              <div className="font-semibold">
-                通報ID: {r.id}
-              </div>
-              <div>
-                投稿: {r.postTitle || '（タイトルなし）'}{' '}
-                {r.postId && (
-                  <span className="text-xs text-gray-500">ID: {r.postId}</span>
-                )}
-              </div>
-              <div>通報者: {r.reporterEmail || '（不明）'}</div>
-              <div>理由: {r.reason || '(未入力)'}</div>
-              <div className="text-xs text-gray-500">
-                日時:{' '}
-                {r.createdAt
-                  ? new Date(r.createdAt).toLocaleString()
-                  : '(不明)'}
-              </div>
-              <div className="mt-2 flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleResolve(r.id, 'reviewed')}
-                  className="px-3 py-1 text-xs bg-black text-white rounded"
-                >
-                  対応済みにする
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleResolve(r.id, 'dismissed')}
-                  className="px-3 py-1 text-xs border rounded"
-                >
-                  却下
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

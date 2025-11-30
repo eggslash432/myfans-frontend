@@ -4,12 +4,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { api } from '../../lib/api';
-
-type AdminSummary = {
-  salesMonthly: number;
-  newUsersMonthly: number;
-  reportsPending: number;
-};
+import type { AdminSummary } from '../../shared/types';
 
 function AdminInner() {
   const { data, isLoading, error } = useQuery<AdminSummary>({
@@ -100,21 +95,30 @@ function AdminInner() {
           </div>
         )}
 
-        <div className="grid grid-cols-3 gap-3 text-sm">
-          <div className="p-3 bg-gray-50 rounded">
-            <div className="text-xs text-gray-500">月間売上</div>
-            <div className="text-lg font-bold">¥{summary.salesMonthly}</div>
+        <div className="summary-grid">
+          {/* 月間売上（今はリンクなし） */}
+          <div className="summary-item">
+            <div className="summary-label">月間売上</div>
+            <div className="summary-value">
+              ¥{summary.salesMonthly.toLocaleString()}
+            </div>
           </div>
 
-          <div className="p-3 bg-gray-50 rounded">
-            <div className="text-xs text-gray-500">新規登録</div>
-            <div className="text-lg font-bold">{summary.newUsersMonthly}</div>
-          </div>
+          {/* 新規登録 → クリエイター管理へ */}
+          <Link to="/admin/creators" className="summary-item">
+            <div className="summary-label">新規登録</div>
+            <div className="summary-value">
+              {summary.newUsersMonthly.toLocaleString()}
+            </div>
+          </Link>
 
-          <div className="p-3 bg-gray-50 rounded">
-            <div className="text-xs text-gray-500">通報(未対応)</div>
-            <div className="text-lg font-bold">{summary.reportsPending}</div>
-          </div>
+          {/* 通報(未対応) → 通報一覧へ */}
+          <Link to="/admin/reports" className="summary-item">
+            <div className="summary-label">通報(未対応)</div>
+            <div className="summary-value">
+              {summary.reportsPending.toLocaleString()}
+            </div>
+          </Link>
         </div>
       </section>
     </div>

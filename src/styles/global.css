@@ -463,6 +463,40 @@ a.card {
   text-decoration: underline;
 }
 
+/* ===== 管理ダッシュボード・サマリ ===== */
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  font-size: 13px;
+}
+
+.summary-item {
+  padding: 12px;
+  border-radius: 12px;
+  background: #f9fafb;
+  text-align: center;
+  text-decoration: none;
+  color: var(--color-text-main);
+}
+
+/* Link 用の hover */
+.summary-item:hover {
+  background: #f3f4f6;
+}
+
+.summary-label {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-bottom: 2px;
+}
+
+.summary-value {
+  font-size: 18px;
+  font-weight: 700;
+}
+
 
 
 /* 下方向の間隔ユーティリティ（Tailwind 風） */

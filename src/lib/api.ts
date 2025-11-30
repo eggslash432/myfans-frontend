@@ -1,7 +1,7 @@
 // front/src/lib/api.ts
 
 import type { KycStatus, PublishedStatus, Visibility } from "../shared/prisma-enums";
-import type { CreatorMeResponse, PlansResponse, PostDetail, PostSummary, ReportItem } from "../shared/types";
+import type { AdminSummary, CreatorMeResponse, PlansResponse, PostDetail, PostSummary, ReportItem } from "../shared/types";
 
 // API ベースURL
 // 例: VITE_API_BASE_URL = "https://api.example.com"
@@ -500,6 +500,16 @@ export async function adminRejectPayout(payoutId: string, note?: string) {
   });
 }
 
+/* ============================================================
+ * 管理画面: サマリ
+ * ============================================================ */
+
+export async function adminGetSummary(): Promise<AdminSummary> {
+  // バックエンド: Controller('api/admin/summary') @Get()
+  // API_BASE が ".../api" なので、ここは "/admin/summary"
+  return request<AdminSummary>('/admin/summary');
+}
+
 // useAuth.tsx から使うためのラッパー
 const api = {
   me: getMe,
@@ -514,6 +524,9 @@ const api = {
   meSummary,
   applyCreator,
   startCreatorKyc,
+  getMyPlans,
+  updateCreatorProfile,
+
   // ★ ここから axios 風ラッパー（古い画面との互換用）★
   async get<T = any>(
     path: string,
@@ -566,6 +579,8 @@ const api = {
 
 // ---- Admin ラッパー ----
 export const admin = {
+  getSummary: adminGetSummary,
+
   listCreators: adminListCreators,
   setCreatorListing: adminSetCreatorListing,
 
@@ -583,6 +598,7 @@ export const admin = {
   listPayoutRequests: adminListPayoutRequests,
   approvePayout: adminApprovePayout,
   rejectPayout: adminRejectPayout,
+
 };
 
 export default api;
