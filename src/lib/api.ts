@@ -31,6 +31,58 @@ type RequestOptions = Omit<RequestInit, 'body'> & {
   json?: boolean;  // JSON を自動で stringify するフラグ
 };
 
+// ---- axios 風ラッパー関数（トップレベル）----
+
+// GET
+export async function apiGet<T = any>(
+  path: string,
+  init?: Omit<RequestOptions, 'method' | 'body'>,
+) {
+  const data = await request<T>(
+    normalizeApiPath(path),
+    { ...(init ?? {}), method: 'GET' },
+  );
+  return { data }; // axios 互換で { data } を返す
+}
+
+// POST
+export async function apiPost<T = any>(
+  path: string,
+  body?: any,
+  init?: Omit<RequestOptions, 'method' | 'body'>,
+) {
+  const data = await request<T>(
+    normalizeApiPath(path),
+    { ...(init ?? {}), method: 'POST', body },
+  );
+  return { data };
+}
+
+// PATCH
+export async function apiPatch<T = any>(
+  path: string,
+  body?: any,
+  init?: Omit<RequestOptions, 'method' | 'body'>,
+) {
+  const data = await request<T>(
+    normalizeApiPath(path),
+    { ...(init ?? {}), method: 'PATCH', body },
+  );
+  return { data };
+}
+
+// DELETE
+export async function apiDelete<T = any>(
+  path: string,
+  init?: Omit<RequestOptions, 'method' | 'body'>,
+) {
+  const data = await request<T>(
+    normalizeApiPath(path),
+    { ...(init ?? {}), method: 'DELETE' },
+  );
+  return { data };
+}
+
 /**
  * 共通 request ラッパ
  * - credentials: 'include' で Cookie ベースのセッションにも対応
@@ -104,6 +156,22 @@ export function normalizeList<T = any>(raw: any): T[] {
   if (Array.isArray(raw)) return raw;
   if (Array.isArray(raw.items)) return raw.items;
   return [];
+}
+
+// Post 詳細の正規化
+function normalizePostDetail(raw: any): PostDetail {
+  if (!raw) return raw as PostDetail;
+
+  // visibility=free の投稿は必ず閲覧可にしておく（暫定措置）
+  if (raw.visibility === 'free') {
+    return {
+      ...raw,
+      isLocked: false,
+      canView: true,
+    } as PostDetail;
+  }
+
+  return raw as PostDetail;
 }
 
 // axios 互換用: "/creators" → "/api/creators" に揃える
@@ -194,9 +262,16 @@ export async function myPosts(): Promise<PostSummary[]> {
   return res?.items ?? [];
 }
 
-// 投稿詳細
+// 投稿詳細（シンプル版）
 export async function getPostDetail(postId: string) {
-  return request<PostDetail>(`/posts/${postId}`);
+  const data = await request<PostDetail>(`/posts/${postId}`);
+  return normalizePostDetail(data);
+}
+
+// 旧 axios 互換版: api.getPost(postId).then(res => res.data)
+export async function getPost(postId: string) {
+  const data = await getPostDetail(postId); // ここでもう normalize 済み
+  return { data };
 }
 
 // 投稿作成
@@ -246,6 +321,18 @@ export async function reportPost(postId: string, reason: string) {
 /* ============================================================
  * クリエイター関連
  * ============================================================ */
+
+// クリエイター公開プロフィール（axios互換：{ data } を返す）
+async function getCreator(creatorId: string) {
+  const data = await request(`/creators/${creatorId}`);
+  return { data };          // axios.get() っぽく { data } で返す
+}
+
+// クリエイターの公開投稿一覧（axios互換）
+async function getCreatorPosts(creatorId: string) {
+  const data = await request<PostSummary[]>(`/creators/${creatorId}/posts`);
+  return { data };          // こちらも { data } で返す
+}
 
 // 自分のクリエイター情報（設定画面用）
 export async function getCreatorMe() {
@@ -513,6 +600,12 @@ export async function adminGetSummary(): Promise<AdminSummary> {
   return request<AdminSummary>('/admin/summary');
 }
 
+
+// ============================================================
+// エクスポートまとめ
+// ============================================================ 
+
+
 // useAuth.tsx から使うためのラッパー
 const api = {
   me: getMe,
@@ -529,55 +622,15 @@ const api = {
   startCreatorKyc,
   getMyPlans,
   updateCreatorProfile,
+  getCreator,
+  getCreatorPosts,
+  getPost,
 
-  // ★ ここから axios 風ラッパー（古い画面との互換用）★
-  async get<T = any>(
-    path: string,
-    init?: Omit<RequestOptions, 'method' | 'body'>
-  ) {
-    const data = await request<T>(
-      normalizeApiPath(path),
-      { ...(init ?? {}), method: 'GET' }
-    );
-    // axios 互換で { data } を返す
-    return { data };
-  },
-
-  async post<T = any>(
-    path: string,
-    body?: any,
-    init?: Omit<RequestOptions, 'method' | 'body'>
-  ) {
-    const data = await request<T>(
-      normalizeApiPath(path),
-      { ...(init ?? {}), method: 'POST', body }
-    );
-    return { data };
-  },
-
-  // ★ ここから追加 ★
-  async patch<T = any>(
-    path: string,
-    body?: any,
-    init?: Omit<RequestOptions, 'method' | 'body'>
-  ) {
-    const data = await request<T>(
-      normalizeApiPath(path),
-      { ...(init ?? {}), method: 'PATCH', body }
-    );
-    return { data };
-  },
-
-  async delete<T = any>(
-    path: string,
-    init?: Omit<RequestOptions, 'method' | 'body'>
-  ) {
-    const data = await request<T>(
-      normalizeApiPath(path),
-      { ...(init ?? {}), method: 'DELETE' }
-    );
-    return { data };
-  },  
+  // axios 風ラッパー（トップレベル関数への参照）
+  get: apiGet,
+  post: apiPost,
+  patch: apiPatch,
+  delete: apiDelete,
 };
 
 // ---- Admin ラッパー ----
@@ -605,6 +658,4 @@ export const admin = {
 };
 
 export default api;
-export { 
-  api, 
-};
+export { api };

@@ -60,7 +60,7 @@ export default function MediaUploader({ postId, onUploaded }: Props) {
           multiple
           accept="image/*,video/*,audio/*"
           onChange={handleFileChange}
-          className="hidden"
+          style ={{ display: 'none' }}
         />
         <label
           htmlFor="media-files-input"

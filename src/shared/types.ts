@@ -25,6 +25,43 @@ export type Post = {
   planId?: string | null;
   priceJpy?: number | null;
   media?: PostMedia[];
+  canView?: boolean; // ★ 追加
+};
+
+export type PostSummary = {
+  id: string;
+  title: string;
+  visibility: Visibility;
+  priceJpy?: number | null;
+  publishedStatus: PublishedStatus;
+  publishedAt?: string | null;
+  createdAt: string;
+  creatorId?: string | null;
+  creatorName?: string;
+  reportsCount?: number;
+};
+
+export type PostDetail = {
+  id: string;
+  title: string;
+  body?: string | null;
+  visibility: Visibility;
+  priceJpy?: number | null;
+  planId?: string | null;
+  publishedStatus: PublishedStatus;
+  publishedAt?: string | null;
+  createdAt: string;
+  creatorId?: string | null;
+  creator?: {
+    publicName?: string | null;
+  };
+  media: {
+    id: string;
+    url: string;
+    mediaType: MediaType;
+    sortOrder: number;
+  }[];
+  canView?: boolean;
 };
 
 export type PostItem = {
@@ -99,41 +136,6 @@ export interface PaymentRecord {
   paidAt?: string | null;
 }
 
-export type PostSummary = {
-  id: string;
-  title: string;
-  visibility: Visibility;
-  priceJpy?: number | null;
-  publishedStatus: PublishedStatus;
-  publishedAt?: string | null;
-  createdAt: string;
-  creatorId?: string | null;
-  creatorName?: string;
-  reportsCount?: number;
-};
-
-export type PostDetail = {
-  id: string;
-  title: string;
-  body?: string | null;
-  visibility: Visibility;
-  priceJpy?: number | null;
-  planId?: string | null;
-  publishedStatus: PublishedStatus;
-  publishedAt?: string | null;
-  createdAt: string;
-  creatorId?: string | null;
-  creator?: {
-    publicName?: string | null;
-  };
-  media: {
-    id: string;
-    url: string;
-    mediaType: MediaType;
-    sortOrder: number;
-  }[];
-  canView?: boolean;
-};
 
 export type CreatorMeResponse = {
   publicName: string;

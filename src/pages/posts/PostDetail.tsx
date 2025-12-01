@@ -2,10 +2,10 @@
 
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { api, reportPost } from '../lib/api';
-import type { Post } from '../shared/types';
+import { api, reportPost, ApiError } from '../../lib/api';
+import type { Post } from '../../shared/types';
 import { useState } from 'react';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth';
 
 type CheckoutResponse = {
   url?: string;
@@ -27,11 +27,11 @@ export default function PostDetail() {
     enabled: !!id,
     queryFn: async () => {
       if (!id) throw new Error('no id');
-      // ✅ Axiosレスポンスではなく data(Post) だけ返す
       const res = await api.get<Post>(`/posts/${id}`);
       return res.data;
     },
-    retry: (c, err: any) => err?.response?.status !== 403 && c < 1,
+    retry: (c, err: any) =>
+      !(err instanceof ApiError && err.status === 403) && c < 1,
   });
 
   // ★ PPV購入（単品購入）
@@ -138,7 +138,8 @@ export default function PostDetail() {
     return <div className="p-6 text-center text-gray-500">読み込み中…</div>;
   }
 
-  const errorStatus = (q.error as any)?.response?.status;
+  const errorStatus =
+    q.error instanceof ApiError ? q.error.status : undefined;
 
   if (errorStatus === 403) {
     // バックエンドが 403 を返す設計のとき用のロック画面
@@ -176,6 +177,12 @@ export default function PostDetail() {
   const post = q.data;
   const isPpv = post.visibility === 'paid_single';
   const isPlan = post.visibility === 'plan';
+
+  // 無料投稿なら無条件で閲覧OK、それ以外は canView を見る
+  const canView =
+    post.visibility === 'free'
+      ? true
+      : (post as any).canView === true;
 
   const handleReport = async () => {
     if (!user) {
@@ -230,8 +237,38 @@ export default function PostDetail() {
         </div>
       )}
 
-      <div className="prose whitespace-pre-wrap">
-        {post.body ?? '（本文なし）'}
+      <div className="mt-4">
+        {canView ? (
+          <div className="prose whitespace-pre-wrap">
+            {post.body ?? '（本文なし）'}
+          </div>
+        ) : (
+          <div className="space-y-3 text-center text-sm text-gray-700">
+            <p>この投稿は有料です。購読またはPPV購入が必要です。</p>
+
+            <div className="flex justify-center gap-3 mt-2">
+              {isPpv && (
+                <button
+                  onClick={buyPpv}
+                  disabled={busyPpv}
+                  className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
+                >
+                  {busyPpv ? '処理中…' : 'この投稿を単品購入'}
+                </button>
+              )}
+
+              {isPlan && post.planId && (
+                <button
+                  onClick={() => subscribePlan(post)}
+                  disabled={busyPlan}
+                  className="px-4 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60"
+                >
+                  {busyPlan ? '処理中…' : 'このプランに加入する'}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <div style={{ marginTop: 16 }}>

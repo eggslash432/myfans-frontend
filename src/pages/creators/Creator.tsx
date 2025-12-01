@@ -1,6 +1,6 @@
 // frontend/src/pages/Creator.tsx
 import { useEffect, useState } from 'react';
-import { api } from '../lib/api';
+import { api } from '../../lib/api';
 import { useParams } from 'react-router-dom';
 
 type Plan = {

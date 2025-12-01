@@ -1,4 +1,5 @@
-// src/lib/media.ts
+// front/src/lib/media.ts
+
 import type { MediaType } from '../shared/prisma-enums';
 import {api} from './api';
 
@@ -24,8 +25,12 @@ export async function uploadPostMedia(postId: string, file: File): Promise<PostM
   form.append('file', file);
   form.append('mediaType', guessMediaType(file)); // ← バックエンド側DTOに合わせて
 
-  // ★ JSON 版ではなく multipart 版を使う
-  return api.postForm<PostMedia>(`/posts/${postId}/media`, form, true);
+  // ★ 通常の post で OK（FormData を渡せば axios が multipart にしてくれる）
+  const res = await api.post<PostMedia>(
+    `/posts/${postId}/media`,
+    form
+  );
+  return res.data;
 }
 
 /**

@@ -248,9 +248,10 @@ export default function MyPage() {
                 </div>
                 <button
                   onClick={() => navigate(`/posts/${p.id}`)}
-                  className="ml-3 text-xs text-pink-500 underline"
+                  className="ml-3 btn btn-sm btn-outline whitespace-nowrap"
                 >
-                  詳細
+                  <span>詳細を見る</span>
+                  <span style={{ fontSize: '12px' }}>›</span>
                 </button>
               </li>
             ))}

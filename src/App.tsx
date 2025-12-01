@@ -3,8 +3,8 @@
 import { Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import MyPage from './pages/MyPage';
-import CreatorPage from './pages/creators/[id]';
-import PostDetailPage from './pages/posts/[id]';
+import CreatorPage from './pages/creators/Creator';
+import PostDetail from './pages/posts/PostDetail';
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
 import Success from './pages/checkout/Success';
@@ -57,6 +57,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/posts/:id" element={<PostDetail />} />
         {/* クリエイター用ページ */}
         <Route
           path="/creators/settings"
@@ -106,9 +107,14 @@ export default function App() {
             </ProtectedRoute>
           }
         />        
+        <Route 
+          path="/creators/:id" 
+          element={
+            <CreatorPage />
+          } 
+        />
+
         <Route path="/mypage/plans" element={<MyPlansPage />} />
-        <Route path="/creators/:id" element={<CreatorPage />} />
-        <Route path="/posts/:id" element={<PostDetailPage />} />
         <Route path="/checkout/success" element={<Success />} />
         <Route path="/checkout/cancel" element={<Cancel />} />
       </Routes>        
