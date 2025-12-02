@@ -1,13 +1,24 @@
 // src/shared/types.ts
 
 import type { ReactNode } from "react";
-import type { KycStatus, MediaType, PaymentStatus, PayoutStatus, PublishedStatus, Role, SubStatus, Visibility } from "./prisma-enums";
+import type { AgeRating, KycStatus, MediaType, PaymentStatus, PayoutStatus, PublishedStatus, Role, SubStatus, Visibility } from "./prisma-enums";
 
 type PostMedia = {
   id: string;
   mediaType: MediaType;
   url: string;
   sortOrder?: number;
+};
+
+// 投稿作成
+export type CreatePostPayload = {
+  title: string;
+  body?: string;
+  visibility: Visibility;
+  planId?: string | null;
+  priceJpy?: number | null;
+  ageRating?: AgeRating;
+  publishedStatus?: PublishedStatus;
 };
 
 export type Post = {
@@ -77,6 +88,15 @@ export type PostItem = {
   creatorName?: string | null;
 };
 
+export type CheckoutResponse = {
+  url?: string;
+  checkoutUrl?: string;
+  sessionUrl?: string;
+  sessionId?: string;
+  pubKey?: string;
+  publishableKey?: string;
+};
+
 export type User = {
   id: string
   email: string
@@ -89,7 +109,24 @@ export type Creator = {
   name: string
   avatarUrl?: string
   bio?: string
+  plans: Plan[];
 }
+
+export type CreatorMeResponse = {
+  publicName: string;
+  stripeKycStatus?: KycStatus;
+  isListed?: boolean;
+  bio?: string | null;
+  avatarUrl?: string | null;
+  kyc?: {
+    status?: KycStatus | null;
+    chargesEnabled?: boolean;
+    payoutsEnabled?: boolean;
+    disabledReason?: string | null;
+    errors?: string | null;
+    fieldsDue?: string | null;
+  };
+};
 
 export type Plan = {
   id: string;
@@ -101,9 +138,26 @@ export type Plan = {
   externalPriceId?: string | null;
   createdAt: string; // ISO
   updatedAt: string; // ISO
+  interval? : 'month';
 };
 
-export type PlansResponse = { ok: true; plans: Plan[] };
+export type PlansResponse = { 
+  ok: true; 
+  plans: Plan[] 
+};
+
+// ★ 新規プラン作成
+export type CreatePlanPayload = {
+  name: string;
+  priceJpy: number;
+};
+
+export type UpdatePlanPayload = {
+  name?: string;
+  priceJpy?: number;
+  isActive?: boolean;
+  description?: string | null;
+};
 
 export type Payout = {
   id: string;
@@ -135,21 +189,6 @@ export interface PaymentRecord {
   createdAt: string; // ISO
   paidAt?: string | null;
 }
-
-
-export type CreatorMeResponse = {
-  publicName: string;
-  stripeKycStatus?: KycStatus;
-  isListed?: boolean;
-  kyc?: {
-    status?: KycStatus | null;
-    chargesEnabled?: boolean;
-    payoutsEnabled?: boolean;
-    disabledReason?: string | null;
-    errors?: string | null;
-    fieldsDue?: string | null;
-  };
-};
 
 export type ReportItem = {
   id: string;

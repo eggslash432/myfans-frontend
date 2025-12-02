@@ -1,4 +1,5 @@
 // front/src/pages/creators/CreatorPostsPage.tsx
+
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
@@ -63,8 +64,8 @@ export default function CreatorPostsPage() {
                 </div>
                 <button
                   type="button"
-                  className="text-xs text-pink-500 underline ml-2"
                   onClick={() => navigate(`/posts/${p.id}`)}
+                  className="btn btn-outline btn-sm ml-3 whitespace-nowrap"
                 >
                   詳細
                 </button>

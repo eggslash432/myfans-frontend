@@ -19,17 +19,24 @@ export default function MyPage() {
 
   const role = (user as any)?.role;
   const isAdmin = role === 'admin';
+  const isCreator = role === 'creator';
 
   // --- 共通の Creator 再読み込み関数 ---
   const loadCreator = useCallback(async () => {
     if (!ready || !user) return;
+
+    // creator 以外は creator 情報を使わない
+    if (!isCreator) {
+      setCreator(null);
+      return;
+    }
+
     try {
       const c = await api.getCreatorMe();
       setCreator(c);
     } catch (e: any) {
       const msg = e?.message ?? '';
       console.error('getCreatorMe failed:', e);
-      // 404 / creator not found のときだけ「いない」とみなす
       if (/creator not found/i.test(msg) || /404/.test(msg)) {
         setCreator(null);
       } else {
@@ -37,7 +44,7 @@ export default function MyPage() {
         setCreator(null);
       }
     }
-  }, [ready, user]);
+  }, [ready, user, isCreator]);
 
   useEffect(() => {
     if (!ready || !user) return;
@@ -170,7 +177,7 @@ export default function MyPage() {
         </section>
       )}
 
-      {!isAdmin && creator === null && (
+      {!isAdmin && !isCreator && creator === null && (
         <section className="card space-y-3">
           <div className="section-title">クリエイター登録</div>
           <p className="section-subtitle">
@@ -186,7 +193,7 @@ export default function MyPage() {
         </section>
       )}
 
-      {creator && (
+      {isCreator && creator && (
         <>
           <section className="card space-y-2">
             <div className="section-title">クリエイター情報</div>
@@ -201,13 +208,11 @@ export default function MyPage() {
             </div>
           </section>
 
-          {/* クリエイターメニュー */}
           <section className="card space-y-3">
             <div className="section-title">クリエイターメニュー</div>
             <p className="section-subtitle">
               よく使う機能に素早くアクセスできます。
             </p>
-
             <div className="mt-1 space-y-2">
               {creatorMenuItems.map((item) => (
                 <button

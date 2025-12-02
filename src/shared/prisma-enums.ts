@@ -20,3 +20,5 @@ export type PaymentKind = 'subscription' | 'one_time';
 export type PaymentStatus = 'paid' | 'refunded' | 'failed' | 'pending';
 
 export type PayoutStatus = 'requested' | 'approved' | 'paid' | 'rejected';
+
+export type PlanModalMode = 'create' | 'edit';

@@ -1,7 +1,7 @@
 // front/src/lib/api.ts
 
-import type { KycStatus, PublishedStatus, Visibility } from "../shared/prisma-enums";
-import type { AdminSummary, CreatorMeResponse, PlansResponse, PostDetail, PostSummary, ReportItem } from "../shared/types";
+import type { KycStatus, PublishedStatus } from "../shared/prisma-enums";
+import type { AdminSummary, CreatePlanPayload, CreatePostPayload, CreatorMeResponse, Plan, PlansResponse, PostDetail, PostSummary, ReportItem, UpdatePlanPayload } from "../shared/types";
 
 // API ベースURL
 // 例: VITE_API_BASE_URL = "https://api.example.com"
@@ -274,17 +274,6 @@ export async function getPost(postId: string) {
   return { data };
 }
 
-// 投稿作成
-export type CreatePostPayload = {
-  title: string;
-  body?: string;
-  visibility: Visibility;
-  planId?: string | null;
-  priceJpy?: number | null;
-  ageRating?: 'all' | 'r18';
-  publishedStatus?: PublishedStatus | 'draft' | 'published' | 'private';
-};
-
 export async function createPost(payload: CreatePostPayload) {
   // バックエンド側では /posts と /creators/me/posts の両方を受ける実装にしてあるので、
   // ここでは /posts を叩く
@@ -308,6 +297,17 @@ export async function createPostSmart(payload: CreatePostPayload) {
   };
 
   return createPost(body);
+}
+
+export async function uploadPostMedia(postId: string, files: File[]) {
+  const formData = new FormData();
+  files.forEach((file) => formData.append('files', file));
+
+  return apiPost<{ ok: boolean; items: { url: string }[] }>(
+    `/posts/${postId}/media`,
+    formData,
+    { json: false },  // FormData をそのまま送る
+  );
 }
 
 // 投稿通報
@@ -389,29 +389,61 @@ export async function applyCreator(dto: {
  * プラン関連
  * ============================================================ */
 
-// 自分のプラン一覧
+// 自分のプラン一覧（クリエイター画面用）
 export async function getMyPlans(): Promise<PlansResponse> {
-  // バックエンド: GET /plans（ログイン中クリエイターのプラン）
-  return request<PlansResponse>('/plans');
+  // バックエンド: GET /plans/me
+  return request<PlansResponse>('/plans/me');
 }
 
-// 特定クリエイターのプラン一覧
-export async function getCreatorPlans(creatorId: string): Promise<PlansResponse> {
-  // バックエンド: GET /plans/me?creatorId=...
-  // 実装に合わせてパスを変えるならここを調整
-  return request<PlansResponse>(`/plans/me?creatorId=${encodeURIComponent(creatorId)}`);
+// 特定クリエイターのプラン一覧（ファン向けプロフィール表示など）
+export async function getCreatorPlans(
+  creatorId: string,
+): Promise<PlansResponse> {
+  // バックエンド: GET /plans?creatorId=...
+  const qs = new URLSearchParams({ creatorId });
+  return request<PlansResponse>(`/plans?${qs.toString()}`);
 }
-
-// ★ 新規プラン作成
-export type CreatePlanPayload = {
-  name: string;
-  priceJpy: number;
-};
 
 export async function createPlan(payload: CreatePlanPayload) {
   return request('/plans', {
     method: 'POST',
     body: payload,
+  });
+}
+
+// プラン詳細取得
+export async function getPlan(planId: string) {
+  return request<Plan>(`/plans/${planId}`);
+}
+
+// プラン更新
+export async function updatePlan(planId: string, payload: UpdatePlanPayload) {
+  return request<Plan>(`/plans/${planId}`, {
+    method: 'PATCH',
+    body: payload,
+  });
+}
+
+// プラン削除（非アクティブ化）
+export async function deactivatePlan(planId: string) {
+  return request<Plan>(`/plans/${planId}`, {
+    method: 'DELETE',
+  });
+}
+
+// プラン再開（isActive = true）
+export async function reactivatePlan(planId: string) {
+  return request<Plan>(`/plans/${planId}/reactivate`, {
+    method: 'PATCH',
+    body: {}, // JSON送信の形を保つための空ボディ
+  });
+}
+
+// 並び順更新
+export async function reorderPlans(planIds: string[]) {
+  return request<{ ok: true }>('/plans/reorder', {
+    method: 'PATCH',
+    body: { planIds },
   });
 }
 
@@ -625,6 +657,12 @@ const api = {
   getCreator,
   getCreatorPosts,
   getPost,
+  uploadPostMedia,
+  getPlan,
+  updatePlan,
+  deactivatePlan,
+  reactivatePlan,
+  reorderPlans,  
 
   // axios 風ラッパー（トップレベル関数への参照）
   get: apiGet,

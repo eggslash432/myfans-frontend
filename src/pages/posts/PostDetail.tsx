@@ -6,6 +6,7 @@ import { api, reportPost, ApiError } from '../../lib/api';
 import type { Post } from '../../shared/types';
 import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import type { MediaType } from '../../shared/prisma-enums';
 
 type CheckoutResponse = {
   url?: string;
@@ -175,6 +176,20 @@ export default function PostDetail() {
 
   // ✅ ここで Post 型として確定
   const post = q.data;
+  // ★ 追加: メディア一覧（型は一旦 any で受ける）
+  const mediaAssets = ((post as any).mediaAssets ?? []) as {
+    id?: string;
+    url: string;
+    kind?: MediaType;
+    mimeType?: string;
+  }[];  
+  const isVideo = (asset: { url: string; mimeType?: string; kind?: string }) => {
+    if (asset.kind === 'video') return true;
+    if (asset.mimeType?.startsWith('video/')) return true;
+
+    const u = asset.url.toLowerCase();
+    return u.endsWith('.mp4') || u.endsWith('.webm') || u.endsWith('.mov');
+  };  
   const isPpv = post.visibility === 'paid_single';
   const isPlan = post.visibility === 'plan';
 
@@ -239,9 +254,35 @@ export default function PostDetail() {
 
       <div className="mt-4">
         {canView ? (
-          <div className="prose whitespace-pre-wrap">
-            {post.body ?? '（本文なし）'}
-          </div>
+          <div className="space-y-4">
+            {/* ★ メディア表示 */}
+            {mediaAssets.length > 0 && (
+              <div className="space-y-3">
+                {mediaAssets.map((asset, idx) => (
+                  <div key={asset.id ?? idx} className="w-full">
+                    {isVideo(asset) ? (
+                      <video
+                        src={asset.url}
+                        controls
+                        className="w-full rounded-lg shadow"
+                      />
+                    ) : (
+                      <img
+                        src={asset.url}
+                        alt=""
+                        className="w-full rounded-lg shadow object-contain"
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* ★ 本文 */}          
+            <div className="prose whitespace-pre-wrap">
+              {post.body ?? '（本文なし）'}
+            </div>
+          </div>  
         ) : (
           <div className="space-y-3 text-center text-sm text-gray-700">
             <p>この投稿は有料です。購読またはPPV購入が必要です。</p>
@@ -271,8 +312,15 @@ export default function PostDetail() {
         )}
       </div>
 
-      <div style={{ marginTop: 16 }}>
-        <button onClick={handleReport}>通報する</button>
+      <div className="mt-6 flex justify-end">
+        <button
+          type="button"
+          onClick={handleReport}
+          className="btn btn-sm btn-ghost btn-report"
+        >
+          <span>🚩</span>
+          <span>この投稿を通報する</span>
+        </button>
       </div>
     </article>
   );

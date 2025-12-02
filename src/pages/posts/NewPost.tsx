@@ -1,14 +1,17 @@
-import { useState, useEffect } from 'react';
+// front/src/pages/posts/NewPost.tsx
+
+import { useState, useEffect, useRef } from 'react';
 import {
   createPostSmart,
   getCreatorMe,
   getMyPlans,
   createPlan as createPlanApi,
+  uploadPostMedia,          // ★ 追加
 } from '../../lib/api';
 import type { AgeRating, Visibility } from '../../shared/prisma-enums';
-import MediaUploader from '../../components/MediaUploader';
 import type { Plan } from '../../shared/types';
-import { useAuth } from '../../hooks/useAuth';   // ★ 追加
+import { useAuth } from '../../hooks/useAuth';
+
 
 async function fetchMyPlans(): Promise<Plan[]> {
   try {
@@ -19,7 +22,6 @@ async function fetchMyPlans(): Promise<Plan[]> {
   }
 }
 
-// 追加：undefined/null/空文字のキーを落とす（ネストにも対応）
 function prune<T>(obj: T): T {
   if (Array.isArray(obj)) {
     return obj.map(prune).filter((v) => v !== undefined && v !== null) as any;
@@ -35,9 +37,9 @@ function prune<T>(obj: T): T {
 }
 
 export default function NewPost() {
-  const { user } = useAuth();                          // ★ 追加
-  const isAdmin = user?.role === 'admin';              // ★ 追加
-  const isCreator = user?.role === 'creator';          // ★ 追加
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
+  // const isCreator = user?.role === 'creator';
 
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
@@ -57,13 +59,15 @@ export default function NewPost() {
   const [error, setError] = useState<string | null>(null);
   const [okMsg, setOkMsg] = useState<string | null>(null);
 
-  // 作成した投稿のID（これが取れたらメディアアップロード可能）
-  const [createdPostId, setCreatedPostId] = useState<string | null>(null);
-
   const [creator, setCreator] = useState<any | null>(null);
   const [creatorErr, setCreatorErr] = useState('');
 
-  // 初回：プラン取得（admin でも呼んでも害はないが、そのまま）
+  // ★ メディア用 state
+  const [mediaFiles, setMediaFiles] = useState<File[]>([]);
+  const [mediaPreviews, setMediaPreviews] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // 初回：プラン取得
   useEffect(() => {
     const loadPlansOnce = async () => {
       const plans = await fetchMyPlans();
@@ -72,7 +76,7 @@ export default function NewPost() {
     loadPlansOnce();
   }, []);
 
-  // クリエイター情報取得（★ admin のときは呼ばない）
+  // クリエイター情報取得（admin のときは呼ばない）
   useEffect(() => {
     if (isAdmin) {
       setCreator(null);
@@ -96,7 +100,7 @@ export default function NewPost() {
     })();
   }, [isAdmin]);
 
-  // admin の場合は常に free に固定（保険）
+  // admin の場合は常に free に固定
   useEffect(() => {
     if (isAdmin) {
       setVisibility('free');
@@ -113,8 +117,8 @@ export default function NewPost() {
     const base: any = {
       title: title.trim(),
       body,
-      visibility, // 'free' | 'plan' | 'paid_single'
-      ageRating, // 'all'  | 'r18'
+      visibility,
+      ageRating,
       publishedStatus: isDraft ? 'draft' : 'published',
       accessRules: {
         allowByPlanIds: [],
@@ -141,17 +145,15 @@ export default function NewPost() {
     return prune(base);
   };
 
-  // 自分のプラン一覧を再取得（新規作成後用）
   async function loadPlans() {
     try {
-      const res = await getMyPlans(); // PlansResponse { ok, plans }
+      const res = await getMyPlans();
       setPlans(res?.plans ?? []);
     } catch (e) {
       console.error('プラン取得失敗', e);
     }
   }
 
-  // 新規プラン作成
   async function createPlan() {
     if (!newPlanName || !newPlanPrice) return;
     try {
@@ -167,11 +169,22 @@ export default function NewPost() {
     }
   }
 
+  // ★ メディア選択
+  const handleMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const arr = Array.from(files);
+    setMediaFiles(arr);
+
+    // プレビューURLを生成
+    setMediaPreviews(arr.map((f) => URL.createObjectURL(f)));
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     setOkMsg(null);
-    setCreatedPostId(null);
 
     try {
       if (!title.trim()) throw new Error('タイトルを入力してください');
@@ -190,15 +203,19 @@ export default function NewPost() {
         res?.data?.post?.id ??
         res?.data?.id;
 
-      if (postId) {
-        setCreatedPostId(postId);
-        setOkMsg('投稿が完了しました。続けてメディアをアップロードできます。');
-      } else {
-        setOkMsg('投稿が完了しました。（投稿IDの取得にはまだ対応していません）');
+      // ★ postId が取れたらメディアも同時アップロード
+      if (postId && mediaFiles.length > 0) {
+        await uploadPostMedia(postId, mediaFiles);
       }
 
+      setOkMsg('投稿が完了しました。');
+
+      // 入力リセット
       setTitle('');
       setBody('');
+      setMediaFiles([]);
+      mediaPreviews.forEach((url) => URL.revokeObjectURL(url));
+      setMediaPreviews([]);
     } catch (e: any) {
       const msg = e?.message ?? (typeof e === 'string' ? e : JSON.stringify(e));
       setError(`投稿失敗: ${msg}`);
@@ -209,15 +226,13 @@ export default function NewPost() {
 
   const kyc = creator?.kyc ?? {};
   const kycStatus = kyc.status ?? creator?.stripeKycStatus ?? 'pending';
-  const isKycOk = isAdmin ? true : kycStatus === 'approved';   // ★ admin は常にOK扱い
+  const isKycOk = isAdmin ? true : kycStatus === 'approved';
 
   return (
     <div className="page">
       <div className="max-w-3xl mx-auto space-y-4">
-        {/* タイトル */}
         <h1 className="page-title">新規投稿作成</h1>
 
-        {/* クリエイター取得エラー（★ admin のときは表示しない） */}
         {!isAdmin && creatorErr && (
           <section className="card">
             <div className="text-sm text-red-700">
@@ -229,7 +244,6 @@ export default function NewPost() {
           </section>
         )}
 
-        {/* KYC 未完了の注意（★ creator のときだけ効く） */}
         {creator && !isKycOk && (
           <section className="card border border-yellow-300 bg-yellow-50/80">
             <p className="text-sm text-yellow-800">
@@ -239,7 +253,6 @@ export default function NewPost() {
           </section>
         )}
 
-        {/* 投稿フォーム本体 */}
         <section className="card">
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* タイトル */}
@@ -264,6 +277,52 @@ export default function NewPost() {
                 rows={8}
                 className="form-input"
               />
+            </div>
+
+            {/* ★ メディア（本文と同じフォーム内） */}
+            <div className="form-field">
+              <label className="form-label">メディア（画像・動画）</label>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  ファイルを選択
+                </button>
+                {mediaFiles.length > 0 && (
+                  <span className="text-sm text-gray-600">
+                    {mediaFiles.length} 件選択中
+                  </span>
+                )}
+              </div>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,video/*"
+                multiple
+                style = {{ display : 'None'}}
+                onChange={handleMediaChange}
+              />
+
+              {mediaPreviews.length > 0 && (
+                <div className="mt-3 grid grid-cols-3 gap-2">
+                  {mediaPreviews.map((url, i) => (
+                    <img
+                      key={i}
+                      src={url}
+                      alt=""
+                      className="w-full h-24 object-cover rounded"
+                    />
+                  ))}
+                </div>
+              )}
+
+              <p className="mt-1 text-xs text-gray-500">
+                ※ 投稿ボタンを押すと、本文と一緒に選択中のメディアもアップロードされます。
+              </p>
             </div>
 
             {/* 公開範囲 */}
@@ -435,22 +494,6 @@ export default function NewPost() {
           </form>
         </section>
 
-        {/* メディアアップロードカード */}
-        {createdPostId && (
-          <section className="card space-y-3">
-            <div className="section-title">メディアをアップロード</div>
-            <p className="section-subtitle">
-              画像や動画をアップロードすると、この投稿に紐づくメディアとして表示されます。
-            </p>
-            <MediaUploader
-              postId={createdPostId}
-              onUploaded={() => {
-                alert('メディアのアップロードが完了しました');
-              }}
-            />
-          </section>
-        )}
-
         {/* 新規プラン作成モーダル */}
         {showPlanModal && (
           <div className="fixed inset-0 z-50">
@@ -506,7 +549,7 @@ export default function NewPost() {
               </div>
             </div>
           </div>
-        )}
+        )}            
       </div>
     </div>
   );

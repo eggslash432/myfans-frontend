@@ -432,6 +432,24 @@ a.card {
   box-shadow: none;
 }
 
+/* ===== 通報ボタンなどのサブアクション ===== */
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-text-muted);
+  border: 1px solid #e5e7eb;
+}
+
+.btn-ghost:hover {
+  background: #f9fafb;
+}
+
+.btn-report {
+  font-size: 11px;
+  padding: 0.3rem 0.9rem;
+  gap: 0.25rem;
+}
+
 /* ----- エラー／サブリンク ----- */
 
 .auth-error {

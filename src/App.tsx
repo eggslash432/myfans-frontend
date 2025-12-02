@@ -3,7 +3,7 @@
 import { Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import MyPage from './pages/MyPage';
-import CreatorPage from './pages/creators/Creator';
+import CreatorPage from './pages/creators/CreatorPage';
 import PostDetail from './pages/posts/PostDetail';
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
@@ -21,7 +21,7 @@ import AdminReportsPage from './pages/admin/AdminReportsPage';
 import AdminDashboard from './pages/admin/Dashboard';
 import CreatorPostsPage from './pages/creators/CreatorPostsPage';
 import CreatorPlansPage from './pages/creators/CreatorPlansPage';
-import PayoutsPage from './pages/creators/PayoutsPage';
+import PayoutsPage from './pages/creators/CreatorPayoutsPage';
 import CreatorAnalyticsPage from './pages/creators/CreatorAnalyticsPage';
 import CreatorProfilePage from './pages/creators/CreatorProfilePage';
 import AdminSummaryPage from './pages/admin/AdminSummaryPage';

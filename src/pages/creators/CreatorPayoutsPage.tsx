@@ -1,5 +1,5 @@
+// front/src/pages/creator/CreatorPayoutsPage.tsx
 
-// src/pages/creator/PayoutsPage.tsx
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
 import type { Payout } from '../../shared/types';
@@ -13,8 +13,9 @@ export default function PayoutsPage() {
   const [loadingAll, setLoadingAll] = useState(true);
   const [error, setError] = useState<string>('');
   const [creator, setCreator] = useState<any | null>(null);
-  const [creatorErr, setCreatorErr] = useState('');  
+  const [creatorErr, setCreatorErr] = useState('');
 
+  // 出金情報読み込み
   async function loadAll() {
     try {
       setLoadingAll(true);
@@ -27,15 +28,8 @@ export default function PayoutsPage() {
       setBalance(balRes.data.balanceJpy);
 
       // 出金履歴
-      const listRes = await api.get<Payout[]>(
-        '/creators/me/payouts',
-      );
+      const listRes = await api.get<Payout[]>('/creators/me/payouts');
       setItems(listRes.data ?? []);
-
-      // もし creator 情報も取っているならこんな感じ
-      // const creatorRes = await api.get<CreatorMeResponse>('/creators/me');
-      // setCreator(creatorRes.data);
-
     } catch (e: any) {
       console.error(e);
       setError(e?.message ?? '読み込みに失敗しました');
@@ -44,9 +38,36 @@ export default function PayoutsPage() {
     }
   }
 
-
+  // クリエイター情報 + 出金情報
   useEffect(() => {
-    loadAll();
+    (async () => {
+      try {
+        const res = await api.get('/creators/me');
+        setCreator(res.data);
+        setCreatorErr('');
+
+        // KYC / Stripe OK のときだけ出金情報を取りに行く
+        const kyc = res.data?.kyc ?? {};
+        const kycStatus = kyc.status ?? res.data?.stripeKycStatus ?? 'pending';
+        const payoutsEnabled =
+          res.data?.stripePayoutsEnabled ?? kyc.payoutsEnabled ?? false;
+        const isKycOk = kycStatus === 'approved' && payoutsEnabled;
+
+        if (isKycOk) {
+          await loadAll();
+        } else {
+          setLoadingAll(false);
+        }
+      } catch (e: any) {
+        console.error(e);
+        setCreatorErr(
+          e?.response?.data?.message ??
+            e?.message ??
+            'クリエイター情報の取得に失敗しました',
+        );
+        setLoadingAll(false);
+      }
+    })();
   }, []);
 
   async function handleRequest() {
@@ -88,44 +109,68 @@ export default function PayoutsPage() {
     }
   }
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await api.get('/creators/me');
-        setCreator(res.data);
-      } catch (e: any) {
-        setCreatorErr(e?.response?.data?.message ?? e?.message ?? 'クリエイター情報の取得に失敗しました');
-      }
-    })();
-  }, []);
-
+  // クリエイター未登録
   if (creatorErr === 'creator not found') {
-    return <div>クリエイター登録が必要です…</div>;
-  }
-
-  if (!creator) return <div>読み込み中...</div>;
-
-  const kyc = creator.kyc ?? {};
-  const isKycOk = kyc.status === 'approved' && kyc.payoutsEnabled;
-
-  if (!isKycOk) {
     return (
-      <div>
-        <h1>出金管理</h1>
-        <p>本人確認（KYC）とStripeの審査が完了していないため、出金機能は利用できません。</p>
-        {kyc.disabledReason && <p>Stripeエラー: {kyc.disabledReason}</p>}
+      <div className="page">
+        <h1 className="page-title">出金管理</h1>
+        <section className="card">
+          <p className="text-sm text-gray-700">
+            出金機能を利用するには、まずクリエイター登録が必要です。
+          </p>
+        </section>
       </div>
     );
-  }  
+  }
 
+  if (!creator) {
+    return (
+      <div className="page">
+        <div className="p-4 text-sm text-gray-500">読み込み中…</div>
+      </div>
+    );
+  }
+
+  // KYC / Stripe ステータス判定（NewPost と揃える）
+  const kyc = creator.kyc ?? {};
+  const kycStatus = kyc.status ?? creator.stripeKycStatus ?? 'pending';
+  const payoutsEnabled =
+    creator.stripePayoutsEnabled ?? kyc.payoutsEnabled ?? false;
+  const isKycOk = kycStatus === 'approved' && payoutsEnabled;
+
+  // KYC 未完了 or 出金無効のとき
+  if (!isKycOk) {
+    return (
+      <div className="page space-y-4">
+        <h1 className="page-title">出金管理</h1>
+        <section className="card space-y-2">
+          <p className="text-sm text-gray-700">
+            本人確認（KYC）と Stripe 側の審査が完了していないため、
+            出金機能は現在ご利用いただけません。
+          </p>
+          <p className="text-xs text-gray-500">
+            現在のステータス: KYC = {kycStatus},{' '}
+            StripePayoutsEnabled = {String(payoutsEnabled)}
+          </p>
+          {kyc.disabledReason && (
+            <p className="text-xs text-red-600">
+              Stripe エラー: {kyc.disabledReason}
+            </p>
+          )}
+        </section>
+      </div>
+    );
+  }
+
+  // ここから出金機能本体
   return (
-    <div className="mx-auto max-w-3xl p-6 space-y-6">
-      <h1 className="text-2xl font-bold">出金管理</h1>
+    <div className="page space-y-4">
+      <h1 className="page-title">出金管理</h1>
 
       {error && <div className="text-red-600 text-sm">{error}</div>}
 
       {/* 残高表示 */}
-      <section className="border rounded p-4 space-y-2">
+      <section className="card space-y-2">
         <div className="text-sm text-gray-600">出金可能残高</div>
         <div className="text-2xl font-semibold">
           {balance == null ? '読み込み中…' : `¥${balance.toLocaleString()}`}
@@ -133,12 +178,12 @@ export default function PayoutsPage() {
       </section>
 
       {/* 出金リクエストフォーム */}
-      <section className="border rounded p-4 space-y-3">
-        <div className="font-semibold">出金リクエスト</div>
+      <section className="card space-y-3">
+        <div className="section-title">出金リクエスト</div>
         <div className="flex flex-wrap gap-2 items-center">
           <input
             type="number"
-            className="border rounded px-3 py-2 w-48"
+            className="form-input w-40"
             placeholder="金額（円）"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
@@ -146,7 +191,7 @@ export default function PayoutsPage() {
           <button
             onClick={handleRequest}
             disabled={loading}
-            className="px-4 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60"
+            className="btn btn-primary btn-sm"
           >
             {loading ? '送信中…' : '出金申請する'}
           </button>
@@ -157,10 +202,10 @@ export default function PayoutsPage() {
       </section>
 
       {/* リスト */}
-      <section className="border rounded p-4 space-y-3">
-        <div className="font-semibold">出金履歴</div>
+      <section className="card space-y-3">
+        <div className="section-title">出金履歴</div>
         {loadingAll ? (
-          <div>読み込み中…</div>
+          <div className="text-sm text-gray-500">読み込み中…</div>
         ) : items.length === 0 ? (
           <div className="text-sm text-gray-500">
             まだ出金リクエストはありません。
@@ -184,7 +229,9 @@ export default function PayoutsPage() {
                   <td className="py-1 text-right">
                     ¥{p.amountJpy.toLocaleString()}
                   </td>
-                  <td className="py-1">{renderStatusLabel(p.payoutStatus)}</td>
+                  <td className="py-1">
+                    {renderStatusLabel(p.payoutStatus)}
+                  </td>
                   <td className="py-1">
                     {p.paidAt ? new Date(p.paidAt).toLocaleString() : '-'}
                   </td>
