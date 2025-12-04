@@ -1,4 +1,4 @@
-import type { Me } from '../types';
+import type { Me } from '../../shared/types';
 
 export default function SubscriptionStatus({ me }: { me: Me }) {
   const s = me.subscription;

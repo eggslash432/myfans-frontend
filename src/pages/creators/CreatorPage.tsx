@@ -3,12 +3,15 @@ import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
 import { useParams } from 'react-router-dom';
 import type { Creator } from '../../shared/types';
+import { useAuth } from '../../hooks/useAuth';
 
 export default function CreatorPage() {
   const { id } = useParams();
   const [creator, setCreator] = useState<Creator | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
+  const isMyself = user && creator && user.id === creator.id;
 
   useEffect(() => {
     (async () => {
@@ -143,12 +146,17 @@ export default function CreatorPage() {
                     ¥{(p.priceJpy ?? 0).toLocaleString()}/月
                   </div>
                 </div>
+                {!isMyself &&(
                 <button
                   className="btn btn-sm btn-primary"
                   onClick={() => onSubscribe(p.id)}
                 >
                   購読する
                 </button>
+                )}
+                {isMyself && (
+                  <p className="text-xs text-gray-500">※自分のプランは購読できません</p>
+                )}
               </div>
             ))}
           </div>

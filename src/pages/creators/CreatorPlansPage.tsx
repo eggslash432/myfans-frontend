@@ -7,7 +7,7 @@ import type { Plan, PlansResponse } from '../../shared/types';
 type PlanModalMode = 'create' | 'edit';
 
 export default function CreatorPlansPage() {
-  const [data, setData] = useState<PlansResponse | null>(null);
+  const [_, setData] = useState<PlansResponse | null>(null);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
