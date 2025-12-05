@@ -515,7 +515,18 @@ a.card {
   font-weight: 700;
 }
 
-
+/* --------------------------------------------------
+   共通：投稿メディアのサイズ調整
+  （画像・動画どちらにも適用）
+-------------------------------------------------- */
+.post-media {
+  max-width: 100%;
+  max-height: 70vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
 
 /* 下方向の間隔ユーティリティ（Tailwind 風） */
 .space-y-3 > * + * {

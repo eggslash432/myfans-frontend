@@ -311,37 +311,25 @@ export default function PostDetail() {
           <div className="space-y-4">
             {/* ★ メディア表示 */}
             {mediaAssets.length > 0 && (
-              <div className="space-y-3">
-                {mediaAssets.length > 0 && (
-                  <div className="space-y-4">
-                    {mediaAssets.map((asset, idx) => {
-                      const src = resolveMediaUrl(asset.url);
+              <div className="space-y-4">
+                {mediaAssets.map((asset, idx) => {
+                  const src = resolveMediaUrl(asset.url);
 
-                      return (
-                        <div
-                          key={asset.id ?? idx}
-                          className="w-full flex justify-center"
-                        >
-                          <div className="max-w-full max-h-[70vh] bg-black/5 rounded-2xl overflow-hidden flex items-center justify-center">
-                            {isVideo(asset) ? (
-                              <video
-                                src={src}
-                                controls
-                                className="max-w-full max-h-[70vh] object-contain"
-                              />
-                            ) : (
-                              <img
-                                src={src}
-                                alt=""
-                                className="max-w-full max-h-[70vh] object-contain"
-                              />
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+                  return (
+                    <div
+                      key={asset.id ?? idx}
+                      className="w-full flex justify-center"
+                    >
+                      <div className="bg-black/5 rounded-2xl overflow-hidden flex items-center justify-center">
+                        {isVideo(asset) ? (
+                          <video src={src} controls className="post-media" />
+                        ) : (
+                          <img src={src} alt="" className="post-media" />
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
 
