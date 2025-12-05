@@ -8,6 +8,8 @@ type Props = {
   disabled?: boolean;
   className?: string;
 };
+
+//購入ボタン
 export default function PurchaseButton({ postId, priceYen, disabled, className }: Props) {
   // 価格 0 / 未設定で無料判定されるレイアウトの時はボタンを出さない
   if (priceYen === 0) return null;

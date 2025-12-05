@@ -1,6 +1,4 @@
-// front/src/pages/posts/PostDetail.tsx
-
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api, reportPost, ApiError } from '../../lib/api';
 import type { Post } from '../../shared/types';
@@ -17,9 +15,27 @@ type CheckoutResponse = {
   publishableKey?: string;
 };
 
+// ★ API ベース URL（axios で使っている VITE_API_URL から /api を取ったもの）
+const API_ORIGIN = (import.meta.env.VITE_API_BASE_URL as string | undefined)
+  // 例: http://localhost:3000/api → http://localhost:3000 にする
+  ?.replace(/\/api\/?$/, '')
+  ?.replace(/\/$/, '');
+
+// 相対パス("/uploads/...")なら API_ORIGIN を前に付ける
+const resolveMediaUrl = (url: string) => {
+  if (!url) return '';
+  if (/^https?:\/\//i.test(url)) return url; // 既に絶対URLならそのまま
+  if (!API_ORIGIN) return url;
+  if (url.startsWith('/')) return `${API_ORIGIN}${url}`;
+  return `${API_ORIGIN}/${url}`;
+};
+
 export default function PostDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [busyPlan, setBusyPlan] = useState(false);
   const [busyPpv, setBusyPpv] = useState(false);
 
@@ -38,6 +54,16 @@ export default function PostDetail() {
   // ★ PPV購入（単品購入）
   const buyPpv = async () => {
     if (!id) return;
+
+    // 🔒 未ログインならログイン画面へ
+    if (!user) {
+      navigate('/login', {
+        state: { from: location.pathname },
+        replace: true,
+      });
+      return;
+    }
+
     try {
       setBusyPpv(true);
 
@@ -51,7 +77,6 @@ export default function PostDetail() {
       });
       const payload = res.data;
 
-      // Stripe Checkout URL の取得
       const url =
         payload.url ??
         payload.checkoutUrl ??
@@ -63,7 +88,6 @@ export default function PostDetail() {
         return;
       }
 
-      // ② sessionId + publishableKey 方式にフォールバック（必要なら）
       const { sessionId, pubKey, publishableKey } = payload;
       const pk = pubKey ?? publishableKey;
       if (!sessionId || !pk) {
@@ -75,6 +99,14 @@ export default function PostDetail() {
       await (stripe as any).redirectToCheckout({ sessionId });
     } catch (e: any) {
       console.error(e);
+      const status = e?.response?.status;
+      if (status === 401) {
+        navigate('/login', {
+          state: { from: location.pathname },
+          replace: true,
+        });
+        return;
+      }
       alert(e?.response?.data?.message ?? '決済の開始に失敗しました');
     } finally {
       setBusyPpv(false);
@@ -87,6 +119,16 @@ export default function PostDetail() {
       alert('この投稿に紐づくプラン情報がありません');
       return;
     }
+
+    // 🔒 未ログインチェック
+    if (!user) {
+      navigate('/login', {
+        state: { from: location.pathname },
+        replace: true,
+      });
+      return;
+    }
+
     try {
       setBusyPlan(true);
 
@@ -122,14 +164,17 @@ export default function PostDetail() {
     } catch (e: any) {
       const status = e?.response?.status;
       if (status === 401) {
-        alert('ログインが必要です');
-      } else {
-        console.error(e);
-        alert(
-          e?.response?.data?.message ??
-            'プラン加入の開始に失敗しました',
-        );
+        navigate('/login', {
+          state: { from: location.pathname },
+          replace: true,
+        });
+        return;
       }
+      console.error(e);
+      alert(
+        e?.response?.data?.message ??
+          'プラン加入の開始に失敗しました',
+      );
     } finally {
       setBusyPlan(false);
     }
@@ -176,20 +221,29 @@ export default function PostDetail() {
 
   // ✅ ここで Post 型として確定
   const post = q.data;
-  // ★ 追加: メディア一覧（型は一旦 any で受ける）
-  const mediaAssets = ((post as any).mediaAssets ?? []) as {
+
+  // ★ メディア一覧（バックエンドのフィールド名が違う可能性もあるので保険込み）
+  const rawMedia =
+    (post as any).mediaAssets ??
+    (post as any).media ??
+    (post as any).medias ??
+    [];
+
+  const mediaAssets = (rawMedia ?? []) as {
     id?: string;
     url: string;
-    kind?: MediaType;
+    kind?: MediaType | string;
     mimeType?: string;
-  }[];  
+  }[];
+
   const isVideo = (asset: { url: string; mimeType?: string; kind?: string }) => {
     if (asset.kind === 'video') return true;
     if (asset.mimeType?.startsWith('video/')) return true;
 
     const u = asset.url.toLowerCase();
     return u.endsWith('.mp4') || u.endsWith('.webm') || u.endsWith('.mov');
-  };  
+  };
+
   const isPpv = post.visibility === 'paid_single';
   const isPlan = post.visibility === 'plan';
 
@@ -223,7 +277,7 @@ export default function PostDetail() {
         {post.creator?.publicName
           ? `by ${post.creator.publicName}`
           : 'by 運営'}
-      </div>      
+      </div>
 
       {/* ▼ 種類・価格ラベル */}
       <div className="text-sm text-gray-600 space-x-2">
@@ -258,31 +312,44 @@ export default function PostDetail() {
             {/* ★ メディア表示 */}
             {mediaAssets.length > 0 && (
               <div className="space-y-3">
-                {mediaAssets.map((asset, idx) => (
-                  <div key={asset.id ?? idx} className="w-full">
-                    {isVideo(asset) ? (
-                      <video
-                        src={asset.url}
-                        controls
-                        className="w-full rounded-lg shadow"
-                      />
-                    ) : (
-                      <img
-                        src={asset.url}
-                        alt=""
-                        className="w-full rounded-lg shadow object-contain"
-                      />
-                    )}
+                {mediaAssets.length > 0 && (
+                  <div className="space-y-4">
+                    {mediaAssets.map((asset, idx) => {
+                      const src = resolveMediaUrl(asset.url);
+
+                      return (
+                        <div
+                          key={asset.id ?? idx}
+                          className="w-full flex justify-center"
+                        >
+                          <div className="max-w-full max-h-[70vh] bg-black/5 rounded-2xl overflow-hidden flex items-center justify-center">
+                            {isVideo(asset) ? (
+                              <video
+                                src={src}
+                                controls
+                                className="max-w-full max-h-[70vh] object-contain"
+                              />
+                            ) : (
+                              <img
+                                src={src}
+                                alt=""
+                                className="max-w-full max-h-[70vh] object-contain"
+                              />
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
+                )}
               </div>
             )}
 
-            {/* ★ 本文 */}          
+            {/* ★ 本文 */}
             <div className="prose whitespace-pre-wrap">
               {post.body ?? '（本文なし）'}
             </div>
-          </div>  
+          </div>
         ) : (
           <div className="space-y-3 text-center text-sm text-gray-700">
             <p>この投稿は有料です。購読またはPPV購入が必要です。</p>

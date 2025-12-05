@@ -1,7 +1,7 @@
 // front/src/pages/CreatorPage.tsx
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import type { Creator } from '../../shared/types';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -10,8 +10,12 @@ export default function CreatorPage() {
   const [creator, setCreator] = useState<Creator | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
   const { user } = useAuth();
-  const isMyself = user && creator && user.id === creator.id;
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const isMyself = user && creator && user.id === (creator as any).id;
 
   useEffect(() => {
     (async () => {
@@ -36,6 +40,16 @@ export default function CreatorPage() {
   // ▼ 購読処理（Stripe Checkout 開始）
   async function onSubscribe(planId: string) {
     if (!id) return;
+
+    // 🔒 未ログインならログイン画面へ
+    if (!user) {
+      navigate('/login', {
+        state: { from: location.pathname }, // ログイン後に戻ってくる用
+        replace: true,
+      });
+      return;
+    }
+
     try {
       // creators.controller の
       // POST /creators/:creatorId/plans/:planId/checkout を叩く
@@ -49,6 +63,17 @@ export default function CreatorPage() {
       window.location.href = url;
     } catch (e: any) {
       console.error(e);
+
+      // サーバー側で JWT が切れて 401 になったときもログインへ
+      const status = e?.response?.status;
+      if (status === 401) {
+        navigate('/login', {
+          state: { from: location.pathname },
+          replace: true,
+        });
+        return;
+      }
+
       const msg =
         e?.response?.data?.message ??
         e?.message ??
@@ -146,16 +171,19 @@ export default function CreatorPage() {
                     ¥{(p.priceJpy ?? 0).toLocaleString()}/月
                   </div>
                 </div>
-                {!isMyself &&(
-                <button
-                  className="btn btn-sm btn-primary"
-                  onClick={() => onSubscribe(p.id)}
-                >
-                  購読する
-                </button>
+
+                {!isMyself && (
+                  <button
+                    className="btn btn-sm btn-primary"
+                    onClick={() => onSubscribe(p.id)}
+                  >
+                    購読する
+                  </button>
                 )}
                 {isMyself && (
-                  <p className="text-xs text-gray-500">※自分のプランは購読できません</p>
+                  <p className="text-xs text-gray-500">
+                    ※自分のプランは購読できません
+                  </p>
                 )}
               </div>
             ))}
