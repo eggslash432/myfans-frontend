@@ -1,8 +1,14 @@
 // front/src/pages/posts/PostDetail.tsx
 import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { api, reportPost, ApiError, createPlanCheckoutSession, createPpvCheckoutSession } from '../../lib/api';
-import type { CheckoutResponse, Post } from '../../shared/types';
+import {
+  api,
+  reportPost,
+  ApiError,
+  createPlanCheckoutSession,
+  createPpvCheckoutSession,
+} from '../../lib/api';
+import type { Post } from '../../shared/types';
 import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import type { MediaType } from '../../shared/prisma-enums';
@@ -40,33 +46,32 @@ export default function PostDetail() {
       !(err instanceof ApiError && err.status === 403) && c < 1,
   });
 
-  const buyPpv = async () => {
-    if (!id) return;
-
-    // 未ログインならログインへ
+  /** 未ログインならログイン画面へ飛ばして true を返す */
+  const requireLogin = () => {
     if (!user) {
       navigate('/login', {
         state: { from: location.pathname },
         replace: true,
       });
-      return;
+      return true;
     }
+    return false;
+  };
+
+  const buyPpv = async () => {
+    if (!id) return;
+    if (requireLogin()) return;
 
     try {
       setBusyPpv(true);
 
-      // ★ 新しいヘルパーを使う
       const { url } = await createPpvCheckoutSession(id);
-
-      if (!url) {
-        throw new Error('Checkout URL が取得できませんでした');
-      }
+      if (!url) throw new Error('Checkout URL が取得できませんでした');
 
       window.location.href = url;
     } catch (e: any) {
       console.error(e);
 
-      // ApiError で 401 が返ってきたときは再ログインへ
       if (e instanceof ApiError && e.status === 401) {
         navigate('/login', {
           state: { from: location.pathname },
@@ -86,27 +91,18 @@ export default function PostDetail() {
       alert('この投稿に紐づくプラン情報がありません');
       return;
     }
-
-    if (!user) {
-      navigate('/login', {
-        state: { from: location.pathname },
-        replace: true,
-      });
-      return;
-    }
+    if (requireLogin()) return;
 
     try {
       setBusyPlan(true);
 
-      // ★ 新しいヘルパーを使う
       const { url } = await createPlanCheckoutSession(post.planId);
-
-      if (!url) {
-        throw new Error('Checkout URL が取得できませんでした');
-      }
+      if (!url) throw new Error('Checkout URL が取得できませんでした');
 
       window.location.href = url;
     } catch (e: any) {
+      console.error(e);
+
       if (e instanceof ApiError && e.status === 401) {
         navigate('/login', {
           state: { from: location.pathname },
@@ -114,13 +110,14 @@ export default function PostDetail() {
         });
         return;
       }
-      console.error(e);
+
       alert(e?.body?.message ?? e?.message ?? 'プラン加入の開始に失敗しました');
     } finally {
       setBusyPlan(false);
     }
   };
 
+  // ====== ローディング・エラー系 ======
 
   if (q.isLoading) {
     return (
@@ -132,10 +129,9 @@ export default function PostDetail() {
     );
   }
 
-  const errorStatus =
-    q.error instanceof ApiError ? q.error.status : undefined;
+  const errorStatus = q.error instanceof ApiError ? q.error.status : undefined;
 
-  // 🔒 403 のとき：有料ロック画面
+  // 🔒 403 のとき：有料ロック画面（投稿詳細そのものが取れないケース）
   if (errorStatus === 403) {
     return (
       <div className="page">
@@ -152,13 +148,7 @@ export default function PostDetail() {
             <Link to="/signup" className="btn btn-ghost">
               新規登録
             </Link>
-            <button
-              onClick={buyPpv}
-              disabled={busyPpv}
-              className="btn btn-primary"
-            >
-              {busyPpv ? '処理中…' : 'この投稿を単品購入'}
-            </button>
+            {/* ★ ここでは PPV かプランか分からないので購入ボタンは出さない */}
           </div>
         </section>
       </div>
@@ -177,6 +167,7 @@ export default function PostDetail() {
     );
   }
 
+  // ====== ここから本文表示 ======
   const post = q.data;
 
   const rawMedia =
@@ -226,13 +217,17 @@ export default function PostDetail() {
     );
   };
 
-  const isPpv = post.visibility === 'paid_single';
+  const isFree = post.visibility === 'free';
   const isPlan = post.visibility === 'plan';
+  const isPpv = post.visibility === 'paid_single';
 
-  const canView =
-    post.visibility === 'free'
-      ? true
-      : (post as any).canView === true;
+  // ★ R18 判定（プロパティ名は実プロジェクトに合わせて変えてね）
+  const isR18 =
+    (post as any).ageRating === 'r18' ||
+    (post as any).isAdult === true;
+
+  const canView = isFree ? true : (post as any).canView === true;
+  const isLocked = !canView && (isPlan || isPpv);
 
   const handleReport = async () => {
     if (!user) {
@@ -279,30 +274,31 @@ export default function PostDetail() {
                 プラン限定投稿
               </span>
             )}
-            {!isPpv && !isPlan && (
+            {isFree && (
               <span className="post-detail-badge post-detail-badge-free">
                 無料投稿
               </span>
             )}
-          </div>
+            {/* ★ R18 バッジ */}
+            {isR18 && (
+              <span className="post-detail-badge post-detail-badge-r18">
+                R18
+              </span>
+            )}            
 
-          {/* プラン加入ボタン */}
-          {isPlan && post.planId && (
-            <div className="post-detail-actions">
-              <button
-                onClick={() => subscribePlan(post)}
-                disabled={busyPlan}
-                className="btn btn-primary"
-              >
-                {busyPlan ? '処理中…' : 'このプランに加入する'}
-              </button>
-            </div>
-          )}
+            {/* プランで閲覧できている = 購読中 */}
+            {isPlan && canView && (
+              <span className="post-detail-badge">
+                このプランを購読中
+              </span>
+            )}
+          </div>
         </header>
 
         {/* 本文／ロック表示 */}
         <section className="post-detail-body">
-          {canView ? (
+          {!isLocked ? (
+            // ====== 閲覧可能 ======
             <div className="space-y-4">
               {/* メディア */}
               {mediaAssets.length > 0 && (
@@ -347,8 +343,15 @@ export default function PostDetail() {
               </div>
             </div>
           ) : (
+            // ====== ロック表示（有料だけどまだ見れない） ======
             <div className="post-detail-locked">
-              <p>この投稿は有料です。購読またはPPV購入が必要です。</p>
+              {isPlan ? (
+                <p>この投稿は有料です。このプランへの加入が必要です。</p>
+              ) : isPpv ? (
+                <p>この投稿は有料です。この投稿の単品購入が必要です。</p>
+              ) : (
+                <p>この投稿は有料です。</p>
+              )}
 
               <div className="post-detail-actions">
                 {isPpv && (

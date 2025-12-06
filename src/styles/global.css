@@ -884,6 +884,11 @@ a.post-list-item:visited {
   justify-content: flex-end;
 }
 
+.post-detail-badge-r18 {
+  background: #fee2e2;  /* 薄い赤 */
+  color: #b91c1c;       /* 濃い赤文字 */
+  border-color: #fecaca;
+}
 
 /* 下方向の間隔ユーティリティ（Tailwind 風） */
 .space-y-3 > * + * {
