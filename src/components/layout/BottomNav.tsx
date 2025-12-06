@@ -1,4 +1,5 @@
 // front/src/components/layout/BottomNav.tsx
+
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import {
@@ -7,6 +8,7 @@ import {
   PencilSquareIcon,
   SparklesIcon,
   WrenchScrewdriverIcon,
+  Cog6ToothIcon, 
 } from '@heroicons/react/24/outline';
 
 export default function BottomNav() {
@@ -20,6 +22,7 @@ export default function BottomNav() {
   const isNewPost = path.startsWith('/posts/new');
   const isCreator = path.startsWith('/creators');
   const isAdmin   = path.startsWith('/admin');
+  const isSettings = path.startsWith('/settings'); 
 
   return (
     <nav className="bottom-nav">
@@ -67,6 +70,17 @@ export default function BottomNav() {
           <SparklesIcon className="bottom-nav-icon" />
           <span className="bottom-nav-label">クリエイター</span>
         </Link>
+
+        {/* 設定 */}
+        <Link
+          to="/settings"
+          className={
+            'bottom-nav-item ' + (isSettings ? 'bottom-nav-item-active' : '')
+          }
+        >
+          <Cog6ToothIcon className="bottom-nav-icon" />
+          <span className="bottom-nav-label">設定</span>
+        </Link>        
 
         {/* 管理者タブ：admin ロールのときだけ表示 */}
         {user?.role === 'admin' && (

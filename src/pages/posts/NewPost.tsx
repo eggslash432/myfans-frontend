@@ -6,12 +6,11 @@ import {
   getCreatorMe,
   getMyPlans,
   createPlan as createPlanApi,
-  uploadPostMedia,          // ★ 追加
+  uploadPostMedia,
 } from '../../lib/api';
 import type { AgeRating, Visibility } from '../../shared/prisma-enums';
 import type { Plan } from '../../shared/types';
 import { useAuth } from '../../hooks/useAuth';
-
 
 async function fetchMyPlans(): Promise<Plan[]> {
   try {
@@ -36,10 +35,15 @@ function prune<T>(obj: T): T {
   return obj;
 }
 
+// ★ プレビュー用の型
+type MediaPreview = {
+  url: string;
+  kind: 'image' | 'video' | 'audio';
+};
+
 export default function NewPost() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
-  // const isCreator = user?.role === 'creator';
 
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
@@ -64,7 +68,7 @@ export default function NewPost() {
 
   // ★ メディア用 state
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
-  const [mediaPreviews, setMediaPreviews] = useState<string[]>([]);
+  const [mediaPreviews, setMediaPreviews] = useState<MediaPreview[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // 初回：プラン取得
@@ -169,16 +173,35 @@ export default function NewPost() {
     }
   }
 
-  // ★ メディア選択
+  // ★ メディア選択（画像・動画・音声）
   const handleMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
+    // 既存プレビューURLを解放
+    mediaPreviews.forEach((p) => URL.revokeObjectURL(p.url));
+
     const arr = Array.from(files);
     setMediaFiles(arr);
 
-    // プレビューURLを生成
-    setMediaPreviews(arr.map((f) => URL.createObjectURL(f)));
+    // 新しいプレビューURLを生成
+    const previews: MediaPreview[] = arr.map((f) => {
+      const url = URL.createObjectURL(f);
+      const mime = f.type || '';
+
+      let kind: MediaPreview['kind'] = 'image';
+      if (mime.startsWith('video/')) {
+        kind = 'video';
+      } else if (mime.startsWith('audio/')) {
+        kind = 'audio';
+      } else {
+        kind = 'image';
+      }
+
+      return { url, kind };
+    });
+
+    setMediaPreviews(previews);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -214,7 +237,7 @@ export default function NewPost() {
       setTitle('');
       setBody('');
       setMediaFiles([]);
-      mediaPreviews.forEach((url) => URL.revokeObjectURL(url));
+      mediaPreviews.forEach((p) => URL.revokeObjectURL(p.url));
       setMediaPreviews([]);
     } catch (e: any) {
       const msg = e?.message ?? (typeof e === 'string' ? e : JSON.stringify(e));
@@ -279,9 +302,9 @@ export default function NewPost() {
               />
             </div>
 
-            {/* ★ メディア（本文と同じフォーム内） */}
+            {/* ★ メディア（画像 / 動画 / 音声） */}
             <div className="form-field">
-              <label className="form-label">メディア（画像・動画）</label>
+              <label className="form-label">メディア（画像・動画・音声）</label>
 
               <div className="flex items-center gap-3">
                 <button
@@ -301,21 +324,38 @@ export default function NewPost() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*,video/*"
+                accept="image/*,video/*,audio/*"
                 multiple
-                style = {{ display : 'None'}}
+                style={{ display: 'none' }}
                 onChange={handleMediaChange}
               />
 
               {mediaPreviews.length > 0 && (
                 <div className="mt-3 grid grid-cols-3 gap-2">
-                  {mediaPreviews.map((url, i) => (
-                    <img
+                  {mediaPreviews.map((p, i) => (
+                    <div
                       key={i}
-                      src={url}
-                      alt=""
-                      className="w-full h-24 object-cover rounded"
-                    />
+                      className="w-full max-h-[70vh] bg-black/5 rounded-2xl overflow-hidden flex items-center justify-center"
+                    >
+                      {p.kind === 'image' && (
+                        <img src={p.url} alt="" className="post-media" />
+                      )}
+                      {p.kind === 'video' && (
+                        <video
+                          src={p.url}
+                          className="post-media"
+                          muted
+                          controls
+                        />
+                      )}
+                      {p.kind === 'audio' && (
+                        <audio
+                          src={p.url}
+                          controls
+                          className="w-full"
+                        />
+                      )}
+                    </div>
                   ))}
                 </div>
               )}
@@ -345,7 +385,7 @@ export default function NewPost() {
                     name="visibility"
                     checked={visibility === 'plan'}
                     onChange={() => setVisibility('plan')}
-                    disabled={isAdmin}                     // ★ admin は選べない
+                    disabled={isAdmin}
                   />
                   <span>有料（購読者限定）</span>
                 </label>
@@ -356,13 +396,12 @@ export default function NewPost() {
                     name="visibility"
                     checked={visibility === 'paid_single'}
                     onChange={() => setVisibility('paid_single')}
-                    disabled={isAdmin}                     // ★ admin は選べない
+                    disabled={isAdmin}
                   />
                   <span>PPV</span>
                 </label>
               </div>
 
-              {/* admin 向けの注記 */}
               {isAdmin && (
                 <p className="mt-1 text-xs text-gray-500">
                   管理者アカウントでは無料投稿のみ作成できます（有料販売・購読は不可）。
@@ -470,7 +509,7 @@ export default function NewPost() {
             <div className="pt-2">
               <button
                 type="submit"
-                disabled={(!isKycOk && !isAdmin) || submitting}   // ★ admin はKYC無視
+                disabled={(!isKycOk && !isAdmin) || submitting}
                 className="btn btn-primary w-full sm:w-auto"
               >
                 {submitting ? '投稿中…' : '投稿する'}
@@ -549,7 +588,7 @@ export default function NewPost() {
               </div>
             </div>
           </div>
-        )}            
+        )}
       </div>
     </div>
   );

@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../lib/api';
-import { useAuth } from '../hooks/useAuth';
+import { api } from '../../lib/api';
+import { useAuth } from '../../hooks/useAuth';
 
 export default function MyPage() {
   const { user, ready, restore } = useAuth();

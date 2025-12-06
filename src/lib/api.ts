@@ -330,8 +330,9 @@ async function getCreator(creatorId: string) {
 
 // クリエイターの公開投稿一覧（axios互換）
 async function getCreatorPosts(creatorId: string) {
-  const data = await request<PostSummary[]>(`/creators/${creatorId}/posts`);
-  return { data };          // こちらも { data } で返す
+  const raw = await request<any>(`/creators/${creatorId}/posts`);
+  const data = normalizeList<PostSummary>(raw);  // ← {items: [...]} でも配列にしてくれる
+  return { data };          // axios 互換で { data: PostSummary[] }
 }
 
 // 自分のクリエイター情報（設定画面用）

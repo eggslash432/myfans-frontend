@@ -1,30 +1,19 @@
+// front/src/pages/posts/PostDetail.tsx
 import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api, reportPost, ApiError } from '../../lib/api';
-import type { Post } from '../../shared/types';
+import type { CheckoutResponse, Post } from '../../shared/types';
 import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import type { MediaType } from '../../shared/prisma-enums';
 
-type CheckoutResponse = {
-  url?: string;
-  checkoutUrl?: string;
-  sessionUrl?: string;
-  sessionId?: string;
-  pubKey?: string;
-  publishableKey?: string;
-};
-
-// ★ API ベース URL（axios で使っている VITE_API_URL から /api を取ったもの）
 const API_ORIGIN = (import.meta.env.VITE_API_BASE_URL as string | undefined)
-  // 例: http://localhost:3000/api → http://localhost:3000 にする
   ?.replace(/\/api\/?$/, '')
   ?.replace(/\/$/, '');
 
-// 相対パス("/uploads/...")なら API_ORIGIN を前に付ける
 const resolveMediaUrl = (url: string) => {
   if (!url) return '';
-  if (/^https?:\/\//i.test(url)) return url; // 既に絶対URLならそのまま
+  if (/^https?:\/\//i.test(url)) return url;
   if (!API_ORIGIN) return url;
   if (url.startsWith('/')) return `${API_ORIGIN}${url}`;
   return `${API_ORIGIN}/${url}`;
@@ -51,11 +40,9 @@ export default function PostDetail() {
       !(err instanceof ApiError && err.status === 403) && c < 1,
   });
 
-  // ★ PPV購入（単品購入）
   const buyPpv = async () => {
     if (!id) return;
 
-    // 🔒 未ログインならログイン画面へ
     if (!user) {
       navigate('/login', {
         state: { from: location.pathname },
@@ -67,7 +54,7 @@ export default function PostDetail() {
     try {
       setBusyPpv(true);
 
-      const successUrl = window.location.href; // 購入後このページに戻す
+      const successUrl = window.location.href;
       const cancelUrl = window.location.href;
 
       const res = await api.post<CheckoutResponse>('/payments/checkout', {
@@ -78,10 +65,7 @@ export default function PostDetail() {
       const payload = res.data;
 
       const url =
-        payload.url ??
-        payload.checkoutUrl ??
-        payload.sessionUrl ??
-        null;
+        payload.url ?? payload.checkoutUrl ?? payload.sessionUrl ?? null;
 
       if (url) {
         window.location.href = url;
@@ -90,9 +74,8 @@ export default function PostDetail() {
 
       const { sessionId, pubKey, publishableKey } = payload;
       const pk = pubKey ?? publishableKey;
-      if (!sessionId || !pk) {
-        throw new Error('Checkout情報が不足しています');
-      }
+      if (!sessionId || !pk) throw new Error('Checkout情報が不足しています');
+
       const { loadStripe } = await import('@stripe/stripe-js');
       const stripe = await loadStripe(pk);
       if (!stripe) throw new Error('Stripe初期化に失敗しました');
@@ -113,14 +96,12 @@ export default function PostDetail() {
     }
   };
 
-  // ▼ サブスク加入（プラン購読）
   const subscribePlan = async (post: Post) => {
     if (!post.creatorId || !post.planId) {
       alert('この投稿に紐づくプラン情報がありません');
       return;
     }
 
-    // 🔒 未ログインチェック
     if (!user) {
       navigate('/login', {
         state: { from: location.pathname },
@@ -143,10 +124,7 @@ export default function PostDetail() {
       const payload = res.data;
 
       const url =
-        payload.url ??
-        payload.checkoutUrl ??
-        payload.sessionUrl ??
-        null;
+        payload.url ?? payload.checkoutUrl ?? payload.sessionUrl ?? null;
       if (url) {
         window.location.href = url;
         return;
@@ -154,9 +132,8 @@ export default function PostDetail() {
 
       const { sessionId, pubKey, publishableKey } = payload;
       const pk = pubKey ?? publishableKey;
-      if (!sessionId || !pk) {
-        throw new Error('Checkout情報が不足しています');
-      }
+      if (!sessionId || !pk) throw new Error('Checkout情報が不足しています');
+
       const { loadStripe } = await import('@stripe/stripe-js');
       const stripe = await loadStripe(pk);
       if (!stripe) throw new Error('Stripe初期化に失敗しました');
@@ -172,8 +149,7 @@ export default function PostDetail() {
       }
       console.error(e);
       alert(
-        e?.response?.data?.message ??
-          'プラン加入の開始に失敗しました',
+        e?.response?.data?.message ?? 'プラン加入の開始に失敗しました',
       );
     } finally {
       setBusyPlan(false);
@@ -181,48 +157,62 @@ export default function PostDetail() {
   };
 
   if (q.isLoading) {
-    return <div className="p-6 text-center text-gray-500">読み込み中…</div>;
+    return (
+      <div className="page">
+        <section className="card">
+          <p className="section-subtitle">投稿を読み込み中です…</p>
+        </section>
+      </div>
+    );
   }
 
   const errorStatus =
     q.error instanceof ApiError ? q.error.status : undefined;
 
+  // 🔒 403 のとき：有料ロック画面
   if (errorStatus === 403) {
-    // バックエンドが 403 を返す設計のとき用のロック画面
     return (
-      <div className="mx-auto max-w-lg p-6 text-center space-y-3">
-        <div className="text-lg font-semibold">この投稿は有料です</div>
-        <div className="text-sm text-gray-600">
-          購読または単品購入が必要です
-        </div>
+      <div className="page">
+        <section className="card post-detail-card">
+          <h1 className="post-detail-title">この投稿は有料です</h1>
+          <p className="section-subtitle">
+            購読または単品購入が必要です。
+          </p>
 
-        <div className="flex justify-center gap-3 mt-4">
-          <Link to="/login" className="px-3 py-2 border rounded">
-            ログイン
-          </Link>
-          <Link to="/signup" className="px-3 py-2 border rounded">
-            新規登録
-          </Link>
-          <button
-            onClick={buyPpv}
-            disabled={busyPpv}
-            className="px-3 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
-          >
-            {busyPpv ? '処理中…' : '単品購入'}
-          </button>
-        </div>
+          <div className="post-detail-actions">
+            <Link to="/login" className="btn btn-ghost">
+              ログイン
+            </Link>
+            <Link to="/signup" className="btn btn-ghost">
+              新規登録
+            </Link>
+            <button
+              onClick={buyPpv}
+              disabled={busyPpv}
+              className="btn btn-primary"
+            >
+              {busyPpv ? '処理中…' : 'この投稿を単品購入'}
+            </button>
+          </div>
+        </section>
       </div>
     );
   }
 
   if (q.isError || !q.data) {
-    return <div className="p-6 text-red-600">読み込みに失敗しました</div>;
+    return (
+      <div className="page">
+        <section className="card">
+          <p className="settings-message settings-message-error">
+            投稿の読み込みに失敗しました。
+          </p>
+        </section>
+      </div>
+    );
   }
 
-  // ✅ ここで Post 型として確定
   const post = q.data;
 
-  // ★ メディア一覧（バックエンドのフィールド名が違う可能性もあるので保険込み）
   const rawMedia =
     (post as any).mediaAssets ??
     (post as any).media ??
@@ -233,21 +223,46 @@ export default function PostDetail() {
     id?: string;
     url: string;
     kind?: MediaType | string;
+    mediaType?: MediaType | string;
     mimeType?: string;
   }[];
 
-  const isVideo = (asset: { url: string; mimeType?: string; kind?: string }) => {
-    if (asset.kind === 'video') return true;
-    if (asset.mimeType?.startsWith('video/')) return true;
+  const isVideo = (asset: {
+    url: string;
+    mimeType?: string;
+    kind?: string;
+    mediaType?: string;
+  }) => {
+    const kind = (asset.kind ?? asset.mediaType ?? '').toString();
+    if (kind === 'video') return true;
+    if (asset.mimeType?.startsWith?.('video/')) return true;
 
     const u = asset.url.toLowerCase();
     return u.endsWith('.mp4') || u.endsWith('.webm') || u.endsWith('.mov');
   };
 
+  const isAudio = (asset: {
+    url: string;
+    mimeType?: string;
+    kind?: string;
+    mediaType?: string;
+  }) => {
+    const kind = (asset.kind ?? asset.mediaType ?? '').toString();
+    if (kind === 'audio') return true;
+    if (asset.mimeType?.startsWith?.('audio/')) return true;
+
+    const u = asset.url.toLowerCase();
+    return (
+      u.endsWith('.mp3') ||
+      u.endsWith('.wav') ||
+      u.endsWith('.m4a') ||
+      u.endsWith('.ogg')
+    );
+  };
+
   const isPpv = post.visibility === 'paid_single';
   const isPlan = post.visibility === 'plan';
 
-  // 無料投稿なら無条件で閲覧OK、それ以外は canView を見る
   const canView =
     post.visibility === 'free'
       ? true
@@ -269,114 +284,143 @@ export default function PostDetail() {
   };
 
   return (
-    <article className="mx-auto max-w-2xl p-6 space-y-4">
-      <h1 className="text-2xl font-bold">{post.title}</h1>
+    <div className="page">
+      <article className="card post-detail-card">
+        {/* タイトル＋作者 */}
+        <header className="post-detail-header">
+          <h1 className="post-detail-title">{post.title}</h1>
 
-      {/* ▼ 投稿者表示（creator がいなければ「運営」扱い） */}
-      <div className="text-sm text-gray-500">
-        {post.creator?.publicName
-          ? `by ${post.creator.publicName}`
-          : 'by 運営'}
-      </div>
+          <div className="post-detail-meta">
+            <span className="post-detail-author">
+              {post.creator?.publicName
+                ? `by ${post.creator.publicName}`
+                : 'by 運営'}
+            </span>
+          </div>
 
-      {/* ▼ 種類・価格ラベル */}
-      <div className="text-sm text-gray-600 space-x-2">
-        {isPpv && (
-          <span>
-            単品価格:{' '}
-            {post.priceJpy != null
-              ? `¥${post.priceJpy.toLocaleString()}`
-              : '価格未設定'}
-          </span>
-        )}
-        {isPlan && <span>プラン限定投稿</span>}
-        {!isPpv && !isPlan && <span>無料投稿</span>}
-      </div>
+          {/* 種類・価格ラベル */}
+          <div className="post-detail-tags">
+            {isPpv && (
+              <span className="post-detail-badge">
+                単品価格{' '}
+                {post.priceJpy != null
+                  ? `¥${post.priceJpy.toLocaleString()}`
+                  : '価格未設定'}
+              </span>
+            )}
+            {isPlan && (
+              <span className="post-detail-badge post-detail-badge-plan">
+                プラン限定投稿
+              </span>
+            )}
+            {!isPpv && !isPlan && (
+              <span className="post-detail-badge post-detail-badge-free">
+                無料投稿
+              </span>
+            )}
+          </div>
 
-      {/* ▼ プラン投稿のときに「このプランに加入する」ボタン */}
-      {isPlan && post.planId && (
-        <div className="mt-3">
-          <button
-            onClick={() => subscribePlan(post)}
-            disabled={busyPlan}
-            className="px-4 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60"
-          >
-            {busyPlan ? '処理中…' : 'このプランに加入する'}
-          </button>
-        </div>
-      )}
+          {/* プラン加入ボタン */}
+          {isPlan && post.planId && (
+            <div className="post-detail-actions">
+              <button
+                onClick={() => subscribePlan(post)}
+                disabled={busyPlan}
+                className="btn btn-primary"
+              >
+                {busyPlan ? '処理中…' : 'このプランに加入する'}
+              </button>
+            </div>
+          )}
+        </header>
 
-      <div className="mt-4">
-        {canView ? (
-          <div className="space-y-4">
-            {/* ★ メディア表示 */}
-            {mediaAssets.length > 0 && (
-              <div className="space-y-4">
-                {mediaAssets.map((asset, idx) => {
-                  const src = resolveMediaUrl(asset.url);
+        {/* 本文／ロック表示 */}
+        <section className="post-detail-body">
+          {canView ? (
+            <div className="space-y-4">
+              {/* メディア */}
+              {mediaAssets.length > 0 && (
+                <div className="space-y-4">
+                  {mediaAssets.map((asset, idx) => {
+                    const src = resolveMediaUrl(asset.url);
 
-                  return (
-                    <div
-                      key={asset.id ?? idx}
-                      className="w-full flex justify-center"
-                    >
-                      <div className="bg-black/5 rounded-2xl overflow-hidden flex items-center justify-center">
+                    return (
+                      <div
+                        key={asset.id ?? idx}
+                        className="w-full flex justify-center"
+                      >
                         {isVideo(asset) ? (
-                          <video src={src} controls className="post-media" />
+                          <div className="bg-black/5 rounded-2xl overflow-hidden flex items-center justify-center w-full">
+                            <video
+                              src={src}
+                              controls
+                              className="post-media"
+                            />
+                          </div>
+                        ) : isAudio(asset) ? (
+                          <div className="bg-black/5 rounded-2xl px-4 py-3 w-full flex items-center gap-3">
+                            <span className="text-sm text-gray-600 whitespace-nowrap">
+                              音声
+                            </span>
+                            <audio src={src} controls className="w-full" />
+                          </div>
                         ) : (
-                          <img src={src} alt="" className="post-media" />
+                          <div className="bg-black/5 rounded-2xl overflow-hidden flex items-center justify-center w-full">
+                            <img src={src} alt="" className="post-media" />
+                          </div>
                         )}
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* 本文 */}
+              <div className="post-detail-text">
+                {post.body ?? '（本文なし）'}
               </div>
-            )}
-
-            {/* ★ 本文 */}
-            <div className="prose whitespace-pre-wrap">
-              {post.body ?? '（本文なし）'}
             </div>
-          </div>
-        ) : (
-          <div className="space-y-3 text-center text-sm text-gray-700">
-            <p>この投稿は有料です。購読またはPPV購入が必要です。</p>
+          ) : (
+            <div className="post-detail-locked">
+              <p>この投稿は有料です。購読またはPPV購入が必要です。</p>
 
-            <div className="flex justify-center gap-3 mt-2">
-              {isPpv && (
-                <button
-                  onClick={buyPpv}
-                  disabled={busyPpv}
-                  className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
-                >
-                  {busyPpv ? '処理中…' : 'この投稿を単品購入'}
-                </button>
-              )}
+              <div className="post-detail-actions">
+                {isPpv && (
+                  <button
+                    onClick={buyPpv}
+                    disabled={busyPpv}
+                    className="btn btn-primary"
+                  >
+                    {busyPpv ? '処理中…' : 'この投稿を単品購入'}
+                  </button>
+                )}
 
-              {isPlan && post.planId && (
-                <button
-                  onClick={() => subscribePlan(post)}
-                  disabled={busyPlan}
-                  className="px-4 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60"
-                >
-                  {busyPlan ? '処理中…' : 'このプランに加入する'}
-                </button>
-              )}
+                {isPlan && post.planId && (
+                  <button
+                    onClick={() => subscribePlan(post)}
+                    disabled={busyPlan}
+                    className="btn btn-primary"
+                  >
+                    {busyPlan ? '処理中…' : 'このプランに加入する'}
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </section>
 
-      <div className="mt-6 flex justify-end">
-        <button
-          type="button"
-          onClick={handleReport}
-          className="btn btn-sm btn-ghost btn-report"
-        >
-          <span>🚩</span>
-          <span>この投稿を通報する</span>
-        </button>
-      </div>
-    </article>
+        {/* 通報ボタン */}
+        <footer className="post-detail-footer">
+          <button
+            type="button"
+            onClick={handleReport}
+            className="btn btn-ghost btn-report"
+          >
+            <span>🚩</span>
+            <span>この投稿を通報する</span>
+          </button>
+        </footer>
+      </article>
+    </div>
   );
 }

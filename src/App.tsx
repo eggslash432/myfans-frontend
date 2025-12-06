@@ -2,7 +2,7 @@
 
 import { Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
-import MyPage from './pages/MyPage';
+import MyPage from './pages/mypage/MyPage';
 import CreatorPage from './pages/creators/CreatorPage';
 import PostDetail from './pages/posts/PostDetail';
 import Login from './pages/auth/Login';
@@ -25,6 +25,8 @@ import PayoutsPage from './pages/creators/CreatorPayoutsPage';
 import CreatorAnalyticsPage from './pages/creators/CreatorAnalyticsPage';
 import CreatorProfilePage from './pages/creators/CreatorProfilePage';
 import AdminSummaryPage from './pages/admin/AdminSummaryPage';
+import PasswordChangePage from './pages/settings/PasswordChangePage';
+import SettingsHomePage from './pages/settings';
 
 export default function App() {
   return (
@@ -117,6 +119,10 @@ export default function App() {
         <Route path="/mypage/plans" element={<MyPlansPage />} />
         <Route path="/checkout/success" element={<Success />} />
         <Route path="/checkout/cancel" element={<Cancel />} />
+
+        {/* 設定 */}
+        <Route path="/settings" element={<SettingsHomePage />} />
+        <Route path="/settings/password" element={<PasswordChangePage />} />
       </Routes>        
     </AppLayout>
   );

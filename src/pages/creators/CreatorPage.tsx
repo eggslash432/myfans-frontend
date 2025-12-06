@@ -1,13 +1,14 @@
 // front/src/pages/CreatorPage.tsx
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import type { Creator } from '../../shared/types';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
+import type { Creator, PostSummary } from '../../shared/types';
 import { useAuth } from '../../hooks/useAuth';
 
 export default function CreatorPage() {
   const { id } = useParams();
   const [creator, setCreator] = useState<Creator | null>(null);
+  const [posts, setPosts] = useState<PostSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,8 +27,14 @@ export default function CreatorPage() {
       }
 
       try {
-        const res = await api.get<Creator>(`/creators/${id}`);
-        setCreator(res.data);
+        // クリエイター情報と投稿一覧を並列で取得
+        const [creatorRes, postsRes] = await Promise.all([
+          api.get<Creator>(`/creators/${id}`),
+          api.getCreatorPosts(id),
+        ]);
+
+        setCreator(creatorRes.data);
+        setPosts(postsRes.data ?? []);
       } catch (e: any) {
         console.error(e);
         setError(e?.message ?? 'ロードに失敗しました');
@@ -51,8 +58,6 @@ export default function CreatorPage() {
     }
 
     try {
-      // creators.controller の
-      // POST /creators/:creatorId/plans/:planId/checkout を叩く
       const res = await api.post<{ url: string }>(
         `/creators/${id}/plans/${planId}/checkout`,
       );
@@ -64,7 +69,6 @@ export default function CreatorPage() {
     } catch (e: any) {
       console.error(e);
 
-      // サーバー側で JWT が切れて 401 になったときもログインへ
       const status = e?.response?.status;
       if (status === 401) {
         navigate('/login', {
@@ -120,6 +124,21 @@ export default function CreatorPage() {
 
   const initial = displayName.trim().charAt(0).toUpperCase() || 'C';
   const planCount = creator.plans?.length ?? 0;
+  const postCount = posts.length;
+
+  // 投稿の visibility をちょっとだけ人間向けに
+  const visibilityLabel = (v: PostSummary['visibility']) => {
+    switch (v) {
+      case 'free':
+        return '無料';
+      case 'plan':
+        return 'プラン限定';
+      case 'paid_single':
+        return 'PPV';
+      default:
+        return '';
+    }
+  };
 
   return (
     <div className="page space-y-4">
@@ -187,6 +206,67 @@ export default function CreatorPage() {
                 )}
               </div>
             ))}
+          </div>
+        )}
+      </section>
+
+      {/* 投稿一覧 */}
+      <section className="card">
+        <div className="section-title flex items-center justify-between">
+          <span>投稿</span>
+          <span className="text-xs text-gray-400">全 {postCount} 件</span>
+        </div>
+
+        {postCount === 0 && (
+          <p className="section-subtitle">まだ公開中の投稿はありません。</p>
+        )}
+
+        {postCount > 0 && (
+          <div className="post-list">
+            {posts.map((post) => {
+              const dateStr = new Date(
+                post.publishedAt ?? post.createdAt,
+              ).toLocaleDateString("ja-JP");
+
+              const statusLabel =
+                post.publishedStatus === "published"
+                  ? "公開中"
+                  : post.publishedStatus === "draft"
+                  ? "下書き"
+                  : "非公開";
+
+              return (
+                <Link
+                  key={post.id}
+                  to={`/posts/${post.id}`}
+                  className="post-list-item card-link"
+                >
+                  {/* 上段：日付＋ステータス */}
+                  <div className="post-list-meta">
+                    <span className="post-list-date">{dateStr}</span>
+                    <span className="post-list-status">{statusLabel}</span>
+                  </div>
+
+                  {/* タイトル */}
+                  <div className="post-list-title">
+                    {post.title || "無題の投稿"}
+                  </div>
+
+                  {/* 下段：公開範囲＋価格 */}
+                  <div className="post-list-tags">
+                    <span className="post-list-badge">
+                      {visibilityLabel(post.visibility)}
+                    </span>
+
+                    {post.visibility === "paid_single" && post.priceJpy != null && (
+                      <span className="post-list-price">
+                        ¥{post.priceJpy.toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         )}
       </section>

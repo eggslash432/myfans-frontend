@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { fetchPaymentHistory } from '../api';
-import type { PaymentRecord } from '../../shared/types';
+import type { PaymentRecord } from '../../../shared/types';
 
 export default function PaymentHistory({ userId }: { userId: string }) {
   const [items, setItems] = useState<PaymentRecord[]>([]);
