@@ -1,6 +1,6 @@
 // front/src/pages/CreatorPage.tsx
 import { useEffect, useState } from 'react';
-import { api } from '../../lib/api';
+import { api, ApiError, createPlanCheckoutSession } from '../../lib/api';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import type { Creator, PostSummary } from '../../shared/types';
 import { useAuth } from '../../hooks/useAuth';
@@ -15,6 +15,7 @@ export default function CreatorPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [busyPlanId, setBusyPlanId] = useState<string | null>(null);
 
   const isMyself = user && creator && user.id === (creator as any).id;
 
@@ -51,26 +52,26 @@ export default function CreatorPage() {
     // 🔒 未ログインならログイン画面へ
     if (!user) {
       navigate('/login', {
-        state: { from: location.pathname }, // ログイン後に戻ってくる用
+        state: { from: location.pathname },
         replace: true,
       });
       return;
     }
 
     try {
-      const res = await api.post<{ url: string }>(
-        `/creators/${id}/plans/${planId}/checkout`,
-      );
+      setBusyPlanId(planId);
 
-      const url = res.data?.url;
-      if (!url) throw new Error('Checkout URL が取得できませんでした');
+      const { url } = await createPlanCheckoutSession(planId);
+      if (!url) {
+        throw new Error('Checkout URL が取得できませんでした');
+      }
 
       window.location.href = url;
     } catch (e: any) {
       console.error(e);
 
-      const status = e?.response?.status;
-      if (status === 401) {
+      // ApiError（ラッパ）経由で 401 が来たとき
+      if (e instanceof ApiError && e.status === 401) {
         navigate('/login', {
           state: { from: location.pathname },
           replace: true,
@@ -79,10 +80,12 @@ export default function CreatorPage() {
       }
 
       const msg =
-        e?.response?.data?.message ??
-        e?.message ??
+        (e as any)?.body?.message ??
+        (e as any)?.message ??
         'Checkoutの作成に失敗しました';
       alert(msg);
+    } finally {
+      setBusyPlanId(null);
     }
   }
 

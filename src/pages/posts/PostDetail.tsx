@@ -1,7 +1,7 @@
 // front/src/pages/posts/PostDetail.tsx
 import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { api, reportPost, ApiError } from '../../lib/api';
+import { api, reportPost, ApiError, createPlanCheckoutSession, createPpvCheckoutSession } from '../../lib/api';
 import type { CheckoutResponse, Post } from '../../shared/types';
 import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
@@ -43,6 +43,7 @@ export default function PostDetail() {
   const buyPpv = async () => {
     if (!id) return;
 
+    // 未ログインならログインへ
     if (!user) {
       navigate('/login', {
         state: { from: location.pathname },
@@ -54,43 +55,27 @@ export default function PostDetail() {
     try {
       setBusyPpv(true);
 
-      const successUrl = window.location.href;
-      const cancelUrl = window.location.href;
+      // ★ 新しいヘルパーを使う
+      const { url } = await createPpvCheckoutSession(id);
 
-      const res = await api.post<CheckoutResponse>('/payments/checkout', {
-        postId: id,
-        successUrl,
-        cancelUrl,
-      });
-      const payload = res.data;
-
-      const url =
-        payload.url ?? payload.checkoutUrl ?? payload.sessionUrl ?? null;
-
-      if (url) {
-        window.location.href = url;
-        return;
+      if (!url) {
+        throw new Error('Checkout URL が取得できませんでした');
       }
 
-      const { sessionId, pubKey, publishableKey } = payload;
-      const pk = pubKey ?? publishableKey;
-      if (!sessionId || !pk) throw new Error('Checkout情報が不足しています');
-
-      const { loadStripe } = await import('@stripe/stripe-js');
-      const stripe = await loadStripe(pk);
-      if (!stripe) throw new Error('Stripe初期化に失敗しました');
-      await (stripe as any).redirectToCheckout({ sessionId });
+      window.location.href = url;
     } catch (e: any) {
       console.error(e);
-      const status = e?.response?.status;
-      if (status === 401) {
+
+      // ApiError で 401 が返ってきたときは再ログインへ
+      if (e instanceof ApiError && e.status === 401) {
         navigate('/login', {
           state: { from: location.pathname },
           replace: true,
         });
         return;
       }
-      alert(e?.response?.data?.message ?? '決済の開始に失敗しました');
+
+      alert(e?.body?.message ?? e?.message ?? '決済の開始に失敗しました');
     } finally {
       setBusyPpv(false);
     }
@@ -113,34 +98,16 @@ export default function PostDetail() {
     try {
       setBusyPlan(true);
 
-      const successUrl = `${window.location.origin}/creators/${post.creatorId}?subscribed=1`;
-      const cancelUrl = `${window.location.origin}/creators/${post.creatorId}`;
+      // ★ 新しいヘルパーを使う
+      const { url } = await createPlanCheckoutSession(post.planId);
 
-      const res = await api.post<CheckoutResponse>('/payments/checkout', {
-        planId: post.planId,
-        successUrl,
-        cancelUrl,
-      });
-      const payload = res.data;
-
-      const url =
-        payload.url ?? payload.checkoutUrl ?? payload.sessionUrl ?? null;
-      if (url) {
-        window.location.href = url;
-        return;
+      if (!url) {
+        throw new Error('Checkout URL が取得できませんでした');
       }
 
-      const { sessionId, pubKey, publishableKey } = payload;
-      const pk = pubKey ?? publishableKey;
-      if (!sessionId || !pk) throw new Error('Checkout情報が不足しています');
-
-      const { loadStripe } = await import('@stripe/stripe-js');
-      const stripe = await loadStripe(pk);
-      if (!stripe) throw new Error('Stripe初期化に失敗しました');
-      await (stripe as any).redirectToCheckout({ sessionId });
+      window.location.href = url;
     } catch (e: any) {
-      const status = e?.response?.status;
-      if (status === 401) {
+      if (e instanceof ApiError && e.status === 401) {
         navigate('/login', {
           state: { from: location.pathname },
           replace: true,
@@ -148,13 +115,12 @@ export default function PostDetail() {
         return;
       }
       console.error(e);
-      alert(
-        e?.response?.data?.message ?? 'プラン加入の開始に失敗しました',
-      );
+      alert(e?.body?.message ?? e?.message ?? 'プラン加入の開始に失敗しました');
     } finally {
       setBusyPlan(false);
     }
   };
+
 
   if (q.isLoading) {
     return (

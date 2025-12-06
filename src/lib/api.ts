@@ -452,19 +452,26 @@ export async function reorderPlans(planIds: string[]) {
  * 決済 / サブスク / PPV
  * ============================================================ */
 
-// サブスク購読用 Checkout セッション作成
+// サブスク購読用 Checkout セッション作成（統一エンドポイント版）
 export async function createPlanCheckoutSession(planId: string) {
-  return request<{ url: string }>('/payments/checkout/subscription', {
+  const successUrl = `${window.location.origin}/mypage?purchase=success`;
+  const cancelUrl  = `${window.location.origin}/mypage?purchase=cancel`;
+
+  return request<{ url: string }>('/payments/checkout', {
     method: 'POST',
-    body: { planId },
+    body: { planId, successUrl, cancelUrl },
   });
 }
 
 // PPV（単品販売）用 Checkout セッション作成
 export async function createPpvCheckoutSession(postId: string) {
-  return request<{ url: string }>('/payments/checkout/one-time', {
+  // DTO 側の仕様に合わせて successUrl / cancelUrl も送っておく
+  const successUrl = window.location.href;
+  const cancelUrl  = window.location.href;
+
+  return request<{ url: string }>('/payments/checkout', {
     method: 'POST',
-    body: { postId },
+    body: { postId, successUrl, cancelUrl },
   });
 }
 
