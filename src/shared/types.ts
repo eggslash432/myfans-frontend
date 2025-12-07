@@ -21,6 +21,23 @@ export type CreatePostPayload = {
   publishedStatus?: PublishedStatus;
 };
 
+// 投稿編集
+export type PostEditValues = {
+  title: string;
+  body: string;
+  visibility: Visibility;
+  priceJpy: number | null;
+  publishedStatus: PublishedStatus;
+};
+
+export type PostProps = {
+  post: any | null;
+  open: boolean;
+  saving: boolean;
+  onClose: () => void;
+  onSubmit: (values: PostEditValues) => void;
+};
+
 export type Post = {
   id: string;
   title: string;

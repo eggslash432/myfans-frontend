@@ -1,7 +1,19 @@
 // front/src/lib/api.ts
 
 import type { KycStatus, PublishedStatus } from "../shared/prisma-enums";
-import type { AdminSummary, CreatePlanPayload, CreatePostPayload, CreatorMeResponse, Plan, PlansResponse, PostDetail, PostSummary, ReportItem, UpdatePlanPayload } from "../shared/types";
+import type { 
+  AdminSummary, 
+  CreatePlanPayload, 
+  CreatePostPayload, 
+  CreatorMeResponse, 
+  Plan, 
+  PlansResponse, 
+  PostDetail, 
+  PostSummary, 
+  ReportItem, 
+  UpdatePlanPayload,
+  UpdatePostPayload,
+  } from "../shared/types";
 
 // API ベースURL
 // 例: VITE_API_BASE_URL = "https://api.example.com"
@@ -315,6 +327,17 @@ export async function reportPost(postId: string, reason: string) {
   return request<{ ok: true }>(`/posts/${postId}/report`, {
     method: 'POST',
     body: { reason },
+  });
+}
+
+// ★ 修正版
+export async function updateMyPost(
+  postId: string,
+  payload: UpdatePostPayload,
+) {
+  return request<PostSummary>(`/posts/me/${postId}`, {
+    method: 'PATCH',
+    body: payload,        
   });
 }
 
@@ -671,6 +694,7 @@ const api = {
   deactivatePlan,
   reactivatePlan,
   reorderPlans,  
+  updateMyPost,
 
   // axios 風ラッパー（トップレベル関数への参照）
   get: apiGet,

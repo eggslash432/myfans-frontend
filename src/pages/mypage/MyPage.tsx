@@ -4,12 +4,16 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { useAuth } from '../../hooks/useAuth';
+import type { PostEditValues } from '../../shared/types';
+import { PostEditModal } from '../posts/PostEditModal';
 
 export default function MyPage() {
   const { user, ready, restore } = useAuth();
   const [summary, setSummary] = useState<any>(null);
   const [err, setErr] = useState<string>('');
   const [posts, setPosts] = useState<any[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [editingPost, setEditingPost] = useState<any | null>(null);
 
   // creator: undefined = 読み込み中, null = いない, object = いる
   const [creator, setCreator] = useState<any | null | undefined>(undefined);
@@ -97,24 +101,6 @@ export default function MyPage() {
     }
   };
 
-  // --- 各種ガード ---
-  if (!ready) return <div className="p-4">読み込み中...</div>;
-  if (!user)
-    return (
-      <div className="p-4">
-        ログインが必要です。右上の「ログイン」からサインインしてください。
-      </div>
-    );
-  if (err)
-    return (
-      <div className="p-4 text-red-700">
-        {/Unauthorized|401/i.test(err)
-          ? 'ログインが必要です。右上の「ログイン」からサインインしてください。'
-          : `サマリー取得に失敗: ${err}`}
-      </div>
-    );
-  if (!summary) return <div className="p-4">読み込み中...</div>;
-
   const creatorMenuItems = [
     {
       label: '投稿管理',
@@ -142,8 +128,85 @@ export default function MyPage() {
     },
   ];
 
-  const subscriptionCount = (summary.subscriptions || []).length;
-  const paymentCount = (summary.payments || []).length;
+  const subscriptionCount = (summary?.subscriptions ?? []).length;
+  const paymentCount = (summary?.payments ?? []).length;
+
+  // ★ ここで「公開中」と「下書き」に振り分ける
+  const publishedPosts = posts.filter(
+    (p) => p.publishedStatus === 'published',
+  );
+  const draftPosts = posts.filter(
+    (p) => p.publishedStatus !== 'published',
+  );  
+
+  const openEdit = (post: any) => {
+    setEditingPost(post);
+  };
+
+  const closeEdit = () => {
+    setEditingPost(null);
+    setSaving(false);
+  };  
+
+  // 保存
+  const handleSavePost = async (values: PostEditValues) => {
+    if (!editingPost) return;
+    try {
+      setSaving(true);
+
+      await api.updateMyPost(editingPost.id, {
+        title: values.title,
+        body: values.body,
+        visibility: values.visibility,
+        priceJpy:
+          values.visibility === 'paid_single' ? values.priceJpy : null,
+        publishedStatus: values.publishedStatus,
+      });
+
+      // ローカル state 更新
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === editingPost.id
+            ? {
+                ...p,
+                title: values.title,
+                body: values.body,
+                visibility: values.visibility,
+                priceJpy:
+                  values.visibility === 'paid_single'
+                    ? values.priceJpy
+                    : null,
+                publishedStatus: values.publishedStatus,
+              }
+            : p,
+        ),
+      );
+
+      closeEdit();
+    } catch (e: any) {
+      console.error('updateMyPost failed', e);
+      alert(e?.message ?? '投稿の更新に失敗しました');
+      setSaving(false);
+    }
+  };
+
+  // --- 各種ガード ---
+  if (!ready) return <div className="p-4">読み込み中...</div>;
+  if (!user)
+    return (
+      <div className="p-4">
+        ログインが必要です。右上の「ログイン」からサインインしてください。
+      </div>
+    );
+  if (err)
+    return (
+      <div className="p-4 text-red-700">
+        {/Unauthorized|401/i.test(err)
+          ? 'ログインが必要です。右上の「ログイン」からサインインしてください。'
+          : `サマリー取得に失敗: ${err}`}
+      </div>
+    );
+  if (!summary) return <div className="p-4">読み込み中...</div>;
 
   return (
     <div className="page space-y-4">
@@ -233,29 +296,28 @@ export default function MyPage() {
         </>
       )}
 
-      {/* マイ投稿一覧 */}
+      {/* マイ投稿一覧（公開中） */}
       <section className="card">
         <div className="section-title">マイ投稿一覧</div>
-        {posts.length === 0 && (
-          <p className="section-subtitle">まだ投稿がありません。</p>
+        {publishedPosts.length === 0 && (
+          <p className="section-subtitle">まだ公開中の投稿がありません。</p>
         )}
-        {posts.length > 0 && (
+        {publishedPosts.length > 0 && (
           <ul className="divide-y divide-gray-100 mt-2">
-            {posts.map((p) => (
-              <li key={p.id} className="py-2 text-sm flex items-center justify-between">
+            {publishedPosts.map((p) => (
+              <li
+                key={p.id}
+                className="py-2 text-sm flex items-center justify-between"
+              >
                 <div className="flex-1 min-w-0">
                   <div className="font-medium truncate">{p.title}</div>
-                  <div className="text-xs text-gray-500">
-                    {p.publishedStatus === 'published'
-                      ? '公開中'
-                      : '下書き'}
-                  </div>
+                  <div className="text-xs text-gray-500">公開中</div>
                 </div>
                 <button
-                  onClick={() => navigate(`/posts/${p.id}`)}
+                  onClick={() => openEdit(p)}   
                   className="ml-3 btn btn-sm btn-outline whitespace-nowrap"
                 >
-                  <span>詳細を見る</span>
+                  <span>詳細・編集</span>
                   <span style={{ fontSize: '12px' }}>›</span>
                 </button>
               </li>
@@ -263,6 +325,38 @@ export default function MyPage() {
           </ul>
         )}
       </section>
+
+      {/* 下書き一覧 */}
+      {draftPosts.length > 0 && (
+        <section className="card">
+          <div className="section-title">下書き一覧</div>
+          <p className="section-subtitle text-xs">
+            公開前の下書きや非公開投稿です。
+          </p>
+          <ul className="divide-y divide-gray-100 mt-2">
+            {draftPosts.map((p) => (
+              <li
+                key={p.id}
+                className="py-2 text-sm flex items-center justify-between"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium truncate">{p.title}</div>
+                  <div className="text-xs text-gray-500">
+                    {p.publishedStatus === 'draft' ? '下書き' : '非公開'}
+                  </div>
+                </div>
+                <button
+                  onClick={() => openEdit(p)}
+                  className="ml-3 btn btn-sm btn-outline whitespace-nowrap"
+                >
+                  <span>詳細・編集</span>
+                  <span style={{ fontSize: '12px' }}>›</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {/* 購読状況 */}
       <section className="card">
@@ -301,6 +395,16 @@ export default function MyPage() {
           </pre>
         )}
       </section>
+
+      {/* 投稿編集モーダル */}
+      <PostEditModal
+        post={editingPost}
+        open={!!editingPost}
+        saving={saving}
+        onClose={closeEdit}
+        onSubmit={handleSavePost}
+      />
+
     </div>
   );
 }
