@@ -18,14 +18,12 @@ export default function CreatorAnalyticsPage() {
         setLoading(true);
         setErr('');
 
-        // まだ専用APIが無いので、暫定で meSummary を使っておく（必要に応じて要変更）
-        const meSummary = await api.meSummary() as any;
-        const totalRevenue = (meSummary?.creatorRevenueJpy ?? 0) as number;
-        const totalSubs = (meSummary?.creatorSubscribers ?? 0) as number;
+        // ✅ 専用APIに差し替え
+        const res = await api.creatorAnalyticsMe();
 
         setSummary({
-          totalRevenueJpy: totalRevenue,
-          totalSubscribers: totalSubs,
+          totalRevenueJpy: res.totalRevenueJpy ?? 0,
+          totalSubscribers: res.totalSubscribers ?? 0,
         });
       } catch (e: any) {
         console.error('load analytics failed', e);

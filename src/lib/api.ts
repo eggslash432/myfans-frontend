@@ -9,10 +9,10 @@ import type {
   Plan, 
   PlansResponse, 
   PostDetail, 
+  PostEditValues, 
   PostSummary, 
   ReportItem, 
-  UpdatePlanPayload,
-  UpdatePostPayload,
+  UpdatePlanPayload,  
   } from "../shared/types";
 
 // API ベースURL
@@ -333,7 +333,7 @@ export async function reportPost(postId: string, reason: string) {
 // ★ 修正版
 export async function updateMyPost(
   postId: string,
-  payload: UpdatePostPayload,
+  payload: PostEditValues,
 ) {
   return request<PostSummary>(`/posts/me/${postId}`, {
     method: 'PATCH',
@@ -695,6 +695,13 @@ const api = {
   reactivatePlan,
   reorderPlans,  
   updateMyPost,
+
+  async creatorAnalyticsMe() {
+    return request<{
+      totalRevenueJpy: number;
+      totalSubscribers: number;
+    }>('/creators/me/analytics', { method: 'GET' });
+  },  
 
   // axios 風ラッパー（トップレベル関数への参照）
   get: apiGet,
