@@ -703,6 +703,14 @@ const api = {
     }>('/creators/me/analytics', { method: 'GET' });
   },  
 
+  async adminSummary() {
+    return request<{
+      salesMonthly: number;
+      newUsersMonthly: number;
+      reportsPending: number;
+    }>('/admin/summary', { method: 'GET' });
+  },
+
   // axios 風ラッパー（トップレベル関数への参照）
   get: apiGet,
   post: apiPost,
