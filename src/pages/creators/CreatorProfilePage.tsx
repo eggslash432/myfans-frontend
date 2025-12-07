@@ -4,6 +4,13 @@ import { useEffect, useRef, useState } from 'react';
 import { api } from '../../lib/api';
 import type { CreatorMeResponse } from '../../shared/types';
 
+// API_BASE は api.ts と同じ env を使う想定
+const API_BASE =
+  import.meta.env.VITE_API_BASE ?? 'http://localhost:3000/api';
+
+// http://localhost:3000/api → http://localhost:3000 にする
+const API_ORIGIN = API_BASE.replace(/\/api\/?$/, '');
+
 export default function CreatorProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -25,8 +32,8 @@ export default function CreatorProfilePage() {
 
         setPublicName(data.publicName ?? '');
         setBio(data.bio ?? '');
-        setAvatarUrl(data.avatarUrl ?? '');
-        setAvatarPreviewUrl(data.avatarUrl ?? '');
+        setAvatarUrl(data.avatarUrl ?? '');   // ← サーバの値はここにだけ入れる
+        setAvatarPreviewUrl('');              // ← 初期表示時はプレビューは空
       } catch (e: any) {
         setErr(
           e?.response?.data?.message ??
@@ -77,12 +84,13 @@ export default function CreatorProfilePage() {
         setAvatarUrl(avatarUrlToSave);
       }
 
-      // 型が unknown なので、結果は使わず await だけ
-      await api.updateCreatorProfile({
+      // 🔽 ここを変更（helperを使わずに直で PATCH /creators/me）
+      const res = await api.patch('/creators/me', {
         publicName,
         bio,
         avatarUrl: avatarUrlToSave,
       });
+      console.log('updateMe res', res.data);
 
       alert('プロフィールを更新しました');
     } catch (e: any) {
@@ -95,6 +103,16 @@ export default function CreatorProfilePage() {
       setSaving(false);
     }
   };
+
+  // プレビュー用の最終的な src を決める
+  const avatarSrc =
+    avatarPreviewUrl
+      ? avatarPreviewUrl                             // ファイル選択後は blob:... を優先
+      : avatarUrl
+      ? avatarUrl.startsWith('http')
+        ? avatarUrl                                  // すでにフルURLならそのまま
+        : `${API_ORIGIN}${avatarUrl}`                // /uploads/... → http://localhost:3000/uploads/...
+      : '';  
 
   if (loading) return <div className="p-4">読み込み中…</div>;
   if (err) return <div className="p-4 text-red-600">{err}</div>;
@@ -162,15 +180,16 @@ export default function CreatorProfilePage() {
           </p>
         </div>
 
-        {(avatarPreviewUrl || avatarUrl) && (
+        {avatarSrc && (
           <div className="flex justify-center mt-2">
             <img
-              src={avatarPreviewUrl || avatarUrl}
+              src={avatarSrc}
               alt="avatar preview"
-              className="w-24 h-24 rounded-full object-cover shadow"
+              className="profile-avatar-preview"
             />
           </div>
         )}
+
 
         <button
           onClick={handleSave}

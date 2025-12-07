@@ -132,19 +132,21 @@ export type Creator = {
 }
 
 export type CreatorMeResponse = {
+  isCreator: boolean;
   publicName: string;
-  stripeKycStatus?: KycStatus;
-  isListed?: boolean;
-  bio?: string | null;
-  avatarUrl?: string | null;
-  kyc?: {
-    status?: KycStatus | null;
-    chargesEnabled?: boolean;
-    payoutsEnabled?: boolean;
-    disabledReason?: string | null;
-    errors?: string | null;
-    fieldsDue?: string | null;
-  };
+
+  // プロフィール情報
+  bio: string | null;
+  avatarUrl: string | null;
+
+  // Stripe / KYC
+  stripeAccountId: string | null;
+  stripeKycStatus: string | null;         // "approved" | "pending" | "rejected"
+  stripeChargesEnabled: boolean;
+  stripePayoutsEnabled: boolean;
+  stripeKycDisabledReason: string | null;
+  stripeKycFieldsDue: string[];
+  stripeKycErrors: any[];
 };
 
 export type Plan = {

@@ -5,6 +5,11 @@ import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import type { Creator, PostSummary } from '../../shared/types';
 import { useAuth } from '../../hooks/useAuth';
 
+// ★ 追加: API_ORIGIN
+const API_BASE =
+  import.meta.env.VITE_API_BASE ?? 'http://localhost:3000/api';
+const API_ORIGIN = API_BASE.replace(/\/api\/?$/, '');
+
 export default function CreatorPage() {
   const { id } = useParams();
   const [creator, setCreator] = useState<Creator | null>(null);
@@ -125,6 +130,14 @@ export default function CreatorPage() {
     (creator as any).name ??
     'クリエイター';
 
+  // ★ 追加: avatarSrc をサーバの相対パスから組み立てる
+  const rawAvatarUrl = (creator as any).avatarUrl as string | undefined;
+  const avatarSrc = rawAvatarUrl
+    ? rawAvatarUrl.startsWith('http')
+      ? rawAvatarUrl
+      : `${API_ORIGIN}${rawAvatarUrl}`
+    : null;
+
   const initial = displayName.trim().charAt(0).toUpperCase() || 'C';
   const planCount = creator.plans?.length ?? 0;
   const postCount = posts.length;
@@ -147,9 +160,16 @@ export default function CreatorPage() {
     <div className="page space-y-4">
       {/* クリエイターのヘッダー */}
       <section className="card flex items-center gap-3">
-        <div className="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center text-sm font-bold text-pink-500 flex-shrink-0">
-          {initial}
-        </div>
+        {/* アイコン画像 or ダミー丸 */}
+        {avatarSrc ? (
+          <img
+            src={avatarSrc}
+            alt={displayName}
+            className="profile-avatar-preview"
+          />
+        ) : (
+          <div className="w-12 h-12 rounded-full bg-gray-100 flex-shrink-0" />
+        )}
 
         <div className="flex-1 min-w-0">
           <h1 className="text-lg font-bold truncate">{displayName}</h1>
@@ -164,6 +184,7 @@ export default function CreatorPage() {
           )}
         </div>
       </section>
+
 
       {/* プラン一覧 */}
       <section className="card">
