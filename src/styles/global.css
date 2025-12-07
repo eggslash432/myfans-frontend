@@ -894,16 +894,16 @@ a.post-list-item:visited {
    Modal (投稿編集など共通)
    ========================= */
 
+/* ===== 共通モーダル ===== */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  background: rgba(15, 23, 42, 0.45); /* 半透明の暗い背景 */
+  background: rgba(15, 23, 42, 0.45); /* 濃い目の半透明 */
   backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 50;
 }
 
 .modal-dialog {
@@ -993,6 +993,139 @@ a.post-list-item:visited {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+}
+
+.modal-card {
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.25);
+  width: 100%;
+  max-width: 440px;
+  padding: 16px 18px 14px;
+}
+
+/* メディア一覧 */
+.modal-media-list {
+  margin-top: 4px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.modal-media-item {
+  position: relative;
+  flex: 0 0 96px;
+  border-radius: 12px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+.modal-media-thumb {
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+  display: block;
+}
+
+.modal-media-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  padding: 0 6px;
+  font-size: 11px;
+}
+
+/* アイコン型のメディア表示（画像以外） */
+.modal-media-icon {
+  width: 100%;
+  height: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #4b5563;
+  gap: 4px;
+}
+
+.modal-media-emoji {
+  font-size: 20px;
+}
+
+.modal-media-label {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f3f4f6;
+}
+
+/* 画像サムネをボタン扱いにしてクリックしやすく */
+.modal-media-thumb-btn {
+  display: block;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.modal-media-thumb {
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+  display: block;
+  border-radius: 10px;
+}
+
+/* 動画プレビュー */
+.modal-media-video {
+  width: 100%;
+  height: 80px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+/* 音声プレイヤー */
+.modal-media-audio-wrapper {
+  padding: 6px 6px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.modal-media-audio-label {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.modal-media-audio {
+  width: 100%;
+}
+
+/* 画像以外のアイコン表示（フォールバック） */
+.modal-media-icon {
+  width: 100%;
+  height: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #4b5563;
+  gap: 4px;
+}
+
+.modal-media-emoji {
+  font-size: 20px;
+}
+
+.modal-media-label {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f3f4f6;
 }
 
 

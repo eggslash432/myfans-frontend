@@ -35,7 +35,9 @@ export type PostProps = {
   open: boolean;
   saving: boolean;
   onClose: () => void;
-  onSubmit: (values: PostEditValues) => void;
+  onSubmit: (payload: PostEditValues) => void;
+  onAddMedia: (files: FileList) => void;
+  onRemoveMedia: (mediaId: string) => void;
 };
 
 export type Post = {

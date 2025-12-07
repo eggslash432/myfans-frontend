@@ -4,16 +4,17 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { useAuth } from '../../hooks/useAuth';
-import type { PostEditValues } from '../../shared/types';
 import { PostEditModal } from '../posts/PostEditModal';
+import type { PublishedStatus } from '../../shared/prisma-enums';
 
 export default function MyPage() {
   const { user, ready, restore } = useAuth();
   const [summary, setSummary] = useState<any>(null);
   const [err, setErr] = useState<string>('');
   const [posts, setPosts] = useState<any[]>([]);
-  const [saving, setSaving] = useState(false);
   const [editingPost, setEditingPost] = useState<any | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   // creator: undefined = 読み込み中, null = いない, object = いる
   const [creator, setCreator] = useState<any | null | undefined>(undefined);
@@ -139,54 +140,109 @@ export default function MyPage() {
     (p) => p.publishedStatus !== 'published',
   );  
 
-  const openEdit = (post: any) => {
-    setEditingPost(post);
+  const openEdit = async (summaryPost: any) => {
+    try {
+      const res = await api.getPost(summaryPost.id);
+
+      // ★ data / post ラップをはがして中身だけにする
+      const full =
+        (res as any).data ??
+        (res as any).post ??
+        res;
+
+      console.log('openEdit full:', full);
+      setEditingPost(full);
+      setEditOpen(true);
+    } catch (e: any) {
+      console.error('getPost failed', e);
+      alert(e?.message ?? '投稿の取得に失敗しました');
+    }
   };
 
-  const closeEdit = () => {
-    setEditingPost(null);
-    setSaving(false);
-  };  
-
-  // 保存
-  const handleSavePost = async (values: PostEditValues) => {
+  const handleSubmitEdit = async (payload: {
+    title: string;
+    body: string;
+    visibility: 'free' | 'plan' | 'paid_single';
+    priceJpy: number | null;
+    publishedStatus: PublishedStatus;
+  }) => {
     if (!editingPost) return;
     try {
       setSaving(true);
 
-      await api.updateMyPost(editingPost.id, {
-        title: values.title,
-        body: values.body,
-        visibility: values.visibility,
-        priceJpy:
-          values.visibility === 'paid_single' ? values.priceJpy : null,
-        publishedStatus: values.publishedStatus,
-      });
+      await api.updateMyPost(editingPost.id, payload);
 
-      // ローカル state 更新
+      // 一覧側は title / status だけ反映しておけばOK
       setPosts((prev) =>
         prev.map((p) =>
           p.id === editingPost.id
-            ? {
-                ...p,
-                title: values.title,
-                body: values.body,
-                visibility: values.visibility,
-                priceJpy:
-                  values.visibility === 'paid_single'
-                    ? values.priceJpy
-                    : null,
-                publishedStatus: values.publishedStatus,
-              }
+            ? { ...p, title: payload.title, publishedStatus: payload.publishedStatus }
             : p,
         ),
       );
 
-      closeEdit();
+      setEditOpen(false);
+      setEditingPost(null);
     } catch (e: any) {
       console.error('updateMyPost failed', e);
       alert(e?.message ?? '投稿の更新に失敗しました');
+    } finally {
       setSaving(false);
+    }
+  };
+
+  // メディア追加
+  const handleAddMedia = async (files: FileList) => {
+    if (!editingPost) return;
+    try {
+      const uploaded: any[] = [];
+
+      for (const file of Array.from(files)) {
+        const res = await api.uploadPostMedia(editingPost.id, [file]); // ★ ここを [file] に
+        // uploadPostMedia が配列を返す前提
+        if (Array.isArray(res)) {
+          uploaded.push(...res);
+        } else {
+          uploaded.push(res);
+        }
+      }
+
+      setEditingPost((prev: any) => {
+        if (!prev) return prev;
+        const raw = prev.mediaAssets ?? prev.media ?? prev.medias ?? [];
+        return {
+          ...prev,
+          mediaAssets: [...raw, ...uploaded],
+        };
+      });
+    } catch (e: any) {
+      console.error('uploadPostMedia failed', e);
+      alert(e?.message ?? 'メディアの追加に失敗しました');
+    }
+  };
+
+  // メディア削除
+  const handleRemoveMedia = async (mediaId: string) => {
+    if (!editingPost) return;
+    if (!confirm('このメディアを削除しますか？')) return;
+
+    try {
+      await api.delete(
+        `/creators/me/posts/${editingPost.id}/media/${mediaId}`,
+      );
+
+      setEditingPost((prev: any) => {
+        if (!prev) return prev;
+        const raw = prev.mediaAssets ?? prev.media ?? prev.medias ?? [];
+        const filtered = raw.filter((m: any) => m.id !== mediaId);
+        return {
+          ...prev,
+          mediaAssets: filtered,
+        };
+      });
+    } catch (e: any) {
+      console.error('メディア削除失敗', e);
+      alert(e?.message ?? 'メディアの削除に失敗しました');
     }
   };
 
@@ -227,7 +283,7 @@ export default function MyPage() {
             {user.email}
           </div>
           <div className="text-xs text-gray-500">
-            ※メールアドレスやパスワードの変更は「プロフィール編集」から行えます。
+            ※パスワードの変更は「設定」から行なえます。
           </div>
         </div>
       </section>
@@ -399,10 +455,16 @@ export default function MyPage() {
       {/* 投稿編集モーダル */}
       <PostEditModal
         post={editingPost}
-        open={!!editingPost}
+        open={editOpen}
         saving={saving}
-        onClose={closeEdit}
-        onSubmit={handleSavePost}
+        onClose={() => {
+          if (saving) return;
+          setEditOpen(false);
+          setEditingPost(null);
+        }}
+        onSubmit={handleSubmitEdit}
+        onAddMedia={handleAddMedia}
+        onRemoveMedia={handleRemoveMedia}
       />
 
     </div>
