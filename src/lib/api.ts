@@ -711,6 +711,10 @@ const api = {
     }>('/admin/summary', { method: 'GET' });
   },
 
+  async listAdminPosts() {
+    return request('/posts/public/admin', { method: 'GET' });
+  },  
+
   // axios 風ラッパー（トップレベル関数への参照）
   get: apiGet,
   post: apiPost,

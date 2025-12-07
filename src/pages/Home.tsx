@@ -5,6 +5,7 @@ import { api, normalizeList } from '../lib/api';
 
 export default function HomePage() {
   const [creators, setCreators] = useState<any[]>([]);
+  const [adminPosts, setAdminPosts] = useState<any[]>([]); // ★ 運営投稿
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -12,12 +13,20 @@ export default function HomePage() {
   useEffect(() => {
     (async () => {
       try {
-        const list = await api.listCreators();
-        console.debug('GET /creators raw:', list);
-        setCreators(normalizeList(list) ?? []);
+        setLoading(true);
+        setError(null);
+
+        const [creatorList, adminPostList] = await Promise.all([
+          api.listCreators(),
+          api.listAdminPosts(),  // /posts/public/admin
+        ]);
+
+        console.debug('GET /creators raw:', creatorList);
+        setCreators(normalizeList(creatorList) ?? []);
+        setAdminPosts(normalizeList(adminPostList) ?? []);  // ★ ここも normalizeList
       } catch (err: any) {
-        console.error('GET /creators failed:', err);
-        setError(err?.message || '取得に失敗しました');
+        console.error('Home load failed:', err);
+        setError(err?.message || '一覧の取得に失敗しました');
       } finally {
         setLoading(false);
       }
@@ -61,6 +70,7 @@ export default function HomePage() {
 
     return {
       ...c,
+      avatarUrl: c.avatarUrl ?? c.profileImageUrl ?? null, // ← 追加
       _displayName: name,
       _initial: initial,
       _postCount: postCount,
@@ -70,6 +80,30 @@ export default function HomePage() {
 
   return (
     <div className="page space-y-4">
+      {/* ▼ 運営からのお知らせ（管理者投稿） */}
+      {adminPosts.length > 0 && (
+        <section className="card">
+          <div className="section-title">運営からのお知らせ</div>
+          <div className="space-y-2 mt-2">
+            {adminPosts.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => navigate(`/posts/${p.id}`)}
+                className="card-link w-full text-left"
+              >
+                <div className="text-sm font-semibold truncate">
+                  {p.title}
+                </div>
+                <div className="text-xs text-gray-500 mt-1 line-clamp-2">
+                  {p.body || '詳細を見る'}
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* 見出しカード */}
       <section className="card">
         <div className="section-title">クリエイター</div>
@@ -92,12 +126,20 @@ export default function HomePage() {
               key={c.id}
               type="button"
               onClick={() => navigate(`/creators/${c.id}`)}
-              className="card-link w-full text-left"
+              className="card-link w-full text左"
             >
               <div className="card flex items-center gap-3">
-                {/* 丸アイコン（頭文字） */}
-                <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-sm font-bold text-pink-500 flex-shrink-0">
-                  {c._initial}
+                {/* アイコン（画像があれば画像、なければ頭文字） */}
+                <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-sm font-bold text-pink-500 flex-shrink-0 overflow-hidden">
+                  {c.avatarUrl ? (
+                    <img
+                      src={c.avatarUrl}
+                      alt="avatar"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span>{c._initial}</span>
+                  )}
                 </div>
 
                 {/* テキスト部 */}
