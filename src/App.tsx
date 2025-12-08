@@ -27,6 +27,7 @@ import CreatorProfilePage from './pages/creators/CreatorProfilePage';
 import AdminSummaryPage from './pages/admin/AdminSummaryPage';
 import PasswordChangePage from './pages/settings/PasswordChangePage';
 import SettingsHomePage from './pages/settings';
+import AdminSettingsPage from './pages/admin/AdminSettingsPage';
 
 export default function App() {
   return (
@@ -40,6 +41,7 @@ export default function App() {
         <Route path="/admin/payouts" element={<AdminPayoutsPage />} />
         <Route path="/admin/posts" element={<AdminPostsPage />} />
         <Route path="/admin/reports" element={<AdminReportsPage />} />
+        <Route path="/admin/settings" element={<AdminSettingsPage />} />
         <Route path="/admin" element={<AdminSummaryPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />

@@ -1,10 +1,14 @@
-// src/hooks/useAuth.tsx
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import  api  from '../lib/api'; // ← 既存の api ラッパー（api.me()/login()/signup()/logout()）を想定
-
-// ---- types ----
-type Role = 'fan' | 'creator' | 'admin';
-export type User = { id: string; email: string | null; role: Role; creatorId?: number | null };
+// front/src/hooks/useAuth.tsx
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
+import api from '../lib/api'; // 既存の api ラッパー
+import type { User } from '../shared/types';
+import type { Role } from '../shared/prisma-enums';
 
 type AuthContextType = {
   user: User | null;
@@ -15,36 +19,62 @@ type AuthContextType = {
   restore: (force?: boolean) => Promise<void>;
 };
 
-// ---- helpers ----
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const getToken = () => localStorage.getItem('access_token');
 
-// /auth/me の形をアプリ内部の User に正規化
+// /auth/me のレスポンスをアプリ内部の User に正規化
 function normalizeMe(raw: any): User | null {
   if (!raw) return null;
-  const id = String(raw.id ?? raw.sub ?? '');
+
+  // axios などで { data: {...} } が来る可能性も見る
+  const src = raw.data ?? raw;
+
+  const id = String(src.id ?? src.sub ?? '');
   if (!id) return null;
 
-  // 役割の表記ゆれを吸収（user→fan）。creatorId があっても role は API の値を優先。
   const beRole: string =
-    (raw.role as string | undefined) ??
-    (raw.creatorId ? 'creator' : 'user');
+    (src.role as string | undefined) ??
+    (src.creatorId ? 'creator' : 'user');
 
-  const role: Role =
-    beRole === 'user' ? 'fan'
-    : beRole === 'creator' ? 'creator'
-    : beRole === 'admin' ? 'admin'
-    : 'fan';
+  let role: Role;
+  switch (beRole) {
+    case 'user':
+    case 'fan':
+      role = 'fan';
+      break;
+    case 'creator':
+      role = 'creator';
+      break;
+    case 'admin':
+      role = 'admin';
+      break;
+    case 'sub_admin':
+      role = 'sub_admin';
+      break;
+    default:
+      role = 'fan';
+      break;
+  }
+
+  // ← ここを追加（creatorId を number | null にそろえる）
+  let creatorId: number | null = null;
+  const rawCreatorId = (src as any).creatorId;
+
+  if (typeof rawCreatorId === 'number') {
+    creatorId = rawCreatorId;
+  } else if (typeof rawCreatorId === 'string' && rawCreatorId !== '') {
+    const n = Number(rawCreatorId);
+    creatorId = Number.isFinite(n) ? n : null;
+  }  
 
   return {
     id,
-    email: (raw.email as string | undefined) ?? null,
+    email: (src.email as string) ?? '',
     role,
-    creatorId: (raw.creatorId as number | undefined) ?? null,
+    creatorId, // number | null
   };
 }
 
-// ---- provider & hook ----
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [ready, setReady] = useState(false);
@@ -57,7 +87,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setReady(true);
         return;
       }
-      const me = await api.me();         // ← 200で {id,email,role[,creatorId]} を返す前提
+
+      const me = await api.me(); // /auth/me
       setUser(normalizeMe(me));
     } catch {
       localStorage.removeItem('access_token');
@@ -67,32 +98,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  useEffect(() => { restore(); }, [restore]);
+  useEffect(() => {
+    restore();
+  }, [restore]);
 
   const login = async (email: string, password: string) => {
-    await api.login({ email, password }); // ← api 側で access_token 保存（または戻り値から保存）
-    await restore(true);                  // 直後に /me を再取得してヘッダー反映
+    await api.login({ email, password });
+    await restore(true);
   };
 
   const signup = async (email: string, password: string) => {
     await api.signup({ email, password, role: 'fan' });
-    await login(email, password);         // サインアップ後にそのままログイン
+    await login(email, password);
   };
 
   const logout = async () => {
-    try { await api.logout?.(); } catch {}
+    try {
+      await api.logout?.();
+    } catch {
+      // ignore
+    }
     localStorage.removeItem('access_token');
     setUser(null);
   };
 
-  const value: AuthContextType = { user, ready, login, signup, logout, restore };
+  const value: AuthContextType = {
+    user,
+    ready,
+    login,
+    signup,
+    logout,
+    restore,
+  };
+
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within <AuthProvider>');
+  if (!ctx) {
+    throw new Error('useAuth must be used within <AuthProvider>');
+  }
   return ctx;
 }
-
-

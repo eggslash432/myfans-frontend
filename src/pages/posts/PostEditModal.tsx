@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef, type ChangeEvent } from 'react';
 import type { PublishedStatus, Visibility } from '../../shared/prisma-enums';
 import type { PostProps } from '../../shared/types';
+import { useAuth } from '../../hooks/useAuth'; 
 
 export function PostEditModal({
   post,
@@ -12,6 +13,10 @@ export function PostEditModal({
   onAddMedia,
   onRemoveMedia,
 }: PostProps) {
+  const { user } = useAuth();  // ★ 追加
+  const isAdminAccount =
+    user?.role === 'admin' || user?.role === 'sub_admin';  // ★ 追加
+
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [visibility, setVisibility] = useState<Visibility>('free');
@@ -29,7 +34,13 @@ export function PostEditModal({
 
     setTitle(p.title ?? '');
     setBody(p.body ?? '');
-    setVisibility((p.visibility as Visibility) ?? 'free');
+
+    // ★ 管理者アカウントで PPV は選択させない
+    let v = (p.visibility as Visibility) ?? 'free';
+    if (isAdminAccount && v === 'paid_single') {
+      v = 'plan'; // admin で PPV 投稿を編集するときはプラン扱いに寄せる
+    }
+    setVisibility(v);
     setPriceJpy(p.priceJpy ?? null);
 
     const ps = String(p.publishedStatus ?? 'draft') as PublishedStatus;
@@ -38,7 +49,7 @@ export function PostEditModal({
       ps === 'private'   ? 'private'   :
                            'draft',
     );
-  }, [post]);
+  }, [post, isAdminAccount]);
 
   if (!open || !post) return null;
 
@@ -238,8 +249,14 @@ export function PostEditModal({
                 className="modal-select"
               >
                 <option value="free">無料</option>
-                <option value="plan">プラン限定</option>
-                <option value="paid_single">PPV（単品販売）</option>
+
+                {/* ★ 管理者の場合は plan / PPV を隠す */}
+                {!isAdminAccount && (
+                  <>
+                    <option value="plan">プラン限定</option>
+                    <option value="paid_single">PPV（単品販売）</option>
+                  </>
+                )}            
               </select>
               <span className="text-[11px] px-2 py-1 rounded-full bg-gray-100 text-gray-600">
                 {visibilityLabel}
@@ -248,19 +265,18 @@ export function PostEditModal({
           </div>
 
           {/* 価格（PPV のときだけ） */}
-          {visibility === 'paid_single' && (
+          {!isAdminAccount && visibility === 'paid_single' && (
             <div>
               <div className="modal-label">価格（円）</div>
               <input
                 type="number"
+                className="modal-input"
                 value={priceJpy ?? ''}
                 onChange={(e) =>
                   setPriceJpy(
-                    e.target.value === '' ? null : Number(e.target.value),
+                    e.target.value === '' ? null : Number(e.target.value)
                   )
                 }
-                className="modal-input"
-                min={0}
               />
             </div>
           )}

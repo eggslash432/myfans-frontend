@@ -77,6 +77,19 @@ function AdminInner() {
             <span className="text-lg text-gray-400">›</span>
           </div>
         </Link>
+
+        {/* ★ 追加：システム設定（権限／手数料） */}
+        <Link to="/admin/settings" className="card card-link">
+          <div className="flex justify-between items-center">
+            <div>
+              <div className="font-semibold text-sm">システム設定</div>
+              <div className="text-xs text-gray-500 mt-1">
+                管理者／一般管理者の権限区分・手数料（売上分配率）の設定
+              </div>
+            </div>
+            <span className="text-lg text-gray-400">›</span>
+          </div>
+        </Link>        
       </section>
 
       {/* サマリー */}

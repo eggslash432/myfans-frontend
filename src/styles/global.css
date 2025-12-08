@@ -764,6 +764,7 @@ a.post-list-item:visited {
   margin-bottom: 4px;
   overflow: hidden;
   display: -webkit-box;
+  line-clamp: 2;  
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
@@ -815,10 +816,6 @@ a.post-list-item:visited {
   font-size: 11px;
   color: #9ca3af;
   margin-bottom: 6px;
-}
-
-.post-detail-author {
-  /* ここは必要なら太字にしてもOK */
 }
 
 .post-detail-tags {
@@ -1147,4 +1144,91 @@ a.post-list-item:visited {
   display: block;
   border-radius: 12px; /* 正円にしない。丸くしたければ 50% に */
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* =========================
+   Admin News (運営からのお知らせ)
+   ========================= */
+
+.admin-news-card {
+  /* card クラスが付いているので、ここでは軽く調整だけ */
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+.admin-news-list {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-news-item {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.08s ease;
+}
+
+.admin-news-item:hover {
+  background-color: #f3f4f6;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
+}
+
+.admin-news-item:active {
+  transform: translateY(1px);
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.14);
+}
+
+.admin-news-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 4px;
+  font-size: 11px;
+}
+
+.admin-news-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fee2e2;   /* 薄いピンク */
+  color: #b91c1c;        /* 濃い赤 */
+  font-weight: 600;
+}
+
+.admin-news-date {
+  color: #9ca3af;        /* gray-400 */
+}
+
+.admin-news-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 2px;
+  overflow: hidden;
+  display: -webkit-box;
+  line-clamp: 2;  
+  -webkit-line-clamp: 2;   /* タイトル2行まで */
+  -webkit-box-orient: vertical;
+}
+
+.admin-news-body {
+  font-size: 12px;
+  color: #6b7280;          /* gray-500 */
+  line-height: 1.5;
+  overflow: hidden;
+  display: -webkit-box;
+  line-clamp: 2;  
+  -webkit-line-clamp: 2;   /* 本文も2行まで */
+  -webkit-box-orient: vertical;
 }

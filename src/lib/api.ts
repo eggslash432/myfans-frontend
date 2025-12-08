@@ -663,6 +663,38 @@ export async function adminGetSummary(): Promise<AdminSummary> {
   return request<AdminSummary>('/admin/summary');
 }
 
+/* ============================================================
+ * 管理画面: Admin設定ページ
+ * ============================================================ */
+
+// 料金・手数料設定取得
+async function getFeeSettings() {
+  const res = await api.get('/admin/settings/fees');
+  return res.data; // { managerPercent, shopPercent, creatorPercent }
+}
+
+// 料金・手数料設定更新
+async function updateFeeSettings(payload: {
+  managerPercent: number;
+  shopPercent: number;
+  creatorPercent: number;
+}) {
+  const res = await api.patch('/admin/settings/fees', payload);
+  return res.data;
+}
+
+// 管理者一覧（権限区分）
+async function listAdminUsers() {
+  const res = await api.get('/admin/users'); // { items: [...] }
+  return res.data.items;
+}
+
+// 権限更新
+async function updateAdminRole(userId: string, role: 'admin' | 'sub_admin') {
+  const res = await api.patch(`/admin/users/${userId}/role`, { role });
+  return res.data;
+}
+
 
 // ============================================================
 // エクスポートまとめ
@@ -695,6 +727,10 @@ const api = {
   reactivatePlan,
   reorderPlans,  
   updateMyPost,
+  getFeeSettings,
+  updateFeeSettings,
+  listAdminUsers,
+  updateAdminRole,
 
   async creatorAnalyticsMe() {
     return request<{

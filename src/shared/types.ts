@@ -130,6 +130,7 @@ export type User = {
   email: string
   nickname?: string
   role?: Role
+  creatorId?: number | null
 }
 
 export type Creator = {
@@ -262,4 +263,17 @@ export type PendingCreator = {
   publicName: string | null;
   createdAt: string;
   stripeKycStatus?: string | null;
+};
+
+export type FeeSettings = {
+  managerPercent: number; // 管理者
+  shopPercent: number;    // 店舗
+  creatorPercent: number; // クリエイター
+};
+
+export type AdminUser = {
+  id: string;
+  email: string;
+  name?: string | null;
+  role: 'admin' | 'sub_admin'; // 一般管理者を sub_admin として想定
 };

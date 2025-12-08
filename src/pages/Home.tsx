@@ -82,24 +82,40 @@ export default function HomePage() {
     <div className="page space-y-4">
       {/* ▼ 運営からのお知らせ（管理者投稿） */}
       {adminPosts.length > 0 && (
-        <section className="card">
+        <section className="card admin-news-card">
           <div className="section-title">運営からのお知らせ</div>
-          <div className="space-y-2 mt-2">
-            {adminPosts.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => navigate(`/posts/${p.id}`)}
-                className="card-link w-full text-left"
-              >
-                <div className="text-sm font-semibold truncate">
-                  {p.title}
-                </div>
-                <div className="text-xs text-gray-500 mt-1 line-clamp-2">
-                  {p.body || '詳細を見る'}
-                </div>
-              </button>
-            ))}
+
+          <div className="admin-news-list">
+            {adminPosts.map((p) => {
+              const dateRaw = p.publishedAt || p.createdAt;
+              const dateStr = dateRaw
+                ? new Date(dateRaw).toLocaleDateString('ja-JP')
+                : '';
+
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => navigate(`/posts/${p.id}`)}
+                  className="admin-news-item"
+                >
+                  <div className="admin-news-meta">
+                    <span className="admin-news-pill">お知らせ</span>
+                    {dateStr && (
+                      <span className="admin-news-date">{dateStr}</span>
+                    )}
+                  </div>
+
+                  <div className="admin-news-title">
+                    {p.title}
+                  </div>
+
+                  <div className="admin-news-body">
+                    {p.body || '詳細を見る'}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </section>
       )}
