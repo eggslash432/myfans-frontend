@@ -1,7 +1,16 @@
 // src/shared/types.ts
 
 import type { ReactNode } from "react";
-import type { AgeRating, KycStatus, MediaType, PaymentStatus, PayoutStatus, PublishedStatus, Role, SubStatus, Visibility } from "./prisma-enums";
+import type { 
+  AgeRating, 
+  MediaType, 
+  PaymentStatus, 
+  PayoutStatus, 
+  PublishedStatus, 
+  Role, 
+  SubStatus, 
+  Visibility 
+} from "./prisma-enums";
 
 type PostMedia = {
   id: string;

@@ -66,9 +66,16 @@ export default function CreatorSettingsPage() {
   }
 
   // ④ KYC ステータス
-  const kyc = creator.kyc || {};
-  const kycStatus = kyc.status ?? creator.stripeKycStatus ?? 'pending';
+  type KycStatusFront = 'approved' | 'pending' | 'rejected';
+
+  // DB上の enum: 'pending' | 'approved' | 'rejected' | null
+  const rawStatus = creator.stripeKycStatus as KycStatusFront | null | undefined;
+
+  // 何も入ってなければとりあえず 'pending' 扱い
+  const kycStatus: KycStatusFront = rawStatus ?? 'pending';
+
   const isKycOk = kycStatus === 'approved';
+  const disabledReason = creator.stripeKycDisabledReason ?? null;
 
   return (
     <div className="p-6 space-y-5 page">
@@ -78,34 +85,52 @@ export default function CreatorSettingsPage() {
         <div className="section-title">本人確認ステータス</div>
 
         <div className="text-sm">
-          {kycStatus === 'approved' ? (
+          {kycStatus === 'approved' && (
             <span className="font-semibold text-green-600">承認済み</span>
-          ) : (
-            <span className="font-semibold text-orange-500">未完了</span>
+          )}
+
+          {kycStatus === 'pending' && (
+            <span className="font-semibold text-orange-500">
+              審査中（Stripeでの確認待ち）
+            </span>
+          )}
+
+          {kycStatus === 'rejected' && (
+            <span className="font-semibold text-red-600">
+              差し戻し（本人確認のやり直しが必要です）
+            </span>
           )}
         </div>
 
         {/* Stripe 側のエラー */}
-        {kyc.disabledReason && (
+        {disabledReason && (
           <div className="p-3 border border-red-300 bg-red-50 text-red-700 rounded-lg text-sm">
-            Stripe 側のエラー / 制限：{kyc.disabledReason}
+            Stripe 側のエラー / 制限：{disabledReason}
           </div>
         )}
 
-        {/* KYC 未完了時のみ表示 */}
+        {/* KYC 未完了時の案内 */}
         {kycStatus !== 'approved' && (
           <div className="space-y-2">
-            <p className="text-sm text-gray-700">
-              本人確認を完了すると、投稿・プラン作成・出金が利用できるようになります。
-            </p>
-
-            <button
-              onClick={handleStartKyc}
-              disabled={loading || isKycOk}
-              className="btn btn-primary w-full"
-            >
-              {loading ? '遷移中…' : '本人確認をはじめる'}
-            </button>
+            {kycStatus === 'pending' ? (
+              <p className="text-sm text-gray-700">
+                Stripe 上での本人確認は完了しており、現在審査中です。
+                この画面での操作は不要で、審査が完了すると自動的に承認状態になります。
+              </p>
+            ) : (
+              <>
+                <p className="text-sm text-gray-700">
+                  本人確認を完了すると、投稿・プラン作成・出金が利用できるようになります。
+                </p>
+                <button
+                  onClick={handleStartKyc}
+                  disabled={loading}
+                  className="btn btn-primary w-full"
+                >
+                  {loading ? '遷移中…' : '本人確認をはじめる'}
+                </button>
+              </>
+            )}
           </div>
         )}
 
