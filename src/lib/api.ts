@@ -311,16 +311,29 @@ export async function createPostSmart(payload: CreatePostPayload) {
   return createPost(body);
 }
 
-export async function uploadPostMedia(postId: string, files: File[]) {
+export async function uploadPostMedia(
+  postId: string,
+  files: File[],
+  sampleIndex?: number,   // ★ 追加
+) {
   const formData = new FormData();
-  files.forEach((file) => formData.append('files', file));
+
+  files.forEach((file) => {
+    formData.append('files', file);
+  });
+
+  // ★ サンプル動画 index（動画が無い or 未指定なら送らない）
+  if (typeof sampleIndex === 'number' && sampleIndex >= 0) {
+    formData.append('sampleIndex', String(sampleIndex));
+  }
 
   return apiPost<{ ok: boolean; items: { url: string }[] }>(
     `/posts/${postId}/media`,
     formData,
-    { json: false },  // FormData をそのまま送る
+    { json: false },
   );
 }
+
 
 // 投稿通報
 export async function reportPost(postId: string, reason: string) {

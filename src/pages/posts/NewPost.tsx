@@ -39,6 +39,7 @@ function prune<T>(obj: T): T {
 type MediaPreview = {
   url: string;
   kind: 'image' | 'video' | 'audio';
+  isSample?: boolean; // ★ 追加：サンプル指定用
 };
 
 export default function NewPost() {
@@ -69,6 +70,7 @@ export default function NewPost() {
   // ★ メディア用 state
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const [mediaPreviews, setMediaPreviews] = useState<MediaPreview[]>([]);
+  const [sampleMediaIndex, setSampleMediaIndex] = useState<number | null>(null); // ★ どの動画をサンプルにするか
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // 初回：プラン取得
@@ -173,35 +175,62 @@ export default function NewPost() {
     }
   }
 
+  const clearMedia = () => {
+    mediaPreviews.forEach((p) => URL.revokeObjectURL(p.url));
+    setMediaFiles([]);
+    setMediaPreviews([]);
+    setSampleMediaIndex(null);
+  };  
+
   // ★ メディア選択（画像・動画・音声）
   const handleMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
-    // 既存プレビューURLを解放
-    mediaPreviews.forEach((p) => URL.revokeObjectURL(p.url));
-
     const arr = Array.from(files);
-    setMediaFiles(arr);
 
-    // 新しいプレビューURLを生成
-    const previews: MediaPreview[] = arr.map((f) => {
+    // ★ 既存ファイルに追加
+    setMediaFiles((prev) => [...prev, ...arr]);
+
+    let firstNewVideoIndex: number | null = null;
+    const baseIndex = mediaPreviews.length;
+
+    const newPreviews: MediaPreview[] = arr.map((f, idx) => {
       const url = URL.createObjectURL(f);
       const mime = f.type || '';
 
       let kind: MediaPreview['kind'] = 'image';
       if (mime.startsWith('video/')) {
         kind = 'video';
+        if (firstNewVideoIndex === null) {
+          firstNewVideoIndex = baseIndex + idx;
+        }
       } else if (mime.startsWith('audio/')) {
         kind = 'audio';
-      } else {
-        kind = 'image';
       }
 
       return { url, kind };
     });
 
-    setMediaPreviews(previews);
+    // ★ サンプル未指定 & 今回動画があれば自動指定
+    const nextSampleIndex =
+      sampleMediaIndex !== null
+        ? sampleMediaIndex
+        : firstNewVideoIndex;
+
+    if (sampleMediaIndex === null && firstNewVideoIndex !== null) {
+      setSampleMediaIndex(firstNewVideoIndex);
+    }
+
+    setMediaPreviews((prev) =>
+      [...prev, ...newPreviews].map((p, idx) => ({
+        ...p,
+        isSample: idx === nextSampleIndex,
+      })),
+    );
+
+    // ★ 同じファイルを再選択できるようにする
+    e.target.value = '';
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -228,7 +257,8 @@ export default function NewPost() {
 
       // ★ postId が取れたらメディアも同時アップロード
       if (postId && mediaFiles.length > 0) {
-        await uploadPostMedia(postId, mediaFiles);
+        // sampleMediaIndex が動画以外を指している場合は無視される前提
+        await uploadPostMedia(postId, mediaFiles, sampleMediaIndex ?? undefined);
       }
 
       setOkMsg('投稿が完了しました。');
@@ -239,6 +269,7 @@ export default function NewPost() {
       setMediaFiles([]);
       mediaPreviews.forEach((p) => URL.revokeObjectURL(p.url));
       setMediaPreviews([]);
+      setSampleMediaIndex(null);
     } catch (e: any) {
       const msg = e?.message ?? (typeof e === 'string' ? e : JSON.stringify(e));
       setError(`投稿失敗: ${msg}`);
@@ -315,6 +346,15 @@ export default function NewPost() {
                   ファイルを選択
                 </button>
                 {mediaFiles.length > 0 && (
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm text-red-600"
+                    onClick={clearMedia}
+                  >
+                    すべて削除
+                  </button>
+                )}
+                {mediaFiles.length > 0 && (
                   <span className="text-sm text-gray-600">
                     {mediaFiles.length} 件選択中
                   </span>
@@ -335,25 +375,48 @@ export default function NewPost() {
                   {mediaPreviews.map((p, i) => (
                     <div
                       key={i}
-                      className="w-full max-h-[70vh] bg-black/5 rounded-2xl overflow-hidden flex items-center justify-center"
+                      className="w-full max-h-[70vh] bg-black/5 rounded-2xl overflow-hidden flex flex-col items-center justify-start"
                     >
-                      {p.kind === 'image' && (
-                        <img src={p.url} alt="" className="post-media" />
-                      )}
+                      <div className="w-full flex-1 flex items-center justify-center">
+                        {p.kind === 'image' && (
+                          <img src={p.url} alt="" className="post-media" />
+                        )}
+                        {p.kind === 'video' && (
+                          <video
+                            src={p.url}
+                            className="post-media"
+                            muted
+                            controls
+                          />
+                        )}
+                        {p.kind === 'audio' && (
+                          <audio
+                            src={p.url}
+                            controls
+                            className="w-full"
+                          />
+                        )}
+                      </div>
+
+                      {/* ★ サンプル指定用ラジオ（動画だけ） */}
                       {p.kind === 'video' && (
-                        <video
-                          src={p.url}
-                          className="post-media"
-                          muted
-                          controls
-                        />
-                      )}
-                      {p.kind === 'audio' && (
-                        <audio
-                          src={p.url}
-                          controls
-                          className="w-full"
-                        />
+                        <label className="w-full px-2 py-1 flex items-center gap-1 text-[11px] border-t border-gray-200 bg-white/80">
+                          <input
+                            type="radio"
+                            name="sampleMedia"
+                            checked={sampleMediaIndex === i}
+                            onChange={() => {
+                              setSampleMediaIndex(i);
+                              setMediaPreviews((prev) =>
+                                prev.map((pp, idx) => ({
+                                  ...pp,
+                                  isSample: idx === i,
+                                })),
+                              );
+                            }}
+                          />
+                          <span>この動画をサンプルとして表示する</span>
+                        </label>
                       )}
                     </div>
                   ))}
@@ -362,8 +425,12 @@ export default function NewPost() {
 
               <p className="mt-1 text-xs text-gray-500">
                 ※ 投稿ボタンを押すと、本文と一緒に選択中のメディアもアップロードされます。
+                {`（動画を選択した場合は、1つを「サンプル動画」として指定できます）`}
               </p>
             </div>
+
+            {/* 公開範囲 */}
+            {/* ... 以下は元のまま ...（省略せずに実装済み） */}
 
             {/* 公開範囲 */}
             <div className="space-y-2">

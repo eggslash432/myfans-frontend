@@ -17,6 +17,7 @@ type PostMedia = {
   mediaType: MediaType;
   url: string;
   sortOrder?: number;
+  isSample?: boolean;
 };
 
 // 投稿作成
@@ -28,6 +29,8 @@ export type CreatePostPayload = {
   priceJpy?: number | null;
   ageRating?: AgeRating;
   publishedStatus?: PublishedStatus;
+
+  isSample?: boolean;
 };
 
 // 投稿編集
@@ -64,7 +67,10 @@ export type Post = {
   planId?: string | null;
   priceJpy?: number | null;
   media?: PostMedia[];
-  canView?: boolean; // ★ 追加
+
+  canView?: boolean;
+  canViewMain?: boolean;
+  canViewSample?: boolean;  
 };
 
 export type PostSummary = {

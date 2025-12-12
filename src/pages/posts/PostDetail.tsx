@@ -9,7 +9,7 @@ import {
   createPpvCheckoutSession,
 } from '../../lib/api';
 import type { Post } from '../../shared/types';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import type { MediaType } from '../../shared/prisma-enums';
 
@@ -33,6 +33,40 @@ export default function PostDetail() {
 
   const [busyPlan, setBusyPlan] = useState(false);
   const [busyPpv, setBusyPpv] = useState(false);
+
+  // ===== サンプル30秒制限 =====
+  const SAMPLE_LIMIT_SEC = 30;
+
+  // 動画ごとに「30秒到達したか」を保持（複数サンプル対応）
+  const [sampleLockedMap, setSampleLockedMap] = useState<Record<string, boolean>>(
+    {},
+  );
+
+  const lockSample = (key: string) => {
+    setSampleLockedMap((prev) => ({ ...prev, [key]: true }));
+  };
+
+  const unlockSample = (key: string) => {
+    setSampleLockedMap((prev) => {
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  };
+
+  const handleSampleTimeUpdate = (
+    key: string,
+    e: React.SyntheticEvent<HTMLVideoElement>,
+  ) => {
+    const v = e.currentTarget;
+
+    if (v.currentTime >= SAMPLE_LIMIT_SEC) {
+      v.pause();
+      v.currentTime = SAMPLE_LIMIT_SEC;
+      lockSample(key);
+    }
+  };  
 
   const q = useQuery<Post>({
     queryKey: ['post', id],
@@ -170,6 +204,7 @@ export default function PostDetail() {
   // ====== ここから本文表示 ======
   const post = q.data;
 
+  // バックエンドからの media / mediaAssets / medias などをゆるく吸収
   const rawMedia =
     (post as any).mediaAssets ??
     (post as any).media ??
@@ -182,6 +217,8 @@ export default function PostDetail() {
     kind?: MediaType | string;
     mediaType?: MediaType | string;
     mimeType?: string;
+    // ★ バックエンド側で isSample を返してもらう想定
+    isSample?: boolean;
   }[];
 
   const isVideo = (asset: {
@@ -217,6 +254,10 @@ export default function PostDetail() {
     );
   };
 
+  // ★ サンプルと本編を分離
+  const sampleAssets = mediaAssets.filter((m) => (m as any).isSample);
+  const mainAssets = mediaAssets.filter((m) => !(m as any).isSample);
+
   const isFree = post.visibility === 'free';
   const isPlan = post.visibility === 'plan';
   const isPpv = post.visibility === 'paid_single';
@@ -226,7 +267,18 @@ export default function PostDetail() {
     (post as any).ageRating === 'r18' ||
     (post as any).isAdult === true;
 
-  const canView = isFree ? true : (post as any).canView === true;
+  // ★ バックエンド側で canViewMain / canViewSample を返している場合も拾う
+  const canViewMainFlag =
+    (post as any).canViewMain ??
+    (post as any).canView ??
+    undefined;
+
+  const canView = isFree ? true : canViewMainFlag === true;
+
+  const canViewSample =
+    (post as any).canViewSample ??
+    (sampleAssets.length > 0); // 指定が無ければ「サンプルがあれば誰でも見れる」前提
+
   const isLocked = !canView && (isPlan || isPpv);
 
   const handleReport = async () => {
@@ -242,6 +294,53 @@ export default function PostDetail() {
       console.error(e);
       alert('通報に失敗しました。時間をおいて再度お試しください。');
     }
+  };
+
+  // ★ サンプル動画のレンダリング（30秒制限つき）
+  const renderSampleSection = () => {
+    if (!canViewSample || sampleAssets.length === 0) return null;
+
+    return (
+      <section className="space-y-2 mb-4">
+        <div className="post-detail-badge post-detail-badge-free">
+          🎬 サンプル動画（最大{SAMPLE_LIMIT_SEC}秒）
+        </div>
+
+        <div className="space-y-3">
+          {sampleAssets.map((asset, idx) => {
+            const src = resolveMediaUrl(asset.url);
+            const key = (asset.id ?? `sample-${idx}`).toString();
+
+            // サンプルは基本 video 想定。video以外でも一応 video タグで再生を試みる
+            const locked = sampleLockedMap[key] === true;
+
+            return (
+              <div key={key} className="w-full">
+                <div className="bg-black/5 rounded-2xl overflow-hidden flex items-center justify-center w-full">
+                  <video
+                    src={src}
+                    controls
+                    className="post-media"
+                    onPlay={() => unlockSample(key)}
+                    onTimeUpdate={(e) => handleSampleTimeUpdate(key, e)}
+                  />
+                </div>
+
+                <div className="mt-1 text-xs text-gray-600">
+                  ※ サンプルは {SAMPLE_LIMIT_SEC} 秒で自動停止します
+                </div>
+
+                {locked && (
+                  <div className="mt-2 p-3 rounded-xl bg-yellow-50 border border-yellow-200 text-sm text-yellow-800">
+                    サンプル視聴は {SAMPLE_LIMIT_SEC} 秒までです。続きは購入 / 購読してください。
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    );
   };
 
   return (
@@ -284,7 +383,7 @@ export default function PostDetail() {
               <span className="post-detail-badge post-detail-badge-r18">
                 R18
               </span>
-            )}            
+            )}
 
             {/* プランで閲覧できている = 購読中 */}
             {isPlan && canView && (
@@ -297,13 +396,16 @@ export default function PostDetail() {
 
         {/* 本文／ロック表示 */}
         <section className="post-detail-body">
+          {/* ★ サンプルはロック状態に関係なく上部に表示 */}
+          {renderSampleSection()}
+
           {!isLocked ? (
             // ====== 閲覧可能 ======
             <div className="space-y-4">
-              {/* メディア */}
-              {mediaAssets.length > 0 && (
+              {/* 本編メディア */}
+              {mainAssets.length > 0 && (
                 <div className="space-y-4">
-                  {mediaAssets.map((asset, idx) => {
+                  {mainAssets.map((asset, idx) => {
                     const src = resolveMediaUrl(asset.url);
 
                     return (
