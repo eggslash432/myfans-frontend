@@ -20,6 +20,11 @@ type PostMedia = {
   isSample?: boolean;
 };
 
+export type UploadSetting = {
+  maxFileSizeMb: number;
+  maxFiles: number;
+};
+
 // 投稿作成
 export type CreatePostPayload = {
   title: string;

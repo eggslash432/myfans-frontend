@@ -12,7 +12,8 @@ import type {
   PostEditValues, 
   PostSummary, 
   ReportItem, 
-  UpdatePlanPayload,  
+  UpdatePlanPayload,
+  UploadSetting,  
   } from "../shared/types";
 
 // API ベースURL
@@ -334,6 +335,17 @@ export async function uploadPostMedia(
   );
 }
 
+// GET
+async function getUploadSettings(): Promise<UploadSetting> {
+  const res = await api.get("/admin/settings/upload");
+  return res.data;
+}
+
+// PATCH
+async function updateUploadSettings(input: UploadSetting): Promise<{ ok: true }> {
+  const res = await api.patch("/admin/settings/upload", input);
+  return res.data;
+}
 
 // 投稿通報
 export async function reportPost(postId: string, reason: string) {
@@ -744,6 +756,8 @@ const api = {
   updateFeeSettings,
   listAdminUsers,
   updateAdminRole,
+  getUploadSettings,
+  updateUploadSettings,
 
   async creatorAnalyticsMe() {
     return request<{
