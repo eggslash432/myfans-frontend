@@ -3,9 +3,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   listCreators, 
-  adminListPosts,
-} from '../lib/api';
-import { normalizeList } from '../lib/domain/normalize';
+  getPublicPosts,
+} from '../../lib/api';
+import { normalizeList } from '../../lib/domain/normalize';
 
 export default function HomePage() {
   const [creators, setCreators] = useState<any[]>([]);
@@ -22,7 +22,7 @@ export default function HomePage() {
 
         const [creatorList, adminPostList] = await Promise.all([
           listCreators(),
-          adminListPosts(),  // /posts/public/admin
+          getPublicPosts(),  
         ]);
 
         console.debug('GET /creators raw:', creatorList);
