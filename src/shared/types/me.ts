@@ -7,6 +7,21 @@ export type Me = {
   role: Role; 
 };
 
+// マイページ・設定用
+export type UserMe = {
+  id: string;
+  email: string;
+  role: string;
+  profile?: {
+    displayName?: string;
+    avatarUrl?: string;
+  };
+  creator?: {
+    id: string;
+    status: string;
+  };
+};
+
 export type MeSummary = {
   /** 購読中プラン一覧 */
   subscriptions: Array<{

@@ -1,12 +1,12 @@
 // front/src/hooks/useMeSummary.ts
 import { useEffect, useState } from "react";
 import { useAuth } from "./useAuth";
-import { getMeSummary } from "../lib/api/auth"; // 実際の置き場所に合わせて
-import type { MeSummary } from "../shared/types";
+import { getMe } from "../lib/api/auth"; // 実際の置き場所に合わせて
+import type { Me } from "../shared/types";
 
 export function useMeSummary() {
   const { user, ready } = useAuth();
-  const [summary, setSummary] = useState<MeSummary | null>(null);
+  const [summary, setSummary] = useState<Me | null>(null);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -23,7 +23,7 @@ export function useMeSummary() {
       try {
         setLoading(true);
         setErr(null);
-        const s = await getMeSummary();
+        const s = await getMe();
         if (alive) setSummary(s);
       } catch (e: any) {
         const msg = e?.body?.message ?? e?.message ?? "Failed to fetch";

@@ -1,16 +1,74 @@
 /* front/src/styles/components/status-badge.css */
 
-/* status badge */
+.badges {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .badge {
   display: inline-flex;
   align-items: center;
   padding: 4px 10px;
+  font-size: 12px;
+  line-height: 1;
   border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  border: 1px solid transparent;
+  border: 1px solid rgba(0,0,0,0.06);
+  background: #f3f4f6; /* default */
+  color: #374151;
+}
+
+/* 状態色 */
+.badge-success {
+  background: #ecfdf5;
+  color: #065f46;
+  border-color: #a7f3d0;
+}
+
+.badge-warning {
+  background: #fffbeb;
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+.badge-muted {
+  background: #f3f4f6;
+  color: #6b7280;
+  border-color: #e5e7eb;
+}
+
+/* visibility 用（青系） */
+.badge-info {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+/* 状態別 */
+.badge-green {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.badge-yellow {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+.badge-red {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.badge-gray {
+  background: #f3f4f6;
+  color: #6b7280;
 }
 
 .badge-draft { background: #f3f4f6; color: #374151; border-color: #e5e7eb; }
 .badge-published { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
 .badge-private { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+
+
+
+

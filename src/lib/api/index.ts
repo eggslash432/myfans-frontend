@@ -13,4 +13,5 @@ export * from './axiosLike';
 export * from './payments';
 export * from './media';
 export * from './stripe';
+export * from './users';
 

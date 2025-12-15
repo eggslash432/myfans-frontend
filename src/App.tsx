@@ -1,5 +1,5 @@
 // front/src/App.tsx
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Outlet } from "react-router-dom";
 import Home from "./pages/home/Home";
 import MyPage from "./pages/mypage/MyPage";
 import CreatorPage from "./pages/creators/CreatorPage";
@@ -36,15 +36,22 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
-        {/* Admin 配下はまとめてガード（未ログイン→/loginへ、非admin→/） */}
+        {/* ✅ Admin 配下（/admin, /admin/creators ...） */}
         <Route
-          path="/admin/*"
+          path="/admin"
           element={
             <ProtectedRoute role="admin">
-              <AdminRoutes />
+              <Outlet />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<AdminDashboard />} />
+          <Route path="creators" element={<CreatorsAdminPage />} />
+          <Route path="payouts" element={<AdminPayoutsPage />} />
+          <Route path="posts" element={<AdminPostsPage />} />
+          <Route path="reports" element={<AdminReportsPage />} />
+          <Route path="settings" element={<AdminSettingsPage />} />
+        </Route>
 
         <Route
           path="/mypage"
@@ -126,42 +133,23 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
         <Route path="/checkout/success" element={<Success />} />
         <Route path="/checkout/cancel" element={<Cancel />} />
 
-        {/* 設定 */}
+        {/* ✅ 設定配下もネストに統一 */}
         <Route
-          path="/settings/*"
+          path="/settings"
           element={
             <ProtectedRoute>
-              <SettingsRoutes />
+              <Outlet />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<SettingsHomePage />} />
+          <Route path="password" element={<PasswordChangePage />} />
+        </Route>
       </Routes>
     </AppLayout>
-  );
-}
-
-/** admin の子ルーティングだけをここにまとめる（/admin が二重定義にならない） */
-function AdminRoutes() {
-  return (
-    <Routes>
-      <Route path="/" element={<AdminDashboard />} />
-      <Route path="creators" element={<CreatorsAdminPage />} />
-      <Route path="payouts" element={<AdminPayoutsPage />} />
-      <Route path="posts" element={<AdminPostsPage />} />
-      <Route path="reports" element={<AdminReportsPage />} />
-      <Route path="settings" element={<AdminSettingsPage />} />
-    </Routes>
-  );
-}
-
-function SettingsRoutes() {
-  return (
-    <Routes>
-      <Route path="/" element={<SettingsHomePage />} />
-      <Route path="password" element={<PasswordChangePage />} />
-    </Routes>
   );
 }

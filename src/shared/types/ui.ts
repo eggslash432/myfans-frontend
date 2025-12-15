@@ -17,4 +17,9 @@ export type Props = {
   children: ReactNode 
 };
 
+export type SubTitleRule = {
+  match: (path: string) => boolean;
+  label: string;
+};
+
 

@@ -79,3 +79,7 @@ export function reportPost(
     body: input ?? {},
   });
 }
+
+export function getOfficialPosts() {
+  return request<ListResponse<PostSummary>>('/posts?official=1', { method: 'GET' });
+}

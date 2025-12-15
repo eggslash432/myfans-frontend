@@ -1,12 +1,12 @@
 // src/pages/checkout/Success.tsx
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { getMeSummary } from '../../lib/api/auth'; // ★追加
-import type { MeSummary } from '../../shared/types'; // ★型も合わせる
+import { getMe } from '../../lib/api/auth'; // ★追加
+import type { Me } from '../../shared/types'; // ★型も合わせる
 
 export default function Success() {
   const [params] = useSearchParams();
-  const [summary, setSummary] = useState<MeSummary | null>(null);
+  const [summary, setSummary] = useState<Me | null>(null);
   const [msg, setMsg] = useState<string>('反映中...');
 
   const planName = params.get('plan') ?? '';
@@ -17,7 +17,7 @@ export default function Success() {
 
     const fetchSummary = async () => {
       try {
-        const s = await getMeSummary(); // ★ここ
+        const s = await getMe(); // ★ここ
         if (!mounted) return;
         setSummary(s);
         setMsg('反映完了');

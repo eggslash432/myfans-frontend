@@ -63,6 +63,9 @@ export async function request<T = unknown>(
   const data = text ? safeJsonParse(text) : null;
 
   if (!res.ok) {
+    if (res.status === 401) {
+      localStorage.removeItem("access_token");
+    }    
     throw new ApiError(res.status, data, data?.message);
   }
 

@@ -111,3 +111,8 @@ export function requestCreatorPayout(amountJpy: number): Promise<unknown> {
     body: { amountJpy },
   });
 }
+
+export async function createStripeOnboardingLink(): Promise<{ url: string }> {
+  // ★既存APIを使う
+  return request<{ url: string }>("/creators/me/kyc/start", { method: "POST" });
+}

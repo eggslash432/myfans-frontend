@@ -1,14 +1,9 @@
 // front/src/lib/api/auth.ts
 import { request } from './apiClient';
-import type { Me, MeSummary } from '../../shared/types';
+import type { Me } from '../../shared/types';
 
 export function getMe(): Promise<Me> {
   return request<Me>('/auth/me');
-}
-
-/** マイページ用サマリ（旧: getMeSummary / meSummary） */
-export function getMeSummary(): Promise<MeSummary> {
-  return request<MeSummary>('/auth/me/summary', { method: 'GET' });
 }
 
 export async function login(payload: { email: string; password: string }) {

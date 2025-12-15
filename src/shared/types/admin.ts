@@ -1,4 +1,4 @@
-import type { PublishedStatus } from "../prisma-enums";
+import type { PublishedStatus, Visibility } from "../prisma-enums";
 
 // front/src/shared/types/admin.ts
 export type PendingCreator = {
@@ -12,10 +12,14 @@ export type PendingCreator = {
 export type AdminPost = {
   id: string;
   title: string;
+  visibility: Visibility;
+  priceJpy: number | null;
   publishedStatus: PublishedStatus;
-  creator?: { 
-    publicName?: string 
-  };
+  publishedAt: string | null;
+  createdAt: string;
+  creatorId: string | null;
+  creatorName: string; 
+  reportsCount: number;
 };
 
 export type AdminPostReport = {

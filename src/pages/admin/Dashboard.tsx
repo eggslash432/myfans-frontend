@@ -2,7 +2,6 @@
 
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import ProtectedRoute from '../../components/ProtectedRoute';
 import { adminGetSummary } from '../../lib/api/admin';
 import type { AdminSummary } from '../../shared/types';
 
@@ -78,7 +77,6 @@ function AdminInner() {
           </div>
         </Link>
 
-        {/* ★ 追加：システム設定（権限／手数料） */}
         <Link to="/admin/settings" className="card card-link">
           <div className="flex justify-between items-center">
             <div>
@@ -89,7 +87,7 @@ function AdminInner() {
             </div>
             <span className="text-lg text-gray-400">›</span>
           </div>
-        </Link>        
+        </Link>
       </section>
 
       {/* サマリー */}
@@ -102,14 +100,13 @@ function AdminInner() {
 
         {error && (
           <div className="text-xs text-red-600 mb-3">
-            管理サマリを取得できませんでした。
-            <br />
-            API <code>/admin/summary</code> の未実装または権限不足の可能性があります。
+            {/401|Unauthorized/i.test(String(error))
+              ? 'ログインが切れています。再ログインしてください。'
+              : <>管理サマリを取得できませんでした。<br />API <code>/admin/summary</code> の未実装または権限不足の可能性があります。</>}
           </div>
         )}
 
         <div className="summary-grid">
-          {/* 月間売上（今はリンクなし） */}
           <div className="summary-item">
             <div className="summary-label">月間売上</div>
             <div className="summary-value">
@@ -117,7 +114,6 @@ function AdminInner() {
             </div>
           </div>
 
-          {/* 新規登録 → クリエイター管理へ */}
           <Link to="/admin/creators" className="summary-item">
             <div className="summary-label">新規登録</div>
             <div className="summary-value">
@@ -125,7 +121,6 @@ function AdminInner() {
             </div>
           </Link>
 
-          {/* 通報(未対応) → 通報一覧へ */}
           <Link to="/admin/reports" className="summary-item">
             <div className="summary-label">通報(未対応)</div>
             <div className="summary-value">
@@ -139,9 +134,5 @@ function AdminInner() {
 }
 
 export default function AdminDashboard() {
-  return (
-    <ProtectedRoute>
-      <AdminInner />
-    </ProtectedRoute>
-  );
+  return <AdminInner />;
 }

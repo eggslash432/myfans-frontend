@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  getMeSummary, 
+  API_ORIGIN,
+  getUserMe,
   getCreatorMe, 
   applyCreator, 
   myPosts,
@@ -11,6 +12,7 @@ import {
   updateMyPost,
   uploadPostMedia,
   deleteMyPostMedia,
+  createStripeOnboardingLink,
 } from '../../lib/api';
 import { useAuth } from '../../hooks/useAuth';
 import { PostEditModal } from '../posts/PostEditModal';
@@ -18,12 +20,15 @@ import type { PublishedStatus } from '../../shared/prisma-enums';
 import type { 
   CreatorMeResponse, 
   MeSummary, 
-  PostSummary 
+  PostSummary, 
 } from '../../shared/types';
+import StatusBadge from "../../components/ui/StatusBadge";
+import KycStatusBadge from '../../components/ui/KycStatusBadge';
+import CreatorMonetizationStatus from "../../components/ui/CreatorMonetizationStatus";
 
 export default function MyPage() {
   const { user, ready, restore } = useAuth();
-  const [summary, setSummary] = useState<MeSummary | null>(null);
+  const [summary, setSummary] = useState<MeSummary>();
   const [err, setErr] = useState<string>('');
   const [posts, setPosts] = useState<PostSummary[]>([]);
   const [editingPost, setEditingPost] = useState<any | null>(null);
@@ -39,6 +44,13 @@ export default function MyPage() {
   const role = (user as any)?.role;
   const isAdmin = role === 'admin';
   const isCreator = role === 'creator';
+
+  useEffect(() => {
+    if (!ready || !user) return;
+    if (!isAdmin) return;
+
+    navigate('/admin', { replace: true }); 
+  }, [ready, user, isAdmin, navigate]);  
 
   // --- 共通の Creator 再読み込み関数 ---
   const loadCreator = useCallback(async () => {
@@ -69,7 +81,7 @@ export default function MyPage() {
     if (!ready || !user) return;
     (async () => {
       try {
-        setSummary(await getMeSummary());
+        setSummary(await getUserMe());
       } catch (e: any) {
         setErr(e.message || 'failed');
       }
@@ -79,11 +91,20 @@ export default function MyPage() {
   // --- 投稿 ---
   useEffect(() => {
     if (!ready || !user) return;
+    if (!isCreator) return;
 
     myPosts()
       .then((res) => setPosts(res.items ?? [])) // ★ items を使う
       .catch((e) => console.error('投稿取得失敗:', e));
   }, [ready, user]);
+
+  useEffect(() => {
+    if (!ready) return;
+
+    if (!isCreator) {
+      setPosts([]);
+    }
+  }, [ready, isCreator]);
 
   // --- Creator 情報読込 ---
   useEffect(() => {
@@ -147,12 +168,9 @@ export default function MyPage() {
   const paymentCount = (summary?.payments ?? []).length;
 
   // ★ ここで「公開中」と「下書き」に振り分ける
-  const publishedPosts = posts.filter(
-    (p) => p.publishedStatus === 'published',
-  );
-  const draftPosts = posts.filter(
-    (p) => p.publishedStatus !== 'published',
-  );  
+  const publicPosts = posts.filter((p) => p.publishedStatus === 'published');
+  const draftPosts  = posts.filter((p) => p.publishedStatus === 'draft');
+  const privatePosts = posts.filter((p) => p.publishedStatus === 'private'); 
 
   const openEdit = async (summaryPost: any) => {
     try {
@@ -259,6 +277,9 @@ export default function MyPage() {
   };
 
   // --- 各種ガード ---
+  if (isAdmin) {
+    return <div className="p-4">管理画面へ移動しています…</div>;
+  }
   if (!ready) return <div className="p-4">読み込み中...</div>;
   if (!user)
     return (
@@ -326,17 +347,83 @@ export default function MyPage() {
 
       {isCreator && creator && (
         <>
-          <section className="card space-y-2">
-            <div className="section-title">クリエイター情報</div>
-            <p className="section-subtitle">
-              売上や出金、投稿の管理はクリエイターメニューから行えます。
-            </p>
-            <div className="text-sm">
-              <div className="mb-1">
-                <span className="font-semibold">表示名：</span>
-                {creator.publicName ?? '(未設定)'}
-              </div>
+          <section className="card">
+            <div className="section-title flex items-center justify-between">
+              <span>クリエイター情報</span>
+              <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                onClick={() => navigate('/creator/profile')}
+              >
+                詳細
+              </button>
             </div>
+
+            {(() => {
+              const displayName = creator.publicName ?? '(未設定)';
+
+              const rawAvatarUrl = creator.avatarUrl ?? undefined;
+              const avatarSrc = rawAvatarUrl
+                ? rawAvatarUrl.startsWith('http')
+                  ? rawAvatarUrl
+                  : `${API_ORIGIN}${rawAvatarUrl}`
+                : null;
+
+              return (
+                <div className="flex items-start gap-3 mt-3">
+                  {avatarSrc ? (
+                    <img
+                      src={avatarSrc}
+                      alt={displayName}
+                      className="profile-avatar-preview"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-gray-100 flex-shrink-0" />
+                  )}
+
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold truncate">{displayName}</div>
+
+                    {creator.bio ? (
+                      <p className="text-xs text-gray-500 mt-1 line-clamp-3">
+                        {creator.bio}
+                      </p>
+                    ) : (
+                      <p className="text-xs text-gray-400 mt-1">
+                        自己紹介はまだ登録されていません。
+                      </p>
+                    )}
+
+                    {/* おまけ：KYC 状態 */}
+                    <div className="mt-2 flex items-center gap-2 text-xs">
+                      <span className="text-gray-500">本人確認</span>
+
+                      <KycStatusBadge
+                        status={creator.stripeKycStatus}
+                        disabledReason={creator.stripeKycDisabledReason}
+                      />
+
+                      {creator.stripeKycStatus !== 'approved' && (
+                        <span className="text-gray-400">
+                          （出金には本人確認が必要です）
+                        </span>
+                      )}
+                    </div>
+                    <CreatorMonetizationStatus
+                      stripeKycStatus={creator.stripeKycStatus}
+                      stripeChargesEnabled={creator.stripeChargesEnabled}
+                      stripePayoutsEnabled={creator.stripePayoutsEnabled}
+                      stripeKycDisabledReason={creator.stripeKycDisabledReason}
+                      stripeKycFieldsDue={creator.stripeKycFieldsDue}
+                      onClickFix={async () => {
+                        const { url } = await createStripeOnboardingLink();
+                        window.location.href = url;
+                      }}
+                    />
+                  </div>
+                </div>
+              );
+            })()}
           </section>
 
           <section className="card space-y-3">
@@ -364,67 +451,102 @@ export default function MyPage() {
         </>
       )}
 
-      {/* マイ投稿一覧（公開中） */}
-      <section className="card">
-        <div className="section-title">マイ投稿一覧</div>
-        {publishedPosts.length === 0 && (
-          <p className="section-subtitle">まだ公開中の投稿がありません。</p>
-        )}
-        {publishedPosts.length > 0 && (
-          <ul className="divide-y divide-gray-100 mt-2">
-            {publishedPosts.map((p) => (
-              <li
-                key={p.id}
-                className="py-2 text-sm flex items-center justify-between"
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{p.title}</div>
-                  <div className="text-xs text-gray-500">公開中</div>
-                </div>
-                <button
-                  onClick={() => openEdit(p)}   
-                  className="ml-3 btn btn-sm btn-outline whitespace-nowrap"
-                >
-                  <span>詳細・編集</span>
-                  <span style={{ fontSize: '12px' }}>›</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      {/* 下書き一覧 */}
-      {draftPosts.length > 0 && (
+      {/* マイ投稿一覧（ネスト：公開 / 非公開 / 下書き） */}
+      {isCreator && creator && (
         <section className="card">
-          <div className="section-title">下書き一覧</div>
-          <p className="section-subtitle text-xs">
-            公開前の下書きや非公開投稿です。
-          </p>
-          <ul className="divide-y divide-gray-100 mt-2">
-            {draftPosts.map((p) => (
-              <li
-                key={p.id}
-                className="py-2 text-sm flex items-center justify-between"
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{p.title}</div>
-                  <div className="text-xs text-gray-500">
-                    {p.publishedStatus === 'draft' ? '下書き' : '非公開'}
-                  </div>
-                </div>
-                <button
-                  onClick={() => openEdit(p)}
-                  className="ml-3 btn btn-sm btn-outline whitespace-nowrap"
-                >
-                  <span>詳細・編集</span>
-                  <span style={{ fontSize: '12px' }}>›</span>
-                </button>
-              </li>
-            ))}
-          </ul>
+          <div className="section-title">マイ投稿一覧</div>
+
+          <details open className="mt-2">
+            <summary className="cursor-pointer text-sm font-semibold">
+              公開（{publicPosts.length}）
+            </summary>
+            {publicPosts.length === 0 ? (
+              <p className="section-subtitle mt-2">まだ公開中の投稿がありません。</p>
+            ) : (
+              <ul className="divide-y divide-gray-100 mt-2">
+                {publicPosts.map((p) => (
+                  <li key={p.id} className="py-2 text-sm flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium truncate">{p.title}</div>
+                      <StatusBadge
+                        publishedStatus={p.publishedStatus}
+                        visibility={p.visibility}
+                      />
+                    </div>
+                    <button
+                      onClick={() => openEdit(p)}
+                      className="ml-3 btn btn-sm btn-outline whitespace-nowrap"
+                    >
+                      <span>詳細・編集</span>
+                      <span style={{ fontSize: "12px" }}>›</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </details>
+
+          <details className="mt-3">
+            <summary className="cursor-pointer text-sm font-semibold">
+              非公開（{privatePosts.length}）
+            </summary>
+            {privatePosts.length === 0 ? (
+              <p className="section-subtitle mt-2">非公開の投稿はありません。</p>
+            ) : (
+              <ul className="divide-y divide-gray-100 mt-2">
+                {privatePosts.map((p) => (
+                  <li key={p.id} className="py-2 text-sm flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium truncate">{p.title}</div>
+                      <StatusBadge
+                        publishedStatus={p.publishedStatus}
+                        visibility={p.visibility}
+                      />
+                    </div>
+                    <button
+                      onClick={() => openEdit(p)}
+                      className="ml-3 btn btn-sm btn-outline whitespace-nowrap"
+                    >
+                      <span>詳細・編集</span>
+                      <span style={{ fontSize: "12px" }}>›</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </details>
+
+          <details className="mt-3">
+            <summary className="cursor-pointer text-sm font-semibold">
+              下書き（{draftPosts.length}）
+            </summary>
+            {draftPosts.length === 0 ? (
+              <p className="section-subtitle mt-2">下書きはありません。</p>
+            ) : (
+              <ul className="divide-y divide-gray-100 mt-2">
+                {draftPosts.map((p) => (
+                  <li key={p.id} className="py-2 text-sm flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium truncate">{p.title}</div>
+                      <StatusBadge
+                        publishedStatus={p.publishedStatus}
+                        visibility={p.visibility}
+                      />
+                    </div>
+                    <button
+                      onClick={() => openEdit(p)}
+                      className="ml-3 btn btn-sm btn-outline whitespace-nowrap"
+                    >
+                      <span>詳細・編集</span>
+                      <span style={{ fontSize: "12px" }}>›</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </details>
         </section>
-      )}
+      )}  
 
       {/* 購読状況 */}
       <section className="card">

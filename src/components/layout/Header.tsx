@@ -1,33 +1,43 @@
-// front/src/components/Header.tsx
-import { Link, useLocation, useNavigate } from "react-router-dom";              // ← これがさっきの api.ts
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
+import type { SubTitleRule } from "../../shared/types";
 
-// もし useAuth があるならメール表示に使う
-import { useAuth } from "../../hooks/useAuth"; // パスはプロジェクトに合わせて
+const SUB_TITLE_RULES: SubTitleRule[] = [
+  // --- Creator ---
+  { match: (p) => p.startsWith("/creator/posts"), label: "クリエイター" },
+  { match: (p) => p.startsWith("/creator/plans"), label: "クリエイター" },
+  { match: (p) => p.startsWith("/creator/payouts"), label: "クリエイター" },
+  { match: (p) => p.startsWith("/creator/analytics"), label: "クリエイター" },
+  { match: (p) => p.startsWith("/creators/settings"), label: "クリエイター設定" },
+
+  // --- My page / User ---
+  { match: (p) => p.startsWith("/mypage"), label: "マイページ" },
+  { match: (p) => p.startsWith("/settings"), label: "設定" },
+
+  // --- Admin（将来用） ---
+  { match: (p) => p.startsWith("/admin"), label: "管理画面" },
+];
 
 export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();  // { email, role, ... } が入っている想定
+  const { user, ready, logout } = useAuth();
 
-  const isMyPage = location.pathname.startsWith("/mypage");
-  const isCreator = location.pathname.startsWith("/creators");
-
-  let subTitle = "";
-  if (isMyPage) subTitle = "マイページ";
-  else if (isCreator) subTitle = "クリエイター設定";
+  const subTitle =
+    SUB_TITLE_RULES.find((r) => r.match(location.pathname))?.label ?? "";
 
   const handleLogout = async () => {
     try {
-      await logout();          // /auth/logout を叩いて token 削除
+      await logout();
     } catch (e) {
       console.error("logout failed", e);
-      // 失敗しても一応ログイン画面へ飛ばしてしまう
     } finally {
       navigate("/login", { replace: true });
     }
   };
 
-  const isLoggedIn = !!user;  // useAuth がなければこの行消して、常にログアウトボタンでもOK
+  const isLoggedIn = ready && !!user;
+  const next = encodeURIComponent(location.pathname);
 
   return (
     <header className="header-mobile">
@@ -39,15 +49,16 @@ export default function Header() {
           {subTitle && <span className="header-sub">{subTitle}</span>}
         </div>
 
-        {/* 右側：ログイン状態に応じて切り替え */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {isLoggedIn ? (
+        <div className="header-actions">
+          {!ready ? (
+            <span className="header-loading">…</span>
+          ) : isLoggedIn ? (
             <>
-              {/* メールとロールはお好みで */}
-              <span style={{ fontSize: 11, color: "#6b7280" }}>
-                {user?.email} {user?.role && `(${user.role})`}
+              <span className="header-user">
+                {user!.email} {user!.role ? `(${user!.role})` : ""}
               </span>
               <button
+                type="button"
                 className="btn btn-outline btn-sm"
                 onClick={handleLogout}
               >
@@ -56,16 +67,10 @@ export default function Header() {
             </>
           ) : (
             <>
-              <Link
-                to="/login"
-                style={{ fontSize: 12, color: "#6b7280", textDecoration: "none" }}
-              >
+              <Link className="header-link" to={`/login?next=${next}`}>
                 ログイン
               </Link>
-              <Link
-                to="/signup"
-                style={{ fontSize: 12, color: "#6b7280", textDecoration: "none" }}
-              >
+              <Link className="header-link" to="/signup">
                 新規登録
               </Link>
             </>

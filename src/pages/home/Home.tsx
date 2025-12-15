@@ -1,10 +1,7 @@
 // front/src/pages/Home.tsx
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  listCreators, 
-  getPublicPosts,
-} from '../../lib/api';
+import { listCreators, getOfficialPosts } from '../../lib/api';
 import { normalizeList } from '../../lib/domain/normalize';
 
 export default function HomePage() {
@@ -20,14 +17,20 @@ export default function HomePage() {
         setLoading(true);
         setError(null);
 
-        const [creatorList, adminPostList] = await Promise.all([
+        const [creatorList, officialPostList] = await Promise.all([
           listCreators(),
-          getPublicPosts(),  
+          getOfficialPosts(),
         ]);
 
-        console.debug('GET /creators raw:', creatorList);
         setCreators(normalizeList(creatorList) ?? []);
-        setAdminPosts(normalizeList(adminPostList) ?? []);  // ★ ここも normalizeList
+
+        const all = normalizeList(officialPostList) ?? [];
+
+        // ✅ API が official=1 を返す前提なので基本はそのまま使う
+        // （念のための保険を入れるなら creatorId === null に寄せる）
+        const official = all.filter((p: any) => p?.creatorId == null);
+
+        setAdminPosts(official);
       } catch (err: any) {
         console.error('Home load failed:', err);
         setError(err?.message || '一覧の取得に失敗しました');
@@ -57,7 +60,6 @@ export default function HomePage() {
     );
   }
 
-  // 正規化して各カードに出したい情報を組み立て
   const items = creators.map((c) => {
     const name =
       c.publicName ??
@@ -68,13 +70,12 @@ export default function HomePage() {
     const trimmed = String(name).trim();
     const initial = trimmed ? trimmed.charAt(0).toUpperCase() : '?';
 
-    // あれば使う（無ければ 0）
     const postCount = c.postCount ?? c.postsCount ?? 0;
     const fanCount = c.fanCount ?? c.subscriberCount ?? 0;
 
     return {
       ...c,
-      avatarUrl: c.avatarUrl ?? c.profileImageUrl ?? null, // ← 追加
+      avatarUrl: c.avatarUrl ?? c.profileImageUrl ?? null,
       _displayName: name,
       _initial: initial,
       _postCount: postCount,
@@ -105,18 +106,12 @@ export default function HomePage() {
                 >
                   <div className="admin-news-meta">
                     <span className="admin-news-pill">お知らせ</span>
-                    {dateStr && (
-                      <span className="admin-news-date">{dateStr}</span>
-                    )}
+                    {dateStr && <span className="admin-news-date">{dateStr}</span>}
                   </div>
 
-                  <div className="admin-news-title">
-                    {p.title}
-                  </div>
+                  <div className="admin-news-title">{p.title || '（お知らせ）'}</div>
 
-                  <div className="admin-news-body">
-                    {p.body || '詳細を見る'}
-                  </div>
+                  <div className="admin-news-body">{p.body || '詳細を見る'}</div>
                 </button>
               );
             })}
@@ -135,9 +130,7 @@ export default function HomePage() {
       {/* クリエイター一覧 */}
       {items.length === 0 ? (
         <section className="card">
-          <p className="section-subtitle">
-            現在、表示できるクリエイターはいません。
-          </p>
+          <p className="section-subtitle">現在、表示できるクリエイターはいません。</p>
         </section>
       ) : (
         <section className="space-y-2">
@@ -146,27 +139,19 @@ export default function HomePage() {
               key={c.id}
               type="button"
               onClick={() => navigate(`/creators/${c.id}`)}
-              className="card-link w-full text左"
+              className="card-link w-full text-left"
             >
               <div className="card flex items-center gap-3">
-                {/* アイコン（画像があれば画像、なければ頭文字） */}
                 <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-sm font-bold text-pink-500 flex-shrink-0 overflow-hidden">
                   {c.avatarUrl ? (
-                    <img
-                      src={c.avatarUrl}
-                      alt="avatar"
-                      className="w-full h-full object-cover"
-                    />
+                    <img src={c.avatarUrl} alt="avatar" className="w-full h-full object-cover" />
                   ) : (
                     <span>{c._initial}</span>
                   )}
                 </div>
 
-                {/* テキスト部 */}
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold truncate">
-                    {c._displayName}
-                  </div>
+                  <div className="font-semibold truncate">{c._displayName}</div>
 
                   <div className="text-xs text-gray-500 mt-0.5 line-clamp-2">
                     {c.bio || '自己紹介はまだ登録されていません。'}
@@ -178,10 +163,7 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                {/* 右側の矢印的ラベル */}
-                <div className="text-xs text-pink-500 flex-shrink-0">
-                  プロフィール ›
-                </div>
+                <div className="text-xs text-pink-500 flex-shrink-0">プロフィール ›</div>
               </div>
             </button>
           ))}

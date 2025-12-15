@@ -136,3 +136,87 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Admin filter bar */
+.admin-filter { }
+.admin-filter-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+.admin-filter-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.admin-filter-grid2{
+  margin-top:12px;
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap:10px;
+}
+
+.admin-field--full{
+  grid-column: 1 / -1;
+}
+
+/* モバイルは縦積み */
+@media (max-width: 640px){
+  .admin-filter-grid2{
+    grid-template-columns: 1fr;
+  }
+  .admin-field--full{
+    grid-column: auto;
+  }
+}
+
+.admin-field{ display:flex; flex-direction:column; gap:6px; min-width:0; }
+.admin-field-label{
+  font-size:12px;
+  color: var(--color-text-muted);
+  font-weight:600;
+}
+
+.admin-input,
+.admin-select{
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  padding: 0 12px;
+  font-size: 14px;
+  outline: none;
+}
+
+.admin-input:focus,
+.admin-select:focus{
+  border-color: #c7d2fe; /* うっすら */
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+}
+
+.admin-filter-foot{
+  margin-top:10px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.admin-filter-count{
+  font-size:12px;
+  color:#6b7280;
+  font-weight:700;
+}
+.admin-filter-hint{
+  font-size:12px;
+  color:#9ca3af;
+}
+
+/* Responsive */
+@media (max-width: 640px){
+  .admin-filter-grid{
+    grid-template-columns: 1fr;
+  }
+}

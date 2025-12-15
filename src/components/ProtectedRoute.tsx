@@ -1,18 +1,16 @@
 // front/src/components/ProtectedRoute.tsx
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import type { JSX } from "react";
+import type { ReactNode } from "react";
 import type { Role } from "../shared/prisma-enums";
 
-export default function ProtectedRoute({
-  children,
-  role,
-  roles,
-}: {
-  children: JSX.Element;
+type Props = {
+  children: ReactNode;
   role?: Role;
   roles?: Role[];
-}) {
+};
+
+export default function ProtectedRoute({ children, role, roles }: Props) {
   const { user, ready } = useAuth();
   const location = useLocation();
 
@@ -25,13 +23,15 @@ export default function ProtectedRoute({
     return <Navigate to={`/login?next=${next}`} replace />;
   }
 
-  if (role && user.role !== role) {
+  const allowedRoles: Role[] | null = roles
+    ? roles
+    : role
+      ? [role]
+      : null;
+
+  if (allowedRoles && (!user.role || !allowedRoles.includes(user.role as Role))) {
     return <Navigate to="/" replace />;
   }
 
-  if (roles && (!user.role || !roles.includes(user.role))) {
-    return <Navigate to="/" replace />;
-  }
-
-  return children;
+  return <>{children}</>;
 }
