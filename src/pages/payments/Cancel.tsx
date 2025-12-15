@@ -3,10 +3,12 @@ import { Link, useSearchParams } from "react-router-dom";
 
 export default function Cancel() {
   const [params] = useSearchParams();
-  const from = params.get("from"); // 任意: plan / ppv
+  const from = params.get("from"); // "plan" | "ppv"
+  const postId = params.get("postId");
+
   const backTo =
+    from === "ppv" && postId ? `/posts/${postId}` :
     from === "plan" ? "/mypage" :
-    from === "ppv"  ? "/mypage" :
     "/";
 
   return (
@@ -19,7 +21,7 @@ export default function Cancel() {
           もう一度やり直す場合は、戻って再度お試しください。
         </p>
 
-        <div className="pt-2 flex gap-2">
+        <div className="pt-2 flex gap-2 flex-wrap">
           <Link to={backTo} className="btn btn-primary">
             戻る
           </Link>

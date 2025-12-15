@@ -83,7 +83,7 @@ export default function App() {
           }
         />
         <Route
-          path="/creator/posts"
+          path="/creators/posts"
           element={
             <ProtectedRoute role="creator">
               <CreatorPostsPage />
@@ -91,7 +91,7 @@ export default function App() {
           }
         />
         <Route
-          path="/creator/plans"
+          path="/creators/plans"
           element={
             <ProtectedRoute role="creator">
               <CreatorPlansPage />
@@ -99,7 +99,7 @@ export default function App() {
           }
         />
         <Route
-          path="/creator/payouts"
+          path="/creators/payouts"
           element={
             <ProtectedRoute role="creator">
               <PayoutsPage />
@@ -107,7 +107,7 @@ export default function App() {
           }
         />
         <Route
-          path="/creator/analytics"
+          path="/creators/analytics"
           element={
             <ProtectedRoute role="creator">
               <CreatorAnalyticsPage />
@@ -115,7 +115,7 @@ export default function App() {
           }
         />
         <Route
-          path="/creator/profile"
+          path="/creators/profile"
           element={
             <ProtectedRoute role="creator">
               <CreatorProfilePage />
@@ -123,7 +123,7 @@ export default function App() {
           }
         />
 
-        <Route path="/creators/:id" element={<CreatorPage />} />
+        <Route path="/creators/@:id" element={<CreatorPage />} />
 
         <Route
           path="/mypage/plans"
