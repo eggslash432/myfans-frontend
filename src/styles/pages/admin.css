@@ -94,8 +94,9 @@
 
 /* mobile cards */
 .admin-cards {
-  display: grid;
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .admin-post-card {

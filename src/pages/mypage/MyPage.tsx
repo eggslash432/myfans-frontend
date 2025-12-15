@@ -27,7 +27,7 @@ import KycStatusBadge from '../../components/ui/KycStatusBadge';
 import CreatorMonetizationStatus from "../../components/ui/CreatorMonetizationStatus";
 
 export default function MyPage() {
-  const { user, ready, restore } = useAuth();
+  const { user, ready } = useAuth();
   const [summary, setSummary] = useState<MeSummary>();
   const [err, setErr] = useState<string>('');
   const [posts, setPosts] = useState<PostSummary[]>([]);
@@ -45,6 +45,14 @@ export default function MyPage() {
   const isAdmin = role === 'admin';
   const isCreator = role === 'creator';
 
+  const approval = creator?.approvalStatus ?? null;
+  const isApproved = approval === 'approved';
+  const isPending  = approval === 'pending';
+  const isRejected = approval === 'rejected';
+  const isNotApplied =
+    creator === null ||
+    (creator && !creator.approvalStatus);
+
   useEffect(() => {
     if (!ready || !user) return;
     if (!isAdmin) return;
@@ -56,26 +64,38 @@ export default function MyPage() {
   const loadCreator = useCallback(async () => {
     if (!ready || !user) return;
 
-    // creator 以外は creator 情報を使わない
-    if (!isCreator) {
-      setCreator(null);
-      return;
-    }
-
     try {
-      const c = await getCreatorMe();
-      setCreator(c);
+      const res = await getCreatorMe();
+
+      // ★ よくあるラップを剥がす
+      const c =
+        (res as any)?.data ??
+        (res as any)?.creator ??
+        (res as any)?.item ??
+        res;
+
+      // ★ “クリエイターとして成立する形”か確認（id or approvalStatus が無いなら未申請扱い）
+      const ok =
+        c && (typeof c === "object") && (
+          typeof (c as any).id === "string" ||
+          typeof (c as any).approvalStatus === "string"
+        );
+
+      setCreator(ok ? (c as CreatorMeResponse) : null);
     } catch (e: any) {
       const msg = e?.message ?? '';
       console.error('getCreatorMe failed:', e);
+
+      // 404/creator not found なら未申請
       if (/creator not found/i.test(msg) || /404/.test(msg)) {
         setCreator(null);
       } else {
-        console.error('getCreatorMe failed', e);
+        // それ以外は “読み込み失敗” を分けたいなら undefined のままでもOKだが、
+        // UIを出したいなら null に倒す
         setCreator(null);
       }
     }
-  }, [ready, user, isCreator]);
+  }, [ready, user]);
 
   useEffect(() => {
     if (!ready || !user) return;
@@ -91,20 +111,19 @@ export default function MyPage() {
   // --- 投稿 ---
   useEffect(() => {
     if (!ready || !user) return;
-    if (!isCreator) return;
+    if (!isApproved) return;
 
     myPosts()
       .then((res) => setPosts(res.items ?? [])) // ★ items を使う
       .catch((e) => console.error('投稿取得失敗:', e));
-  }, [ready, user]);
+  }, [ready, user, isApproved]);
 
   useEffect(() => {
     if (!ready) return;
 
-    if (!isCreator) {
-      setPosts([]);
-    }
-  }, [ready, isCreator]);
+    // ★ 承認済みでないなら投稿は見せないのでクリア
+    if (!isApproved) setPosts([]);
+  }, [ready, isApproved]);
 
   // --- Creator 情報読込 ---
   useEffect(() => {
@@ -119,16 +138,9 @@ export default function MyPage() {
         (user as any).displayName ??
         (user.email ? user.email.split('@')[0] : '新しいクリエイター');
 
-      // ★ 戻り値（creator オブジェクト）を受け取る
-      const created = await applyCreator({ publicName });  
-      
-      // ★ state を即座に更新して画面を切り替える
-      setCreator(created);    
-      // ★ ここで /auth/me を叩きなおして role=creator を反映
-      await restore(true);        
-
+      await applyCreator({ publicName });
       await loadCreator();
-      alert('クリエイター登録が完了しました');
+      alert('クリエイター申請を受け付けました（審査中）');
     } catch (e: any) {
       console.error('applyCreator failed', e);
       alert(e?.message ?? '登録に失敗しました');
@@ -322,6 +334,7 @@ export default function MyPage() {
       </section>
 
       {/* クリエイター関連エリア */}
+      {/* 読み込み中 */}
       {creator === undefined && (
         <section className="card">
           <div className="section-title">クリエイター情報</div>
@@ -329,7 +342,8 @@ export default function MyPage() {
         </section>
       )}
 
-      {!isAdmin && !isCreator && creator === null && (
+      {/* 未申請（creator が null or approvalStatus が無い） */}
+      {isNotApplied && (
         <section className="card space-y-3">
           <div className="section-title">クリエイター登録</div>
           <p className="section-subtitle">
@@ -345,7 +359,39 @@ export default function MyPage() {
         </section>
       )}
 
-      {isCreator && creator && (
+      {/* 審査中 */}
+      {creator && isPending && (
+        <section className="card">
+          <div className="section-title">審査中</div>
+          <p className="section-subtitle">
+            クリエイター申請を受け付けました。現在、管理者による審査中です。
+          </p>
+        </section>
+      )}
+
+      {/* 差戻し */}
+      {creator && isRejected && (
+        <section className="card space-y-2">
+          <div className="section-title">申請が差し戻されました</div>
+
+          {creator.rejectReason && (
+            <p className="text-sm text-red-600">
+              理由：{creator.rejectReason}
+            </p>
+          )}
+
+          <button
+            onClick={handleApplyCreator}
+            disabled={loading}
+            className="btn btn-primary"
+          >
+            再申請する
+          </button>
+        </section>
+      )}
+
+      {/* 承認済み */}
+      {creator && isApproved && (
         <>
           <section className="card">
             <div className="section-title flex items-center justify-between">
@@ -452,7 +498,7 @@ export default function MyPage() {
       )}
 
       {/* マイ投稿一覧（ネスト：公開 / 非公開 / 下書き） */}
-      {isCreator && creator && (
+      {creator && isApproved && (
         <section className="card">
           <div className="section-title">マイ投稿一覧</div>
 

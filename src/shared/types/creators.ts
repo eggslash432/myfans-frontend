@@ -9,13 +9,50 @@ export type Creator = {
   plans: Plan[];
 };
 
-export type CreatorMeResponse = {
-  isCreator: boolean;
+export type CreatorApprovalStatus =
+  | 'pending'
+  | 'approved'
+  | 'rejected';
+
+// 申請用（管理画面）
+export type CreatorApplication = {
+  userId: string;
+  email: string;
+  displayName: string | null;
   publicName: string;
+  createdAt: string;
+  updatedAt: string;
+
+  approvalStatus: CreatorApprovalStatus;
+  approvedAt?: string | null;
+  rejectedAt?: string | null;
+  rejectReason?: string | null;
+
+  // ③の履歴用（あとで追加）
+  applicationCount?: number;
+  lastAppliedAt?: string | null;
+};
+
+// 既存クリエイター一覧用
+export type PendingCreator = {
+  userId: string;
+  email: string;
+  publicName: string | null;
+  isListed: boolean;
+  kycStatus?: string;
+};
+
+export type CreatorMeResponse = {
+  /**
+   * ★ 後方互換
+   * 管理者承認済み = true
+   */  
+  isCreator: boolean;
+  publicName?: string;
 
   // プロフィール情報
-  bio: string | null;
-  avatarUrl: string | null;
+  bio?: string | null;
+  avatarUrl?: string | null;
 
   // Stripe / KYC
   stripeAccountId: string | null;
@@ -25,6 +62,11 @@ export type CreatorMeResponse = {
   stripeKycDisabledReason: string | null;
   stripeKycFieldsDue: string[];
   stripeKycErrors: any[];
+
+  approvalStatus: CreatorApprovalStatus;
+  approvedAt?: string | null;
+  rejectedAt?: string | null;
+  rejectReason?: string | null;  
 };
 
 export type CreatorPayoutBalanceResponse = { 

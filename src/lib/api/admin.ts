@@ -14,6 +14,8 @@ import type {
   AdminUser,
   ListItems,
   UploadSetting,
+  CreatorApprovalStatus,
+  CreatorApplication,  
 } from '../../shared/types';
 
 //
@@ -37,14 +39,6 @@ export function adminListCreators(
 /** 投稿削除（返り値を使わないなら void でOK） */
 export function adminDeletePost(postId: string): Promise<void> {
   return request<void>(`/admin/posts/${postId}`, { method: 'DELETE' });
-}
-
-// ==============================
-// 後方互換（api_old.ts）
-// ==============================
-
-export function adminListPendingCreators(): Promise<PendingCreator[]> {
-  return adminListCreators({ kycStatus: 'pending' });
 }
 
 /** クリエイター掲載ON/OFF（返り値を使わないなら void） */
@@ -162,5 +156,35 @@ export function adminUpdateUploadSettings(
   return request<{ ok: true }>("/admin/settings/upload", {
     method: "PATCH",
     body: input,
+  });
+}
+
+// ==============================
+// クリエイター申請（approvalStatus）
+// ==============================
+
+export function adminListCreatorApplications(params?: {
+  status?: CreatorApprovalStatus;
+  q?: string;
+}): Promise<{ items: CreatorApplication[] }> {
+  const qs = new URLSearchParams();
+  if (params?.status) qs.set('status', params.status);
+  if (params?.q) qs.set('q', params.q);
+  const q = qs.toString();
+  return request<{ items: CreatorApplication[] }>(
+    `/admin/creators/applications${q ? `?${q}` : ''}`,
+  );
+}
+
+export function adminApproveCreatorApplication(userId: string): Promise<{ ok: true }> {
+  return request<{ ok: true }>(`/admin/creators/applications/${userId}/approve`, {
+    method: 'PATCH',
+  });
+}
+
+export function adminRejectCreatorApplication(userId: string, reason: string): Promise<{ ok: true }> {
+  return request<{ ok: true }>(`/admin/creators/applications/${userId}/reject`, {
+    method: 'PATCH',
+    body: { reason },
   });
 }
