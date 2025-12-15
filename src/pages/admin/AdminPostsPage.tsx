@@ -31,6 +31,12 @@ function StatusBadge({ status }: { status: string }) {
   return <span className={cls}>{label}</span>;
 }
 
+function normalizeStatus(s: any): 'draft' | 'published' | 'private' {
+  if (s === 'published') return 'published';
+  if (s === 'private') return 'private';
+  return 'draft';
+}
+
 export default function AdminPostsPage() {
   const [list, setList] = useState<AdminPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,6 +51,11 @@ export default function AdminPostsPage() {
       const data = await adminListPosts();
       setList(data);
     } catch (e: any) {
+      if (e instanceof ApiError && e.status === 401) {
+        setErr('AUTH_EXPIRED');
+        setList([]);
+        return;
+      }
       if (e instanceof ApiError && e.status === 404) {
         console.warn('/admin/posts 未実装のため空リスト扱い', e);
         setList([]);
@@ -120,10 +131,24 @@ export default function AdminPostsPage() {
   }
 
   if (err) {
+    const isAuthExpired = err === 'AUTH_EXPIRED' || /unauthorized/i.test(err);
+
     return (
       <div className="page">
-        <section className="card">
-          <p className="text-sm text-red-600">{err}</p>
+        <section className="card auth-card">
+          <div className="auth-card-title">ログインが必要です</div>
+          <p className="section-subtitle">
+            セッションが切れました。もう一度ログインしてください。
+          </p>
+
+          <div className="auth-card-actions">
+            <a className="btn btn-primary" href={`/login?next=${encodeURIComponent(location.pathname)}`}>
+              ログインへ
+            </a>
+            <button className="btn btn-outline" onClick={() => location.reload()}>
+              再読み込み
+            </button>
+          </div>
         </section>
       </div>
     );
@@ -143,41 +168,56 @@ export default function AdminPostsPage() {
             <p className="section-subtitle">投稿がありません。</p>
           </section>
         ) : (
-          list.map((p) => (
-            <div key={p.id} className="admin-post-card">
-              <div className="admin-post-title">{p.title || '（無題）'}</div>
+          list.map((p) => {
+            const st = normalizeStatus((p as any).publishedStatus);
 
-              <div className="admin-post-meta">
-                <span>Creator: {p.creator?.publicName ?? '-'}</span>
-                <StatusBadge status={p.publishedStatus} />
-              </div>
+            return (
+              <div key={p.id} className="admin-post-card">
+                <div className="admin-post-title">{p.title || '（無題）'}</div>
 
-              <div className="admin-post-actions">
-                <button
-                  className="btn btn-outline btn-xs"
-                  onClick={() => updateStatus(p.id, 'private')}
-                >
-                  非公開
-                </button>
-                <button
-                  className="btn btn-outline btn-xs"
-                  onClick={() => openReports(p.id)}
-                >
-                  通報
-                </button>
-                <button
-                  className="btn btn-primary btn-xs"
-                  onClick={() => deletePost(p.id)}
-                >
-                  削除
-                </button>
-              </div>
+                <div className="admin-post-meta">
+                  <span>Creator: {p.creator?.publicName ?? '-'}</span>
+                  <StatusBadge status={(p as any).publishedStatus} />
+                </div>
 
-              <div className="admin-post-idline" title={p.id}>
-                ID: {p.id}
+                <div className="admin-post-actions">
+                  {st === 'published' ? (
+                    <button
+                      className="btn btn-outline btn-xs"
+                      onClick={() => updateStatus(p.id, 'private')}
+                    >
+                      非公開
+                    </button>
+                  ) : (
+                    <button
+                      className="btn btn-outline btn-xs"
+                      onClick={() => updateStatus(p.id, 'published')}
+                    >
+                      公開
+                    </button>
+                  )}
+
+                  <button
+                    className="btn btn-outline btn-xs"
+                    onClick={() => openReports(p.id)}
+                  >
+                    通報
+                  </button>
+
+                  <button
+                    className="btn btn-primary btn-xs"
+                    onClick={() => deletePost(p.id)}
+                  >
+                    削除
+                  </button>
+                </div>
+
+                <div className="admin-post-idline" title={p.id}>
+                  ID: {p.id}
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
@@ -201,38 +241,57 @@ export default function AdminPostsPage() {
                 </td>
               </tr>
             ) : (
-              list.map((p) => (
-                <tr key={p.id}>
-                  <td className="admin-id" title={p.id}>{p.id}</td>
-                  <td>
-                    <div style={{ fontWeight: 700 }}>{p.title || '（無題）'}</div>
-                  </td>
-                  <td>{p.creator?.publicName ?? '-'}</td>
-                  <td><StatusBadge status={p.publishedStatus} /></td>
-                  <td>
-                    <div className="admin-actions">
-                      <button
-                        className="btn btn-outline btn-xs"
-                        onClick={() => updateStatus(p.id, 'private')}
-                      >
-                        非公開
-                      </button>
-                      <button
-                        className="btn btn-outline btn-xs"
-                        onClick={() => openReports(p.id)}
-                      >
-                        通報
-                      </button>
-                      <button
-                        className="btn btn-primary btn-xs"
-                        onClick={() => deletePost(p.id)}
-                      >
-                        削除
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
+              list.map((p) => {
+                const st = normalizeStatus((p as any).publishedStatus);
+
+                return (
+                  <tr key={p.id}>
+                    <td className="admin-id" title={p.id}>
+                      {p.id}
+                    </td>
+                    <td>
+                      <div style={{ fontWeight: 700 }}>{p.title || '（無題）'}</div>
+                    </td>
+                    <td>{p.creator?.publicName ?? '-'}</td>
+                    <td>
+                      <StatusBadge status={(p as any).publishedStatus} />
+                    </td>
+                    <td>
+                      <div className="admin-actions">
+                        {st === 'published' ? (
+                          <button
+                            className="btn btn-outline btn-xs"
+                            onClick={() => updateStatus(p.id, 'private')}
+                          >
+                            非公開
+                          </button>
+                        ) : (
+                          <button
+                            className="btn btn-outline btn-xs"
+                            onClick={() => updateStatus(p.id, 'published')}
+                          >
+                            公開
+                          </button>
+                        )}
+
+                        <button
+                          className="btn btn-outline btn-xs"
+                          onClick={() => openReports(p.id)}
+                        >
+                          通報
+                        </button>
+
+                        <button
+                          className="btn btn-primary btn-xs"
+                          onClick={() => deletePost(p.id)}
+                        >
+                          削除
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>

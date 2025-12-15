@@ -1,34 +1,43 @@
 // front/src/pages/auth/Login.tsx
+import { useState } from "react";
+import { useAuth } from "../../hooks/useAuth";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import PasswordField from "../../components/PasswordField";
 
-import { useState } from 'react'
-import { useAuth } from '../../hooks/useAuth'
-import { Link, useNavigate } from 'react-router-dom'
-import PasswordField from '../../components/PasswordField'
-
+function safeNext(next: string | null): string {
+  // 外部URLや怪しい値を弾く（オープンリダイレクト対策）
+  if (!next) return "/";
+  if (!next.startsWith("/")) return "/";
+  if (next.startsWith("//")) return "/";
+  return next;
+}
 
 export default function Login() {
-  const { login } = useAuth()
-  const nav = useNavigate()
+  const { login } = useAuth();
+  const nav = useNavigate();
+  const location = useLocation();
 
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const params = new URLSearchParams(location.search);
+  const next = safeNext(params.get("next"));
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
     try {
       await login(email, password);
-      nav('/');
-    } catch (e:any) {
-      setError(e.message || 'ログイン失敗');
+      nav(next, { replace: true });
+    } catch (e: any) {
+      setError(e.message || "ログイン失敗");
     } finally {
       setLoading(false);
     }
   };
-
 
   return (
     <div className="page page-auth">
@@ -38,9 +47,7 @@ export default function Login() {
           メールアドレスとパスワードを入力してください。
         </p>
 
-        {error && (
-          <div className="auth-error">{error}</div>
-        )}
+        {error && <div className="auth-error">{error}</div>}
 
         <form onSubmit={onSubmit} className="auth-form">
           <div className="form-field">
@@ -68,12 +75,8 @@ export default function Login() {
             />
           </div>
 
-          <button
-            type="submit"
-            className="btn-primary w-full"
-            disabled={loading}
-          >
-            {loading ? 'ログイン中…' : 'ログイン'}
+          <button type="submit" className="btn-primary w-full" disabled={loading}>
+            {loading ? "ログイン中…" : "ログイン"}
           </button>
         </form>
 

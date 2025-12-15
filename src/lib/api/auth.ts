@@ -44,13 +44,3 @@ export async function logout() {
   localStorage.removeItem('access_token');
 }
 
-
-export function changePassword(input: {
-  oldPassword: string;
-  newPassword: string;
-}): Promise<{ ok: true }> {
-  return request<{ ok: true }>("/auth/change-password", {
-    method: "PATCH",
-    body: input,
-  });
-}
