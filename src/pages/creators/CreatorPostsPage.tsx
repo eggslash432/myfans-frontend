@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../../lib/api';
+import { myPosts } from '../../lib/api/posts';
 import type { PostSummary } from '../../shared/types';
 
 export default function CreatorPostsPage() {
@@ -16,8 +16,8 @@ export default function CreatorPostsPage() {
       try {
         setLoading(true);
         setErr('');
-        const data = await api.myPosts(); // /posts/me
-        setItems(data ?? []);
+        const data = await myPosts(); // { items: PostSummary[] }
+        setItems(data.items ?? []);
       } catch (e: any) {
         console.error('load my posts failed', e);
         setErr(e?.message ?? '投稿一覧の取得に失敗しました');

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { getMyPlans, getCreatorPlans } from '../lib/api';
-import { type PlansResponse } from '../shared/types';
+import { getMyPlans, getCreatorPlans } from '../lib/api/plans';
+import type { PlansResponse } from '../shared/types';
 
 // 自分のプラン
 export function useMyPlans() {

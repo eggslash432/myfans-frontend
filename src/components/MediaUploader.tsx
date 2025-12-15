@@ -1,8 +1,8 @@
 // front/src/components/MediaUploader.tsx
 
 import React, { useState } from 'react';
-import { uploadMultiplePostMedia } from '../lib/media';
-import type { PostMedia } from '../lib/media';
+import { uploadMultiplePostMedia } from '../lib/api/media';
+import type { PostMedia } from '../shared/types';
 
 type Props = {
   postId: string;

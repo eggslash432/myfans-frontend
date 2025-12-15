@@ -1,6 +1,7 @@
 // front/src/pages/admin/AdminReportsPage.tsx
 import { useEffect, useState } from 'react';
-import { admin, ApiError } from '../../lib/api';
+import { ApiError } from '../../lib/api/apiClient';
+import { adminListReports, adminResolveReport} from '../../lib/api/admin';
 import type { ReportItem } from '../../shared/types';
 
 export default function AdminReportsPage() {
@@ -12,8 +13,8 @@ export default function AdminReportsPage() {
     try {
       setLoading(true);
       setErr('');
-      const data = await admin.listReports();
-      setReports(data ?? []);
+      const data = await adminListReports();
+      setReports(data);
     } catch (e: any) {
       if (e instanceof ApiError) {
         if (e.status === 404) {
@@ -51,7 +52,7 @@ export default function AdminReportsPage() {
       return;
     }
     try {
-      await admin.resolveReport(id, action);
+      await adminResolveReport(id, action);
       await load();
     } catch (e: any) {
       console.error(e);

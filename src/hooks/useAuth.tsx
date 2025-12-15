@@ -5,10 +5,16 @@ import React, {
   useContext,
   useEffect,
   useState,
-} from 'react';
-import api from '../lib/api'; // 既存の api ラッパー
-import type { User } from '../shared/types';
-import type { Role } from '../shared/prisma-enums';
+} from "react";
+
+import type { User } from "../shared/types";
+import type { Role } from "../shared/prisma-enums";
+import {
+  getMe,
+  login as apiLogin,
+  signup as apiSignup,
+  logout as apiLogout,
+} from "../lib/api/auth";
 
 type AuthContextType = {
   user: User | null;
@@ -20,7 +26,7 @@ type AuthContextType = {
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-const getToken = () => localStorage.getItem('access_token');
+const getToken = () => localStorage.getItem("access_token");
 
 // /auth/me のレスポンスをアプリ内部の User に正規化
 function normalizeMe(raw: any): User | null {
@@ -80,45 +86,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
 
   const restore = useCallback(async (force = false) => {
+    setReady(false);
     try {
       const hasToken = !!getToken();
       if (!hasToken && !force) {
         setUser(null);
-        setReady(true);
         return;
       }
 
-      const me = await api.me(); // /auth/me
+      const me = await getMe(); // ← auth.ts 経由
       setUser(normalizeMe(me));
     } catch {
-      localStorage.removeItem('access_token');
+      // /auth/me が 401 のときなど
       setUser(null);
     } finally {
       setReady(true);
     }
   }, []);
 
+  // アプリ起動時に1回だけ
   useEffect(() => {
     restore();
   }, [restore]);
 
   const login = async (email: string, password: string) => {
-    await api.login({ email, password });
+    await apiLogin({ email, password }); // token 保存は auth.ts がやる
     await restore(true);
   };
 
   const signup = async (email: string, password: string) => {
-    await api.signup({ email, password, role: 'fan' });
+    await apiSignup({ email, password, role: "fan" });
     await login(email, password);
   };
 
   const logout = async () => {
     try {
-      await api.logout?.();
+      await apiLogout();
     } catch {
       // ignore
     }
-    localStorage.removeItem('access_token');
     setUser(null);
   };
 
@@ -137,7 +143,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) {
-    throw new Error('useAuth must be used within <AuthProvider>');
+    throw new Error("useAuth must be used within <AuthProvider>");
   }
   return ctx;
 }

@@ -1,14 +1,8 @@
 // front/src/pages/admin/AdminPayoutsPage.tsx
 import { useEffect, useState } from 'react';
-import { api, adminApprovePayout, ApiError } from '../../lib/api';
-
-type AdminPayout = {
-  id: string;
-  creatorId: string;
-  amountJpy: number;
-  payoutStatus: string;
-  requestedAt: string;
-};
+import { ApiError } from '../../lib/api/apiClient';
+import { adminApprovePayout, adminListPayoutRequests, } from '../../lib/api/admin';
+import type { AdminPayout } from '../../shared/types';
 
 export default function AdminPayoutsPage() {
   const [payouts, setPayouts] = useState<AdminPayout[]>([]);
@@ -19,8 +13,8 @@ export default function AdminPayoutsPage() {
     try {
       setLoading(true);
       setErr('');
-      const res = await api.get<AdminPayout[]>('/admin/payouts');
-      setPayouts(res.data ?? []);
+      const data = await adminListPayoutRequests();
+      setPayouts(data ?? []);
     } catch (e: any) {
       if (e instanceof ApiError) {
         // ★ 401: ログイン切れ or 権限不足

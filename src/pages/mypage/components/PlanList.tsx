@@ -1,3 +1,5 @@
+// front/src/pages/mypage/components/PlanList.tsx
+
 export default function PlanList({
   onSubscribe,
   loading,

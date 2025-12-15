@@ -5,7 +5,7 @@ import { AuthProvider } from './hooks/useAuth';
 import App from './App';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './styles/global.css';
+import './styles/index.css';
 
 const queryClient = new QueryClient();
 

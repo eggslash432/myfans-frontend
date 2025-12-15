@@ -1,14 +1,14 @@
 // front/src/pages/CreatorPage.tsx
 import { useEffect, useState } from 'react';
-import { api, ApiError, createPlanCheckoutSession } from '../../lib/api';
+import { API_ORIGIN, ApiError } from '../../lib/api/apiClient';
+import { createPlanCheckoutSession } from '../../lib/api/payments';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import type { Creator, PostSummary } from '../../shared/types';
 import { useAuth } from '../../hooks/useAuth';
-
-// ★ 追加: API_ORIGIN
-const API_BASE =
-  import.meta.env.VITE_API_BASE ?? 'http://localhost:3000/api';
-const API_ORIGIN = API_BASE.replace(/\/api\/?$/, '');
+import { 
+  getCreatorPosts, 
+  getCreatorPublicProfile 
+} from '../../lib/api/creators';
 
 export default function CreatorPage() {
   const { id } = useParams();
@@ -35,12 +35,12 @@ export default function CreatorPage() {
       try {
         // クリエイター情報と投稿一覧を並列で取得
         const [creatorRes, postsRes] = await Promise.all([
-          api.get<Creator>(`/creators/${id}`),
-          api.getCreatorPosts(id),
+          getCreatorPublicProfile(id),
+          getCreatorPosts(id),
         ]);
 
-        setCreator(creatorRes.data);
-        setPosts(postsRes.data ?? []);
+        setCreator(creatorRes);
+        setPosts(postsRes.items ?? []);
       } catch (e: any) {
         console.error(e);
         setError(e?.message ?? 'ロードに失敗しました');
@@ -138,7 +138,6 @@ export default function CreatorPage() {
       : `${API_ORIGIN}${rawAvatarUrl}`
     : null;
 
-  const initial = displayName.trim().charAt(0).toUpperCase() || 'C';
   const planCount = creator.plans?.length ?? 0;
   const postCount = posts.length;
 
@@ -218,9 +217,10 @@ export default function CreatorPage() {
                 {!isMyself && (
                   <button
                     className="btn btn-sm btn-primary"
+                    disabled={busyPlanId === p.id}
                     onClick={() => onSubscribe(p.id)}
                   >
-                    購読する
+                    {busyPlanId === p.id ? '処理中…' : '購読する'}
                   </button>
                 )}
                 {isMyself && (

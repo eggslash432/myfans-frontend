@@ -1,0 +1,21 @@
+/* front/src/styles/components/media.css */
+
+.post-media {
+  max-width: 100%;
+  max-height: 70vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.profile-avatar-preview {
+  max-width: 80%;
+  max-height: 40vh;    /* ← 40% の高さに収まる */
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  border-radius: 12px; /* 正円にしない。丸くしたければ 50% に */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}

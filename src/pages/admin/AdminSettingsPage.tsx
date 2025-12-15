@@ -1,7 +1,7 @@
 // front/src/pages/admin/AdminSettingsPage.tsx
 
 import { useEffect, useState } from 'react';
-import { api } from '../../lib/api';
+import { adminGetFeeSettings, adminGetUploadSettings, adminListAdminUsers, adminUpdateAdminRole, adminUpdateFeeSettings, adminUpdateUploadSettings } from '../../lib/api/admin';
 import { useAuth } from '../../hooks/useAuth';
 import type { AdminUser, FeeSettings, UploadSetting } from '../../shared/types';
 
@@ -41,9 +41,9 @@ export default function AdminSettingsPage() {
         setError(null);
 
         const [feeRes, adminList, uploadRes] = await Promise.all([
-          api.getFeeSettings(),
-          api.listAdminUsers(),
-          api.getUploadSettings(),
+          adminGetFeeSettings(),
+          adminListAdminUsers(),
+          adminGetUploadSettings(),
         ]);
 
         setFeeSettings({
@@ -86,7 +86,7 @@ export default function AdminSettingsPage() {
     try {
       setFeeSaving(true);
       setFeeMessage(null);
-      await api.updateFeeSettings(feeSettings);
+      await adminUpdateFeeSettings(feeSettings);
       setFeeMessage('手数料設定を保存しました。');
     } catch (e: any) {
       console.error(e);
@@ -112,7 +112,7 @@ export default function AdminSettingsPage() {
         admins.map((u) =>
           u.id === user?.id
             ? Promise.resolve()
-            : api.updateAdminRole(u.id, u.role),
+            : adminUpdateAdminRole(u.id, u.role),
         ),
       );
     } catch (e) {
@@ -137,7 +137,7 @@ export default function AdminSettingsPage() {
     try {
       setUploadSaving(true);
       setUploadMessage(null);
-      await api.updateUploadSettings(uploadSettings);
+      await adminUpdateUploadSettings(uploadSettings);
       setUploadMessage('アップロード制限を保存しました。');
     } catch (e: any) {
       console.error(e);

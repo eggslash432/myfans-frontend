@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { admin } from '../../lib/api';
+import { adminGetSummary } from '../../lib/api/admin'; 
 import type { AdminSummary } from '../../shared/types';
 
 export default function AdminSummaryPage() {
@@ -14,7 +14,7 @@ export default function AdminSummaryPage() {
     try {
       setLoading(true);
       setErr('');
-      const data = await admin.getSummary();
+      const data = await adminGetSummary();
       setSummary(data);
     } catch (e) {
       console.error(e);

@@ -1,6 +1,6 @@
 // src/components/PurchaseButton.tsx
 import { useState } from 'react';
-import { createCheckoutSession } from '../lib/payments';
+import { createCheckoutSession } from '../lib/api/payments';
 
 type Props = {
   postId?: string;

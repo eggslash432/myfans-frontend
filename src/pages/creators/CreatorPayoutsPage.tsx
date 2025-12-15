@@ -1,8 +1,13 @@
 // front/src/pages/creator/CreatorPayoutsPage.tsx
 
 import { useEffect, useState } from 'react';
-import { api } from '../../lib/api';
-import type { Payout } from '../../shared/types';
+import {
+  getCreatorMe,
+  getCreatorPayoutBalance,
+  listCreatorPayouts,
+  requestCreatorPayout,
+} from '../../lib/api/creators';
+import type { CreatorMeResponse, Payout } from '../../shared/types';
 import type { PayoutStatus } from '../../shared/prisma-enums';
 
 export default function PayoutsPage() {
@@ -12,7 +17,7 @@ export default function PayoutsPage() {
   const [loading, setLoading] = useState(false);
   const [loadingAll, setLoadingAll] = useState(true);
   const [error, setError] = useState<string>('');
-  const [creator, setCreator] = useState<any | null>(null);
+  const [creator, setCreator] = useState<CreatorMeResponse | null>(null);
   const [creatorErr, setCreatorErr] = useState('');
 
   // 出金情報読み込み
@@ -21,15 +26,11 @@ export default function PayoutsPage() {
       setLoadingAll(true);
       setError('');
 
-      // 残高
-      const balRes = await api.get<{ balanceJpy: number }>(
-        '/creators/me/payouts/balance',
-      );
-      setBalance(balRes.data.balanceJpy);
+      const bal = await getCreatorPayoutBalance();
+      setBalance(bal.balanceJpy);
 
-      // 出金履歴
-      const listRes = await api.get<Payout[]>('/creators/me/payouts');
-      setItems(listRes.data ?? []);
+      const payouts = await listCreatorPayouts();
+      setItems(payouts ?? []);
     } catch (e: any) {
       console.error(e);
       setError(e?.message ?? '読み込みに失敗しました');
@@ -42,15 +43,13 @@ export default function PayoutsPage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await api.get('/creators/me');
-        setCreator(res.data);
+        const res = await getCreatorMe();
+        setCreator(res);
         setCreatorErr('');
 
         // KYC / Stripe OK のときだけ出金情報を取りに行く
-        const kyc = res.data?.kyc ?? {};
-        const kycStatus = kyc.status ?? res.data?.stripeKycStatus ?? 'pending';
-        const payoutsEnabled =
-          res.data?.stripePayoutsEnabled ?? kyc.payoutsEnabled ?? false;
+        const kycStatus = res.stripeKycStatus ?? 'pending';
+        const payoutsEnabled = res.stripePayoutsEnabled ?? false;
         const isKycOk = kycStatus === 'approved' && payoutsEnabled;
 
         if (isKycOk) {
@@ -78,7 +77,7 @@ export default function PayoutsPage() {
     }
     setLoading(true);
     try {
-      await api.post('/creators/me/payouts/request', { amountJpy: num });
+      await requestCreatorPayout(num);
       alert('出金リクエストを送信しました');
       setAmount('');
       await loadAll();
@@ -110,7 +109,7 @@ export default function PayoutsPage() {
   }
 
   // クリエイター未登録
-  if (creatorErr === 'creator not found') {
+  if (creatorErr.toLowerCase().includes('creator not found')){
     return (
       <div className="page">
         <h1 className="page-title">出金管理</h1>
@@ -132,10 +131,8 @@ export default function PayoutsPage() {
   }
 
   // KYC / Stripe ステータス判定（NewPost と揃える）
-  const kyc = creator.kyc ?? {};
-  const kycStatus = kyc.status ?? creator.stripeKycStatus ?? 'pending';
-  const payoutsEnabled =
-    creator.stripePayoutsEnabled ?? kyc.payoutsEnabled ?? false;
+  const kycStatus = creator.stripeKycStatus ?? 'pending';
+  const payoutsEnabled = creator.stripePayoutsEnabled ?? false;
   const isKycOk = kycStatus === 'approved' && payoutsEnabled;
 
   // KYC 未完了 or 出金無効のとき
@@ -152,9 +149,9 @@ export default function PayoutsPage() {
             現在のステータス: KYC = {kycStatus},{' '}
             StripePayoutsEnabled = {String(payoutsEnabled)}
           </p>
-          {kyc.disabledReason && (
+          {creator.stripeKycDisabledReason && (
             <p className="text-xs text-red-600">
-              Stripe エラー: {kyc.disabledReason}
+              Stripe エラー: {creator.stripeKycDisabledReason}
             </p>
           )}
         </section>

@@ -3,13 +3,13 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import ProtectedRoute from '../../components/ProtectedRoute';
-import { api } from '../../lib/api';
+import { adminGetSummary } from '../../lib/api/admin';
 import type { AdminSummary } from '../../shared/types';
 
 function AdminInner() {
   const { data, isLoading, error } = useQuery<AdminSummary>({
     queryKey: ['admin_summary'],
-    queryFn: async () => (await api.get<AdminSummary>('/admin/summary')).data,
+    queryFn: adminGetSummary,
   });
 
   const summary = data ?? {

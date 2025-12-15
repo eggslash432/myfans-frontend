@@ -1,0 +1,50 @@
+/* front/src/styles/components/forms.css */
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-label {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.form-input {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  padding: 9px 11px;
+  font-size: 14px;
+  outline: none;
+  background: #f9fafb;
+  transition: border-color 0.15s ease, background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.form-input:focus {
+  border-color: #ff6aa0;               /* Myfansっぽいピンク */
+  background: #ffffff;
+  box-shadow: 0 0 0 1px rgba(255, 106, 160, 0.3);
+}
+
+.form-password {
+  width: 100%;
+}
+
+/* パスワード欄まわり */
+.form-password .password-input-wrapper {
+  position: relative;
+}
+
+.form-password .password-input-wrapper .form-input {
+  padding-right: 2.8rem; /* 右側にアイコン分の余白 */
+}
+
+/* 補足説明のスタイル（既にあれば不要） */
+.form-password .form-hint {
+  margin-top: 4px;
+  font-size: 11px;
+  color: #9ca3af;
+}

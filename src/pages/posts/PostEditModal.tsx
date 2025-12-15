@@ -88,13 +88,6 @@ export function PostEditModal({
   const mediaAssets =
     rawPost.mediaAssets ?? rawPost.media ?? rawPost.medias ?? [];
 
-  const visibilityLabel =
-    visibility === 'free'
-      ? '無料'
-      : visibility === 'plan'
-      ? 'プラン限定'
-      : 'PPV（単品販売）';
-
   return (
     <div className="modal-overlay">
       <div className="modal-dialog">

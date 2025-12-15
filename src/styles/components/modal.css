@@ -1,0 +1,203 @@
+/* front/src/styles/components/modal.css */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45); /* 濃い目の半透明 */
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 50;
+}
+
+.modal-dialog {
+  width: 100%;
+  max-width: 440px;
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.22);
+  padding: 18px 18px 16px;
+  animation: modal-in 0.16s ease-out;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.modal-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.modal-subtitle {
+  font-size: 0.7rem;
+  color: #9ca3af;
+  margin-left: 8px;
+}
+
+.modal-body {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modal-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.modal-input,
+.modal-textarea,
+.modal-select {
+  margin-top: 4px;
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  padding: 7px 9px;
+  font-size: 0.85rem;
+  outline: none;
+  background: #f9fafb;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.modal-textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.modal-input:focus,
+.modal-textarea:focus,
+.modal-select:focus {
+  border-color: #ff6aa0;
+  background: #ffffff;
+  box-shadow: 0 0 0 1px rgba(255, 106, 160, 0.25);
+}
+
+.modal-footer {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-card {
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.25);
+  width: 100%;
+  max-width: 440px;
+  padding: 16px 18px 14px;
+}
+
+/* メディア一覧 */
+.modal-media-list {
+  margin-top: 4px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.modal-media-item {
+  position: relative;
+  flex: 0 0 96px;
+  border-radius: 12px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+.modal-media-thumb {
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+  display: block;
+  border-radius: 10px;
+}
+
+.modal-media-thumb-btn {
+  display: block;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.modal-media-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  padding: 0 6px;
+  font-size: 11px;
+}
+
+/* アイコン型のメディア表示（画像以外） */
+.modal-media-icon {
+  width: 100%;
+  height: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #4b5563;
+  gap: 4px;
+}
+
+.modal-media-emoji {
+  font-size: 20px;
+}
+
+.modal-media-label {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f3f4f6;
+}
+
+/* 動画プレビュー */
+.modal-media-video {
+  width: 100%;
+  height: 80px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+/* 音声プレイヤー */
+.modal-media-audio-wrapper {
+  padding: 6px 6px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.modal-media-audio-label {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.modal-media-audio {
+  width: 100%;
+}

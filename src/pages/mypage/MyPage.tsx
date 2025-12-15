@@ -1,23 +1,37 @@
-// front/src/pages/MyPage.tsx
+// front/src/pages/mypage/MyPage.tsx
 
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../../lib/api';
+import { 
+  getMeSummary, 
+  getCreatorMe, 
+  applyCreator, 
+  myPosts,
+  getPost,
+  updateMyPost,
+  uploadPostMedia,
+  deleteMyPostMedia,
+} from '../../lib/api';
 import { useAuth } from '../../hooks/useAuth';
 import { PostEditModal } from '../posts/PostEditModal';
 import type { PublishedStatus } from '../../shared/prisma-enums';
+import type { 
+  CreatorMeResponse, 
+  MeSummary, 
+  PostSummary 
+} from '../../shared/types';
 
 export default function MyPage() {
   const { user, ready, restore } = useAuth();
-  const [summary, setSummary] = useState<any>(null);
+  const [summary, setSummary] = useState<MeSummary | null>(null);
   const [err, setErr] = useState<string>('');
-  const [posts, setPosts] = useState<any[]>([]);
+  const [posts, setPosts] = useState<PostSummary[]>([]);
   const [editingPost, setEditingPost] = useState<any | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
   // creator: undefined = 読み込み中, null = いない, object = いる
-  const [creator, setCreator] = useState<any | null | undefined>(undefined);
+  const [creator, setCreator] = useState<CreatorMeResponse | null | undefined>(undefined);
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -37,7 +51,7 @@ export default function MyPage() {
     }
 
     try {
-      const c = await api.getCreatorMe();
+      const c = await getCreatorMe();
       setCreator(c);
     } catch (e: any) {
       const msg = e?.message ?? '';
@@ -55,7 +69,7 @@ export default function MyPage() {
     if (!ready || !user) return;
     (async () => {
       try {
-        setSummary(await api.meSummary());
+        setSummary(await getMeSummary());
       } catch (e: any) {
         setErr(e.message || 'failed');
       }
@@ -65,9 +79,9 @@ export default function MyPage() {
   // --- 投稿 ---
   useEffect(() => {
     if (!ready || !user) return;
-    api
-      .myPosts()
-      .then((items) => setPosts(items ?? []))
+
+    myPosts()
+      .then((res) => setPosts(res.items ?? [])) // ★ items を使う
       .catch((e) => console.error('投稿取得失敗:', e));
   }, [ready, user]);
 
@@ -85,7 +99,7 @@ export default function MyPage() {
         (user.email ? user.email.split('@')[0] : '新しいクリエイター');
 
       // ★ 戻り値（creator オブジェクト）を受け取る
-      const created = await api.applyCreator({ publicName });  
+      const created = await applyCreator({ publicName });  
       
       // ★ state を即座に更新して画面を切り替える
       setCreator(created);    
@@ -142,7 +156,7 @@ export default function MyPage() {
 
   const openEdit = async (summaryPost: any) => {
     try {
-      const res = await api.getPost(summaryPost.id);
+      const res = await getPost(summaryPost.id);
 
       // ★ data / post ラップをはがして中身だけにする
       const full =
@@ -170,7 +184,7 @@ export default function MyPage() {
     try {
       setSaving(true);
 
-      await api.updateMyPost(editingPost.id, payload);
+      await updateMyPost(editingPost.id, payload);
 
       // 一覧側は title / status だけ反映しておけばOK
       setPosts((prev) =>
@@ -198,7 +212,7 @@ export default function MyPage() {
       const uploaded: any[] = [];
 
       for (const file of Array.from(files)) {
-        const res = await api.uploadPostMedia(editingPost.id, [file]); // ★ ここを [file] に
+        const res = await uploadPostMedia(editingPost.id, [file]); // ★ ここを [file] に
         // uploadPostMedia が配列を返す前提
         if (Array.isArray(res)) {
           uploaded.push(...res);
@@ -227,9 +241,7 @@ export default function MyPage() {
     if (!confirm('このメディアを削除しますか？')) return;
 
     try {
-      await api.delete(
-        `/creators/me/posts/${editingPost.id}/media/${mediaId}`,
-      );
+      await deleteMyPostMedia(editingPost.id, mediaId);
 
       setEditingPost((prev: any) => {
         if (!prev) return prev;

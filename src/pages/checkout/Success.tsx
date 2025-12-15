@@ -1,13 +1,12 @@
 // src/pages/checkout/Success.tsx
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { api } from '../../lib/api';
-
-type Summary = any; // ★ 型未確定なら当面 any でOK（検収優先）
+import { meSummary } from '../../lib/api/auth';
+import type { PaymentSummary } from '../../shared/types';
 
 export default function Success() {
   const [params] = useSearchParams();
-  const [summary, setSummary] = useState<Summary | null>(null);
+  const [summary, setSummary] = useState<PaymentSummary | null>(null);
   const [msg, setMsg] = useState<string>('反映中...');
 
   // URLに ?plan=Basic などが付いていなくてもOKなように
@@ -19,7 +18,7 @@ export default function Success() {
 
     const fetchSummary = async () => {
       try {
-        const s = await api.meSummary();
+        const s = await meSummary();
         if (!mounted) return;
         setSummary(s);
         setMsg('反映完了');

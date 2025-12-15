@@ -1,15 +1,12 @@
 // front/src/pages/creators/CreatorProfilePage.tsx
 
 import { useEffect, useRef, useState } from 'react';
-import { api } from '../../lib/api';
-import type { CreatorMeResponse } from '../../shared/types';
-
-// API_BASE は api.ts と同じ env を使う想定
-const API_BASE =
-  import.meta.env.VITE_API_BASE ?? 'http://localhost:3000/api';
-
-// http://localhost:3000/api → http://localhost:3000 にする
-const API_ORIGIN = API_BASE.replace(/\/api\/?$/, '');
+import { 
+  API_ORIGIN,
+  getCreatorMe, 
+  updateCreatorProfile, 
+  uploadCreatorAvatar 
+} from '../../lib/api';
 
 export default function CreatorProfilePage() {
   const [loading, setLoading] = useState(true);
@@ -27,8 +24,7 @@ export default function CreatorProfilePage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await api.get<CreatorMeResponse>('/creators/me');
-        const data = res.data;
+        const data = await getCreatorMe();
 
         setPublicName(data.publicName ?? '');
         setBio(data.bio ?? '');
@@ -45,6 +41,12 @@ export default function CreatorProfilePage() {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (avatarPreviewUrl) URL.revokeObjectURL(avatarPreviewUrl);
+    };
+  }, [avatarPreviewUrl]);  
 
   const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -64,33 +66,17 @@ export default function CreatorProfilePage() {
 
       // 画像アップロード部分だけ修正
       if (avatarFile) {
-        const formData = new FormData();
-        formData.append('file', avatarFile);
-
-        const uploadRes = await api.post<{ url: string }>(
-          '/creators/me/avatar',
-          formData,
-          {
-            json: false, // ★ JSON.stringify させない
-            headers: {
-              // fetch が自動で boundary 付けるので、本当はこれも省略推奨だが、
-              // 既に他で multipart を使っているなら合わせてOK
-              // 'Content-Type': 'multipart/form-data',
-            },
-          },
-        );
-
-        avatarUrlToSave = uploadRes.data.url;
+        const uploadRes = await uploadCreatorAvatar(avatarFile);
+        avatarUrlToSave = uploadRes.url;
         setAvatarUrl(avatarUrlToSave);
       }
 
-      // 🔽 ここを変更（helperを使わずに直で PATCH /creators/me）
-      const res = await api.patch('/creators/me', {
+      const updated = await updateCreatorProfile({
         publicName,
         bio,
         avatarUrl: avatarUrlToSave,
       });
-      console.log('updateMe res', res.data);
+      console.log('updateMe', updated);
 
       alert('プロフィールを更新しました');
     } catch (e: any) {

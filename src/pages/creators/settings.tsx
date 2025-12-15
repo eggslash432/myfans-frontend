@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../../lib/api';
+import { getCreatorMe, startCreatorKyc } from '../../lib/api';
 import type { CreatorMeResponse } from '../../shared/types';
 
 export default function CreatorSettingsPage() {
@@ -16,8 +16,8 @@ export default function CreatorSettingsPage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await api.get('/creators/me');
-        setCreator(res.data);
+        const data = await getCreatorMe();
+        setCreator(data);
       } catch (e: any) {
         const msg = e?.response?.data?.message ?? e?.message ?? '取得に失敗しました';
         setErr(msg);
@@ -30,7 +30,7 @@ export default function CreatorSettingsPage() {
     setLoading(true);
     setErr('');
     try {
-      const { url } = await api.startCreatorKyc();  // POST /creators/me/kyc/start
+      const { url } = await startCreatorKyc();  // POST /creators/me/kyc/start
       // 戻ってこない前提なので location.href で遷移
       window.location.href = url;
     } catch (e: any) {

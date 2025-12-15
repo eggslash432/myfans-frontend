@@ -1,0 +1,20 @@
+/* front/src/styles/tokens.css */
+
+:root {
+  --color-bg-root: #020617;
+  --color-app-bg: #f9fafb;
+  --color-surface: #ffffff;
+  --color-primary: #8b5cf6;
+  --color-primary-soft: #ede9fe;
+  --color-text-main: #111827;
+  --color-text-muted: #6b7280;
+  --color-border: #e5e7eb;
+  --shadow-soft: 0 10px 25px rgba(15, 23, 42, 0.08);
+  --radius-lg: 16px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}

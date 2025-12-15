@@ -1,6 +1,7 @@
 // front/src/pages/settings/PasswordChangePage.tsx
 import { useState } from "react";
-import api, { ApiError } from "../../lib/api";
+import { ApiError } from "../../lib/api/apiClient";
+import { changePassword } from "../../lib/api/auth";
 
 export default function PasswordChangePage() {
   const [oldPassword, setOld] = useState("");
@@ -13,10 +14,7 @@ export default function PasswordChangePage() {
     setMessage(null);
 
     try {
-      await api.patch("/auth/change-password", {
-        oldPassword,
-        newPassword,
-      });
+      await changePassword({ oldPassword, newPassword });
 
       setIsError(false);
       setMessage("パスワードが変更されました");
@@ -27,9 +25,7 @@ export default function PasswordChangePage() {
 
       if (err instanceof ApiError) {
         setMessage(
-          err.body?.message ??
-            err.message ??
-            "パスワード変更に失敗しました"
+          err.body?.message ?? err.message ?? "パスワード変更に失敗しました",
         );
       } else {
         setMessage("予期せぬエラーが発生しました");

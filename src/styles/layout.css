@@ -1,0 +1,159 @@
+/* front/src/styles/layout.css */
+
+.app-root {
+  min-height: 100vh;
+  background: #f2f2f4;
+  display: flex;
+  justify-content: center;
+}
+
+/* スマホ本体っぽい白いパネル */
+.app-shell {
+  width: 100%;
+  max-width: 480px;          /* スマホ横幅の上限 */
+  min-height: 100vh;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+}
+
+/* PC のときだけカードっぽくする */
+@media (min-width: 768px) {
+  .app-shell {
+    margin: 12px 0;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+  }
+}
+
+/* 中身（Routes が入る部分）のスクロール領域 */
+.app-container {
+  flex: 1;
+  padding: 12px 12px 72px; /* 下にボトムナビ分の余白 */
+  overflow-y: auto;
+}
+
+/* コンテンツ部分。下ナビに被らないように余白をとる */
+.app-main {
+  flex: 1;
+  padding: 16px 12px 78px;  /* ← bottom-nav の高さぶん + α */
+}
+
+/* フッターは小さめ */
+.app-footer {
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 10px;
+  color: #9ca3af;
+  padding: 6px 0 4px;
+}
+
+.header-mobile {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: rgba(249, 250, 251, 0.96);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.header-mobile-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+}
+
+.header-title {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-logo {
+  font-weight: 700;
+  font-size: 18px;
+  color: #ef4444;         /* Myfans っぽい赤 */
+  text-decoration: none;
+}
+
+.header-sub {
+  margin-left: 6px;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.footer-root {
+  margin-top: auto;
+  padding: 8px 0 14px;
+  font-size: 11px;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.footer-main {
+  line-height: 1.4;
+}
+
+.footer-admin {
+  margin-top: 4px;
+}
+
+.footer-admin-link {
+  color: var(--color-text-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+/* ===== ボトムタブナビ ===== */
+
+.bottom-nav {
+  margin-top: auto; /* app-shell の一番下に来るように */
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  background: #ffffff;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.bottom-nav-inner {
+  max-width: 480px;
+  margin: 0 auto;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+/* 各タブ */
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-decoration: none;
+  color: #9ca3af; /* グレー */
+  font-size: 11px;
+}
+
+/* ラベルを折り返さない */
+.bottom-nav-label {
+  white-space: nowrap;
+}
+
+/* アイコンサイズ（Heroicons） */
+.bottom-nav-icon {
+  width: 22px;
+  height: 22px;
+}
+
+/* アクティブ時はピンク寄りに */
+.bottom-nav-item-active {
+  color: #ff2f70; /* お好みで調整 */
+}
+
+.bottom-nav-item-active .bottom-nav-icon {
+  stroke: #ff2f70;
+}
+

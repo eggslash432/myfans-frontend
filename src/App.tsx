@@ -1,7 +1,7 @@
 // front/src/App.tsx
 
 import { Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
+import Home from './pages/home/Home';
 import MyPage from './pages/mypage/MyPage';
 import CreatorPage from './pages/creators/CreatorPage';
 import PostDetail from './pages/posts/PostDetail';
@@ -11,7 +11,7 @@ import Success from './pages/checkout/Success';
 import Cancel from './pages/checkout/Cancel';
 import ProtectedRoute from './components/ProtectedRoute';
 import NewPost from './pages/posts/NewPost';
-import MyPlansPage from './pages/Plans';
+import MyPlansPage from './pages/plans/Plans';
 import CreatorsAdminPage from './pages/admin/AdminCreatorsPage';
 import CreatorSettingsPage from './pages/creators/settings';
 import AdminPayoutsPage from './pages/admin/AdminPayoutsPage';

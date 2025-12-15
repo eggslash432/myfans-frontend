@@ -1,3 +1,5 @@
+// front/src/pages/mypage/components/SubscriptionStatus.tsx
+
 import type { Me } from '../../../shared/types';
 
 export default function SubscriptionStatus({ me }: { me: Me }) {

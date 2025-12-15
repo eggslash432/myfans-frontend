@@ -1,7 +1,11 @@
 // front/src/pages/Home.tsx
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api, normalizeList } from '../lib/api';
+import { 
+  listCreators, 
+  adminListPosts,
+} from '../lib/api';
+import { normalizeList } from '../lib/domain/normalize';
 
 export default function HomePage() {
   const [creators, setCreators] = useState<any[]>([]);
@@ -17,8 +21,8 @@ export default function HomePage() {
         setError(null);
 
         const [creatorList, adminPostList] = await Promise.all([
-          api.listCreators(),
-          api.listAdminPosts(),  // /posts/public/admin
+          listCreators(),
+          adminListPosts(),  // /posts/public/admin
         ]);
 
         console.debug('GET /creators raw:', creatorList);

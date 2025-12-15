@@ -1,8 +1,8 @@
 // src/components/ProtectedRoute.tsx
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import type { JSX } from 'react';
-import type { Role } from '../shared/prisma-enums';
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+import type { JSX } from "react";
+import type { Role } from "../shared/prisma-enums";
 
 export default function ProtectedRoute({
   children,
@@ -13,33 +13,28 @@ export default function ProtectedRoute({
   role?: Role;
   roles?: Role[];
 }) {
-  const { user, ready, restore } = useAuth();
+  const { user, ready } = useAuth();
 
-  // 初回はセッション復元
-  if (!ready && !user) {
-    restore(true);
-  }
+  // AuthProvider 側でアプリ起動時に restore() 済みなので、
+  // ProtectedRoute では副作用を起こさない（見るだけ）
 
-  // ローディング中
   if (!ready) {
     return <div className="p-6">読み込み中...</div>;
   }
 
-  // 未ログイン → ログイン画面へ
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  // ロール指定があるのに一致していない → トップへ
+  // 単一ロール指定
   if (role && user.role !== role) {
     return <Navigate to="/" replace />;
   }
 
-  // 複数ロール指定
-  if (roles && !roles.includes(user.role)) {
+  // 複数ロール指定（role 未設定は拒否）
+  if (roles && (!user.role || !roles.includes(user.role))) {
     return <Navigate to="/" replace />;
-  }  
+  }
 
-  // OK
   return children;
 }

@@ -1,0 +1,9 @@
+/* front/src/styles/components/utilities.css */
+
+.space-y-3 > * + * {
+  margin-top: 0.75rem; /* 12px */
+}
+
+.space-y-4 > * + * {
+  margin-top: 1rem; /* 16px */
+}

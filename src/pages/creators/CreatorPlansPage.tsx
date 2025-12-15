@@ -1,10 +1,16 @@
 // front/src/pages/creators/CreatorPlansPage.tsx
 
 import { useEffect, useState } from 'react';
-import { api } from '../../lib/api';
+import { 
+  getMyPlans,
+  reorderPlans, 
+  deactivatePlan, 
+  reactivatePlan,
+  createPlan,
+  updatePlan,
+} from '../../lib/api/plans';
 import type { Plan, PlansResponse } from '../../shared/types';
-
-type PlanModalMode = 'create' | 'edit';
+import type { PlanModalMode } from '../../shared/prisma-enums';
 
 export default function CreatorPlansPage() {
   const [_, setData] = useState<PlansResponse | null>(null);
@@ -25,7 +31,7 @@ export default function CreatorPlansPage() {
     try {
       setLoading(true);
       setErr('');
-      const res = await api.getMyPlans(); // GET /plans/me
+      const res = await getMyPlans(); // GET /plans/me
       setData(res);
       setPlans(res?.plans ?? []);
     } catch (e: any) {
@@ -60,7 +66,7 @@ export default function CreatorPlansPage() {
     setPlans(after);
 
     try {
-      await api.reorderPlans(after.map((p) => p.id));
+      await reorderPlans(after.map((p) => p.id));
     } catch (e) {
       console.error('reorder failed', e);
       setPlans(before);
@@ -89,7 +95,7 @@ export default function CreatorPlansPage() {
 
   async function deactivate(id: string) {
     try {
-      await api.deactivatePlan(id);
+      await deactivatePlan(id);
       await loadPlans();
     } catch (e: any) {
       alert(e?.response?.data?.message ?? '停止に失敗しました');
@@ -98,7 +104,7 @@ export default function CreatorPlansPage() {
 
   async function reactivate(id: string) {
     try {
-      await api.reactivatePlan(id);
+      await reactivatePlan(id);
       await loadPlans();
     } catch (e: any) {
       alert(e?.response?.data?.message ?? '再開に失敗しました');
@@ -123,12 +129,12 @@ export default function CreatorPlansPage() {
       setModalErr('');
 
       if (modalMode === 'create') {
-        await api.createPlan({
+        await createPlan({
           name: planName.trim(),
           priceJpy: price,
         });
       } else if (modalMode === 'edit' && targetPlan) {
-        await api.updatePlan(targetPlan.id, {
+        await updatePlan(targetPlan.id, {
           name: planName.trim(),
           priceJpy: price,
         });

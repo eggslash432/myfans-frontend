@@ -1,7 +1,8 @@
 // front/src/pages/admin/CreatorsAdminPage.tsx
 
 import { useEffect, useState } from 'react';
-import { adminListPendingCreators, adminSetCreatorListing, ApiError } from '../../lib/api';
+import {  ApiError } from '../../lib/api/apiClient';
+import { adminListPendingCreators, adminSetCreatorListing } from '../../lib/api/admin';
 import type { PendingCreator } from '../../shared/types';
 
 export default function CreatorsAdminPage() {

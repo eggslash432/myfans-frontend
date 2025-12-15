@@ -1,40 +1,31 @@
 // src/pages/admin/AdminPostsPage.tsx
 import { useEffect, useState } from 'react';
-import { api, ApiError } from '../../lib/api';
-
-type AdminPost = {
-  id: string;
-  title: string;
-  publishedStatus: 'draft' | 'published' | 'private';
-  creator?: {
-    publicName?: string;
-  };
-};
-
-type Report = {
-  id: string;
-  reason: string;
-  resolved: boolean;
-  createdAt: string;
-};
+import { ApiError } from '../../lib/api/apiClient';
+import {
+  adminListPosts,
+  adminDeletePost,
+  adminUpdatePostStatus,
+  adminGetPostReports,
+  adminResolvePostReport,
+} from '../../lib/api/admin';
+import type { AdminPost, AdminPostReport } from '../../shared/types';
 
 export default function AdminPostsPage() {
   const [list, setList] = useState<AdminPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
-  const [reports, setReports] = useState<Report[]>([]);
+  const [reports, setReports] = useState<AdminPostReport[]>([]);
   const [reportsPostId, setReportsPostId] = useState<string | null>(null);
 
   async function load() {
     try {
       setLoading(true);
       setErr('');
-      const res = await api.get<AdminPost[]>('/admin/posts');
-      setList(res.data);
+      const data = await adminListPosts();
+      setList(data);
     } catch (e: any) {
-      // ★ 404（API 未実装）のときは「空リスト」として扱う
       if (e instanceof ApiError && e.status === 404) {
-        console.warn('/admin/posts が未実装のため空リスト扱いにします', e);
+        console.warn('/admin/posts 未実装のため空リスト扱い', e);
         setList([]);
         setErr('');
       } else {
@@ -47,50 +38,48 @@ export default function AdminPostsPage() {
   }
 
   useEffect(() => {
-    load();
+    void load();
   }, []);
 
-  // 投稿削除
   async function deletePost(id: string) {
     if (!confirm('この投稿を削除しますか？この操作は元に戻せません。')) return;
     try {
-      await api.delete(`/admin/posts/${id}`);
+      await adminDeletePost(id);
       await load();
     } catch (e: any) {
       alert(e?.message ?? '削除に失敗しました');
     }
   }
 
-  // 公開状態変更
-  async function updateStatus(id: string, status: 'draft' | 'published' | 'private') {
+  async function updateStatus(
+    id: string,
+    status: 'draft' | 'published' | 'private',
+  ) {
     if (!confirm(`この投稿の状態を「${status}」に変更しますか？`)) return;
     try {
-      await api.patch(`/admin/posts/${id}/status`, { status });
+      await adminUpdatePostStatus(id, status);
       await load();
     } catch (e: any) {
       alert(e?.message ?? '状態変更に失敗しました');
     }
   }
 
-  // 通報一覧を開く
   async function openReports(postId: string) {
     try {
-      const res = await api.get(`/admin/posts/${postId}/reports`);
-      setReports(res.data);
+      const data = await adminGetPostReports(postId);
+      setReports(data);
       setReportsPostId(postId);
     } catch (e: any) {
       alert(e?.message ?? '通報一覧の取得に失敗しました');
     }
   }
 
-  // 通報を対応済みにする
   async function resolveReport(reportId: string) {
     try {
-      await api.patch(`/admin/posts/reports/${reportId}/resolve`);
+      await adminResolvePostReport(reportId);
       if (reportsPostId) {
-        // モーダル内一覧をリロード
-        const res = await api.get(`/admin/posts/${reportsPostId}/reports`);
-        setReports(res.data);
+        const data = await adminGetPostReports(reportsPostId);
+        setReports(data);
       }
     } catch (e: any) {
       alert(e?.message ?? '通報の更新に失敗しました');
@@ -128,14 +117,12 @@ export default function AdminPostsPage() {
                 >
                   削除
                 </button>
-
                 <button
                   onClick={() => updateStatus(p.id, 'private')}
                   className="ml-2 px-3 py-1 bg-gray-600 text-white rounded"
                 >
                   非公開
                 </button>
-
                 <button
                   onClick={() => openReports(p.id)}
                   className="ml-2 px-3 py-1 bg-yellow-600 text-white rounded"
@@ -148,12 +135,13 @@ export default function AdminPostsPage() {
         </tbody>
       </table>
 
-      {/* 通報一覧の簡易モーダル */}
       {reportsPostId && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
           <div className="bg-white rounded shadow p-4 max-w-lg w-full max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-2">
-              <h2 className="font-bold">通報一覧（Post ID: {reportsPostId}）</h2>
+              <h2 className="font-bold">
+                通報一覧（Post ID: {reportsPostId}）
+              </h2>
               <button
                 onClick={() => {
                   setReportsPostId(null);

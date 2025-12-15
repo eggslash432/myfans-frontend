@@ -1,6 +1,6 @@
 // front/src/pages/creators/CreatorAnalyticsPage.tsx
 import { useEffect, useState } from 'react';
-import { api } from '../../lib/api';
+import { creatorAnalyticsMe } from '../../lib/api/creators';
 
 type SimpleSummary = {
   totalRevenueJpy: number;
@@ -19,7 +19,7 @@ export default function CreatorAnalyticsPage() {
         setErr('');
 
         // ✅ 専用APIに差し替え
-        const res = await api.creatorAnalyticsMe();
+        const res = await creatorAnalyticsMe();
 
         setSummary({
           totalRevenueJpy: res.totalRevenueJpy ?? 0,

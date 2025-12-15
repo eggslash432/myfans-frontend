@@ -2,20 +2,19 @@
 import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
-  api,
   reportPost,
   ApiError,
   createPlanCheckoutSession,
   createPpvCheckoutSession,
+  getPostDetail,
+  API_ORIGIN,
 } from '../../lib/api';
-import type { Post } from '../../shared/types';
-import { useState, useRef } from 'react';
+import type { 
+  PostDetail,
+} from '../../shared/types';
+import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import type { MediaType } from '../../shared/prisma-enums';
-
-const API_ORIGIN = (import.meta.env.VITE_API_BASE_URL as string | undefined)
-  ?.replace(/\/api\/?$/, '')
-  ?.replace(/\/$/, '');
 
 const resolveMediaUrl = (url: string) => {
   if (!url) return '';
@@ -68,13 +67,12 @@ export default function PostDetail() {
     }
   };  
 
-  const q = useQuery<Post>({
+  const q = useQuery<PostDetail>({
     queryKey: ['post', id],
     enabled: !!id,
     queryFn: async () => {
       if (!id) throw new Error('no id');
-      const res = await api.get<Post>(`/posts/${id}`);
-      return res.data;
+      return await getPostDetail(id); // Promise<PostDetail>
     },
     retry: (c, err: any) =>
       !(err instanceof ApiError && err.status === 403) && c < 1,
@@ -120,7 +118,7 @@ export default function PostDetail() {
     }
   };
 
-  const subscribePlan = async (post: Post) => {
+  const subscribePlan = async (post: PostDetail) => {
     if (!post.creatorId || !post.planId) {
       alert('この投稿に紐づくプラン情報がありません');
       return;
@@ -288,7 +286,7 @@ export default function PostDetail() {
     }
     const reason = window.prompt('通報理由を入力してください（任意）') ?? '';
     try {
-      await reportPost(post.id, reason);
+      await reportPost(post.id, { reason });
       alert('通報を受け付けました。ご協力ありがとうございます。');
     } catch (e) {
       console.error(e);
