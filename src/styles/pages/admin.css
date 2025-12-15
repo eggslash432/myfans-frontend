@@ -1,4 +1,4 @@
-/* front/src/styles/global.css */
+/* front/src/styles/pages/admin.css */
 
 .summary-grid {
   display: grid;
@@ -29,4 +29,110 @@
 .summary-value {
   font-size: 18px;
   font-weight: 700;
+}
+
+.admin-table {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+
+.admin-table-wrap{
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.admin-table thead th {
+  background: #f9fafb;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.admin-table tbody td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: top;
+}
+
+.admin-table tbody tr:hover {
+  background: #fafafa;
+}
+
+.admin-id {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.78rem;
+  color: #6b7280;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* 表示切り替え（admin専用） */
+.admin-only-desktop { display: block !important; }
+.admin-only-mobile  { display: none !important; }
+
+@media (max-width: 768px) {
+  .admin-only-desktop { display: none !important; }
+  .admin-only-mobile  { display: block !important; }
+}
+
+/* mobile cards */
+.admin-cards {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-post-card {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: 12px 12px;
+}
+
+.admin-post-title {
+  font-weight: 800;
+  font-size: 0.95rem;
+  line-height: 1.25rem;
+}
+
+.admin-post-meta {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+.admin-post-actions {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-post-idline {
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

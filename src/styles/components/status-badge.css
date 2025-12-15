@@ -1,0 +1,16 @@
+/* front/src/styles/components/status-badge.css */
+
+/* status badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+
+.badge-draft { background: #f3f4f6; color: #374151; border-color: #e5e7eb; }
+.badge-published { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
+.badge-private { background: #fef2f2; color: #991b1b; border-color: #fecaca; }

@@ -1,4 +1,4 @@
-// src/pages/admin/AdminPostsPage.tsx
+// front/src/pages/admin/AdminPostsPage.tsx
 import { useEffect, useState } from 'react';
 import { ApiError } from '../../lib/api/apiClient';
 import {
@@ -9,6 +9,27 @@ import {
   adminResolvePostReport,
 } from '../../lib/api/admin';
 import type { AdminPost, AdminPostReport } from '../../shared/types';
+
+function StatusBadge({ status }: { status: string }) {
+  const normalized =
+    status === 'published' ? 'published'
+    : status === 'private' ? 'private'
+    : 'draft';
+
+  const cls =
+    normalized === 'published'
+      ? 'badge badge-published'
+      : normalized === 'private'
+        ? 'badge badge-private'
+        : 'badge badge-draft';
+
+  const label =
+    normalized === 'published' ? '公開'
+    : normalized === 'private' ? '非公開'
+    : '下書き';
+
+  return <span className={cls}>{label}</span>;
+}
 
 export default function AdminPostsPage() {
   const [list, setList] = useState<AdminPost[]>([]);
@@ -51,10 +72,7 @@ export default function AdminPostsPage() {
     }
   }
 
-  async function updateStatus(
-    id: string,
-    status: 'draft' | 'published' | 'private',
-  ) {
+  async function updateStatus(id: string, status: 'draft' | 'published' | 'private') {
     if (!confirm(`この投稿の状態を「${status}」に変更しますか？`)) return;
     try {
       await adminUpdatePostStatus(id, status);
@@ -86,98 +104,190 @@ export default function AdminPostsPage() {
     }
   }
 
-  if (loading) return <div>読み込み中…</div>;
-  if (err) return <div className="p-4 text-red-600">{err}</div>;
+  const closeModal = () => {
+    setReportsPostId(null);
+    setReports([]);
+  };  
+
+  if (loading) {
+    return (
+      <div className="page">
+        <section className="card">
+          <p className="section-subtitle">読み込み中…</p>
+        </section>
+      </div>
+    );
+  }
+
+  if (err) {
+    return (
+      <div className="page">
+        <section className="card">
+          <p className="text-sm text-red-600">{err}</p>
+        </section>
+      </div>
+    );
+  }
 
   return (
-    <div className="mx-auto max-w-4xl p-6 space-y-6">
-      <h1 className="text-2xl font-bold">投稿管理（Admin）</h1>
+    <div className="page space-y-4">
+      <section className="card">
+        <div className="section-title">投稿管理（Admin）</div>
+        <p className="section-subtitle">投稿の削除・非公開・通報確認ができます。</p>
+      </section>
 
-      <table className="w-full text-sm border-collapse">
-        <thead>
-          <tr className="border-b">
-            <th className="py-2 text-left">投稿ID</th>
-            <th className="py-2 text-left">タイトル</th>
-            <th className="py-2 text-left">クリエイター</th>
-            <th className="py-2 text-left">状態</th>
-            <th className="py-2 text-left">操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          {list.map((p) => (
-            <tr key={p.id} className="border-b">
-              <td className="py-2">{p.id}</td>
-              <td className="py-2">{p.title}</td>
-              <td className="py-2">{p.creator?.publicName ?? '-'}</td>
-              <td className="py-2">{p.publishedStatus}</td>
-              <td className="py-2 space-x-2">
+      {/* ===== Mobile: cards ===== */}
+      <div className="admin-only-mobile admin-cards">
+        {list.length === 0 ? (
+          <section className="card" style={{ background: '#f9fafb' }}>
+            <p className="section-subtitle">投稿がありません。</p>
+          </section>
+        ) : (
+          list.map((p) => (
+            <div key={p.id} className="admin-post-card">
+              <div className="admin-post-title">{p.title || '（無題）'}</div>
+
+              <div className="admin-post-meta">
+                <span>Creator: {p.creator?.publicName ?? '-'}</span>
+                <StatusBadge status={p.publishedStatus} />
+              </div>
+
+              <div className="admin-post-actions">
                 <button
-                  onClick={() => deletePost(p.id)}
-                  className="px-3 py-1 bg-red-600 text-white rounded"
-                >
-                  削除
-                </button>
-                <button
+                  className="btn btn-outline btn-xs"
                   onClick={() => updateStatus(p.id, 'private')}
-                  className="ml-2 px-3 py-1 bg-gray-600 text-white rounded"
                 >
                   非公開
                 </button>
                 <button
+                  className="btn btn-outline btn-xs"
                   onClick={() => openReports(p.id)}
-                  className="ml-2 px-3 py-1 bg-yellow-600 text-white rounded"
                 >
                   通報
                 </button>
-              </td>
+                <button
+                  className="btn btn-primary btn-xs"
+                  onClick={() => deletePost(p.id)}
+                >
+                  削除
+                </button>
+              </div>
+
+              <div className="admin-post-idline" title={p.id}>
+                ID: {p.id}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* ===== Desktop: table ===== */}
+      <div className="admin-only-desktop admin-table-wrap">
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th style={{ width: 220 }}>投稿ID</th>
+              <th>タイトル</th>
+              <th style={{ width: 140 }}>クリエイター</th>
+              <th style={{ width: 110 }}>状態</th>
+              <th style={{ width: 260 }}>操作</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {list.length === 0 ? (
+              <tr>
+                <td colSpan={5} style={{ padding: 16, color: '#6b7280' }}>
+                  投稿がありません。
+                </td>
+              </tr>
+            ) : (
+              list.map((p) => (
+                <tr key={p.id}>
+                  <td className="admin-id" title={p.id}>{p.id}</td>
+                  <td>
+                    <div style={{ fontWeight: 700 }}>{p.title || '（無題）'}</div>
+                  </td>
+                  <td>{p.creator?.publicName ?? '-'}</td>
+                  <td><StatusBadge status={p.publishedStatus} /></td>
+                  <td>
+                    <div className="admin-actions">
+                      <button
+                        className="btn btn-outline btn-xs"
+                        onClick={() => updateStatus(p.id, 'private')}
+                      >
+                        非公開
+                      </button>
+                      <button
+                        className="btn btn-outline btn-xs"
+                        onClick={() => openReports(p.id)}
+                      >
+                        通報
+                      </button>
+                      <button
+                        className="btn btn-primary btn-xs"
+                        onClick={() => deletePost(p.id)}
+                      >
+                        削除
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
 
       {reportsPostId && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-          <div className="bg-white rounded shadow p-4 max-w-lg w-full max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-2">
-              <h2 className="font-bold">
-                通報一覧（Post ID: {reportsPostId}）
-              </h2>
+        <div className="modal-backdrop" onClick={closeModal}>
+          <div className="modal-card2" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between" style={{ marginBottom: 8 }}>
+              <div>
+                <div className="section-title" style={{ marginBottom: 2 }}>通報一覧</div>
+                <div className="section-subtitle">Post ID: {reportsPostId}</div>
+              </div>
               <button
-                onClick={() => {
-                  setReportsPostId(null);
-                  setReports([]);
-                }}
+                className="btn btn-outline btn-sm"
+                onClick={(e) => { e.stopPropagation(); closeModal(); }}
               >
                 閉じる
               </button>
             </div>
 
-            {reports.length === 0 && <p>通報はありません。</p>}
+            {reports.length === 0 ? (
+              <section className="card" style={{ background: '#f9fafb' }}>
+                <p className="section-subtitle">通報はありません。</p>
+              </section>
+            ) : (
+              <div className="space-y-2">
+                {reports.map((r) => (
+                  <section key={r.id} className="card" style={{ padding: 12 }}>
+                    <div className="text-xs" style={{ color: '#6b7280' }}>
+                      {new Date(r.createdAt).toLocaleString()}
+                    </div>
+                    <div style={{ marginTop: 6, fontWeight: 700 }}>理由</div>
+                    <div className="text-sm">{r.reason}</div>
 
-            {reports.map((r) => (
-              <div key={r.id} className="border-b py-2">
-                <div className="text-xs text-gray-500">
-                  {new Date(r.createdAt).toLocaleString()}
-                </div>
-                <div className="text-sm">理由: {r.reason}</div>
-                <div className="text-xs">
-                  ステータス:{' '}
-                  {r.resolved ? (
-                    <span className="text-green-600">対応済み</span>
-                  ) : (
-                    <span className="text-red-600">未対応</span>
-                  )}
-                </div>
-                {!r.resolved && (
-                  <button
-                    onClick={() => resolveReport(r.id)}
-                    className="mt-1 px-2 py-1 bg-blue-600 text-white text-xs rounded"
-                  >
-                    対応済みにする
-                  </button>
-                )}
+                    <div style={{ marginTop: 8 }} className="text-xs">
+                      ステータス:{' '}
+                      {r.resolved ? (
+                        <span style={{ color: '#065f46', fontWeight: 700 }}>対応済み</span>
+                      ) : (
+                        <span style={{ color: '#991b1b', fontWeight: 700 }}>未対応</span>
+                      )}
+                    </div>
+
+                    {!r.resolved && (
+                      <div style={{ marginTop: 10 }}>
+                        <button className="btn btn-primary btn-xs" onClick={() => resolveReport(r.id)}>
+                          対応済みにする
+                        </button>
+                      </div>
+                    )}
+                  </section>
+                ))}
               </div>
-            ))}
+            )}
           </div>
         </div>
       )}

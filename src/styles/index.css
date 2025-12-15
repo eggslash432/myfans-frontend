@@ -13,6 +13,7 @@
 @import "./components/media.css";
 @import "./components/page.css";
 @import "./components/utilities.css";
+@import "./components/status-badge.css";
 
 /* pages */
 @import "./pages/auth.css";

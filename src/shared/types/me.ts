@@ -1,4 +1,12 @@
 // front/src/shared/types/me.ts 
+import type { PaymentStatus, Role, SubStatus } from "../prisma-enums";
+
+export type Me = { 
+  id: string; 
+  email: string; 
+  role: Role; 
+};
+
 export type MeSummary = {
   /** 購読中プラン一覧 */
   subscriptions: Array<{
@@ -7,7 +15,7 @@ export type MeSummary = {
     creatorId: string;
     planName?: string;
     priceJpy?: number;
-    status?: 'active' | 'canceled' | 'past_due' | string;
+    status?: SubStatus;
     startedAt?: string;
     endedAt?: string | null;
   }>;
@@ -17,7 +25,7 @@ export type MeSummary = {
     id: string;
     amountJpy: number;
     currency?: string;
-    status?: 'paid' | 'failed' | 'refunded' | string;
+    status?: PaymentStatus;
     createdAt: string;
     description?: string;
   }>;

@@ -73,14 +73,19 @@ export default function NewPost() {
   const [sampleMediaIndex, setSampleMediaIndex] = useState<number | null>(null); // ★ どの動画をサンプルにするか
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // 初回：プラン取得
+  // 初回：プラン取得（admin のときは呼ばない）
   useEffect(() => {
+    if (isAdmin) {
+      setPlans([]);
+      return;
+    }
+
     const loadPlansOnce = async () => {
       const plans = await fetchMyPlans();
       setPlans(plans ?? []);
     };
     loadPlansOnce();
-  }, []);
+  }, [isAdmin]);
 
   // クリエイター情報取得（admin のときは呼ばない）
   useEffect(() => {
@@ -152,6 +157,7 @@ export default function NewPost() {
   };
 
   async function loadPlans() {
+    if (isAdmin) return;
     try {
       const res = await getMyPlans();
       setPlans(res?.plans ?? []);
@@ -161,6 +167,7 @@ export default function NewPost() {
   }
 
   async function createPlan() {
+    if (isAdmin) return;
     if (!newPlanName || !newPlanPrice) return;
     try {
       const res = await createPlanApi({

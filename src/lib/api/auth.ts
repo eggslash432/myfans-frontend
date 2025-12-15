@@ -1,9 +1,9 @@
 // front/src/lib/api/auth.ts
 import { request } from './apiClient';
-import type { MeSummary } from '../../shared/types';
+import type { Me, MeSummary } from '../../shared/types';
 
-export function getMe() {
-  return request('/auth/me');
+export function getMe(): Promise<Me> {
+  return request<Me>('/auth/me');
 }
 
 /** マイページ用サマリ（旧: getMeSummary / meSummary） */

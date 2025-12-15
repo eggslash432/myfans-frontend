@@ -1,67 +1,58 @@
-// front/src/lib/media.ts
+// front/src/lib/api/media.ts
 
-import type { MediaType } from "../../shared/prisma-enums";
-import type { PostMedia } from "../../shared/types";
+import type { PostMedia, UploadPostMediaResponse } from "../../shared/types";
 import { request } from "./apiClient";
-
-function guessMediaType(file: File): MediaType {
-  if (file.type.startsWith("image/")) return "image";
-  if (file.type.startsWith("video/")) return "video";
-  return "audio";
-}
 
 /**
  * 単一ファイルをアップロード
- * - FormData のときは json:false が必須（Content-Type はブラウザに任せる）
  */
-export async function uploadPostMedia(
+export function uploadPostMedia(
   postId: string,
-  file: File,
-): Promise<PostMedia> {
-  const form = new FormData();
+  files: File[],
+  sampleIndex?: number,
+): Promise<UploadPostMediaResponse> {
+  const formData = new FormData();
+  files.forEach((f) => formData.append("files", f));
+  if (typeof sampleIndex === "number") {
+    formData.append("sampleIndex", String(sampleIndex));
+  }
 
-  form.append("mediaType", guessMediaType(file));
-
-  return await request<PostMedia>(`/posts/${postId}/media`, {
+  return request<UploadPostMediaResponse>(`/posts/${postId}/media`, {
     method: "POST",
-    body: form,
-    json: false, // Content-Type を付けない（ブラウザに任せる）
+    body: formData,
+    json: false,
   });
 }
 
 /**
- * 複数ファイルを順番にアップロード（単発APIを連続で叩く方式）
+ * 複数ファイルを一括アップロード（backend が対応している場合）
  */
-export async function uploadMultiplePostMedia(
+export function uploadPostMediaBatch(
   postId: string,
   files: File[],
-): Promise<PostMedia[]> {
-  const results: PostMedia[] = [];
-  for (const f of files) {
-    results.push(await uploadPostMedia(postId, f));
-  }
-  return results;
-}
-
-/**
- * 複数ファイルを一括アップロード（バックエンドが複数対応している場合のみ）
- * - もし backend が /posts/:id/media で files を受けて items を返す実装ならこれが速い
- */
-export async function uploadPostMediaBatch(
-  postId: string,
-  files: File[],
-): Promise<PostMedia[]> {
+  sampleIndex?: number,
+): Promise<{ items: PostMedia[] }> {
   const form = new FormData();
-  for (const f of files) {
-    form.append("files", f);
+  files.forEach((f) => form.append("files", f));
+  if (typeof sampleIndex === "number") {
+    form.append("sampleIndex", String(sampleIndex));
   }
 
-  const data = await request<{ items: PostMedia[] }>(`/posts/${postId}/media`, {
+  return request<{ items: PostMedia[] }>(`/posts/${postId}/media`, {
     method: "POST",
     body: form,
     json: false,
   });
+}
 
-  // backend が {items:[...]} の形のとき
-  return data?.items ?? [];
+/**
+ * 複数ファイルを順番にアップロード（単発APIを連続で叩く）
+ */
+export async function uploadPostMediaSequential(
+  postId: string,
+  files: File[],
+  sampleIndex?: number,
+): Promise<PostMedia[]> {
+  const res = await uploadPostMedia(postId, files, sampleIndex);
+  return res.items ?? [];
 }

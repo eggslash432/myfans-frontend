@@ -35,6 +35,11 @@ export type PostMedia = {
   isSample?: boolean;
 };
 
+export type UploadPostMediaResponse = {
+  items: PostMedia[];
+  sampleMediaId?: string;
+};
+
 export type UploadSetting = {
   maxFileSizeMb: number;
   maxFiles: number;
@@ -113,5 +118,3 @@ export type ListResponse<T> = { items: T[] };
 export type CreatePostResponse = unknown;
 export type UpdatePostResponse = unknown;
 
-/** メディアアップロードの返り値が未確定なら unknown */
-export type UploadPostMediaResponse = unknown;

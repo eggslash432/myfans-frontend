@@ -8,15 +8,17 @@ import {
   reactivatePlan,
   createPlan,
   updatePlan,
-} from '../../lib/api/plans';
+  getMe,
+} from '../../lib/api';
 import type { Plan, PlansResponse } from '../../shared/types';
-import type { PlanModalMode } from '../../shared/prisma-enums';
+import type { PlanModalMode, Role } from '../../shared/prisma-enums';
 
 export default function CreatorPlansPage() {
   const [_, setData] = useState<PlansResponse | null>(null);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
+  const [role, setRole] = useState<Role>('fan');
 
   // ▼ モーダル状態
   const [showModal, setShowModal] = useState(false);
@@ -31,6 +33,17 @@ export default function CreatorPlansPage() {
     try {
       setLoading(true);
       setErr('');
+      const me = await getMe(); // GET /auth/me（JWT必須）
+      setRole(me.role);
+
+      if (me.role !== 'creator') {
+        // admin / fan はプラン管理できない → 403を出さずに終了
+        setData(null);
+        setPlans([]);
+        setErr('このページはクリエイターのみ利用できます。');
+        return;
+      }
+
       const res = await getMyPlans(); // GET /plans/me
       setData(res);
       setPlans(res?.plans ?? []);
@@ -169,6 +182,7 @@ export default function CreatorPlansPage() {
             type="button"
             className="btn btn-primary btn-sm"
             onClick={openCreateModal}
+            disabled={role !== 'creator'}
           >
             新規プラン作成
           </button>
@@ -234,6 +248,7 @@ export default function CreatorPlansPage() {
                     type="button"
                     className="btn btn-ghost btn-xs text-pink-500"
                     onClick={() => openEditModal(p)}
+                    disabled={role !== 'creator'}
                   >
                     編集
                   </button>
@@ -243,6 +258,7 @@ export default function CreatorPlansPage() {
                     <button
                       className="btn btn-outline btn-xs text-gray-600"
                       onClick={() => deactivate(p.id)}
+                      disabled={role !== 'creator'}
                     >
                       停止
                     </button>
@@ -250,6 +266,7 @@ export default function CreatorPlansPage() {
                     <button
                       className="btn btn-primary btn-xs"
                       onClick={() => reactivate(p.id)}
+                      disabled={role !== 'creator'}
                     >
                       再開
                     </button>

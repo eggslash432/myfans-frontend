@@ -16,7 +16,7 @@ export interface Subscription {
   status: SubStatus;
 }
 
-export interface Me {
+export interface AuthMe {
   id: string;
   nickname?: string | null;
   email: string;

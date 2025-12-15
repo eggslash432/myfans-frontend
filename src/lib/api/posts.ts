@@ -9,8 +9,7 @@ import type {
   PostEditValues,
   ListResponse,
   CreatePostResponse,
-  UpdatePostResponse,
-  UploadPostMediaResponse,
+  UpdatePostResponse,  
 } from '../../shared/types';
 
 export function getPublicPosts(): Promise<ListResponse<PostSummary>> {
@@ -36,24 +35,6 @@ export function updateMyPost(
   return request<UpdatePostResponse>(`/posts/me/${postId}`, {
     method: 'PATCH',
     body: payload,
-  });
-}
-
-export function uploadPostMedia(
-  postId: string,
-  files: File[],
-  sampleIndex?: number,
-): Promise<UploadPostMediaResponse> {
-  const formData = new FormData();
-  files.forEach((f) => formData.append('files', f));
-  if (typeof sampleIndex === 'number') {
-    formData.append('sampleIndex', String(sampleIndex));
-  }
-
-  return request<UploadPostMediaResponse>(`/posts/${postId}/media`, {
-    method: 'POST',
-    body: formData,
-    json: false, // FormData のとき必須
   });
 }
 

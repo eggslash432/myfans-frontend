@@ -11,3 +11,6 @@ export * from './plans';
 export * from './admin';
 export * from './axiosLike';
 export * from './payments';
+export * from './media';
+export * from './stripe';
+
