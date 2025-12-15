@@ -6,8 +6,8 @@ import CreatorPage from "./pages/creators/CreatorPage";
 import PostDetail from "./pages/posts/PostDetail";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
-import Success from "./pages/checkout/Success";
-import Cancel from "./pages/checkout/Cancel";
+import Success from "./pages/payments/Success";
+import Cancel from "./pages/payments/Cancel";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NewPost from "./pages/posts/NewPost";
 import MyPlansPage from "./pages/plans/Plans";
@@ -134,8 +134,8 @@ export default function App() {
           }
         />
 
-        <Route path="/checkout/success" element={<Success />} />
-        <Route path="/checkout/cancel" element={<Cancel />} />
+        <Route path="/payments/success" element={<Success />} />
+        <Route path="/payments/cancel" element={<Cancel />} />
 
         {/* ✅ 設定配下もネストに統一 */}
         <Route

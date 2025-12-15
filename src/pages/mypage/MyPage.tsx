@@ -25,6 +25,7 @@ import type {
 import StatusBadge from "../../components/ui/StatusBadge";
 import KycStatusBadge from '../../components/ui/KycStatusBadge';
 import CreatorMonetizationStatus from "../../components/ui/CreatorMonetizationStatus";
+import SubStatusBadge from '../../components/ui/SubStatusBadge';
 
 export default function MyPage() {
   const { user, ready } = useAuth();
@@ -49,9 +50,13 @@ export default function MyPage() {
   const isApproved = approval === 'approved';
   const isPending  = approval === 'pending';
   const isRejected = approval === 'rejected';
-  const isNotApplied =
-    creator === null ||
-    (creator && !creator.approvalStatus);
+  const isNotApplied = creator === null;
+
+  // ✅ 追加：表示用 KYC ステータス（null対策）
+  const uiKycStatus =
+    !creator?.stripeAccountId ? 'not_started' : (creator?.stripeKycStatus ?? 'pending');
+
+  const needsKyc = !creator?.stripePayoutsEnabled; // 出金できるようにするにはKYCが必要、という扱い  
 
   useEffect(() => {
     if (!ready || !user) return;
@@ -149,31 +154,12 @@ export default function MyPage() {
     }
   };
 
+  // ✅ /creator → /creators に統一
   const creatorMenuItems = [
-    {
-      label: '投稿管理',
-      description: '投稿の一覧・編集・公開設定',
-      path: '/creator/posts',
-      icon: '📝',
-    },
-    {
-      label: 'プラン設定',
-      description: '月額プランの作成・編集',
-      path: '/creator/plans',
-      icon: '📦',
-    },
-    {
-      label: '出金管理',
-      description: '売上の振込口座・出金履歴',
-      path: '/creator/payouts',
-      icon: '💰',
-    },
-    {
-      label: '売上レポート',
-      description: '期間別の売上・購読状況',
-      path: '/creator/analytics',
-      icon: '📊',
-    },
+    { label: '投稿管理', description: '投稿の一覧・編集・公開設定', path: '/creators/posts', icon: '📝' },
+    { label: 'プラン設定', description: '月額プランの作成・編集', path: '/creators/plans', icon: '📦' },
+    { label: '出金管理', description: '売上の振込口座・出金履歴', path: '/creators/payouts', icon: '💰' },
+    { label: '売上レポート', description: '期間別の売上・購読状況', path: '/creators/analytics', icon: '📊' },
   ];
 
   const subscriptionCount = (summary?.subscriptions ?? []).length;
@@ -399,7 +385,7 @@ export default function MyPage() {
               <button
                 type="button"
                 className="btn btn-outline btn-sm"
-                onClick={() => navigate('/creator/profile')}
+                onClick={() => navigate('/creators/profile')}
               >
                 詳細
               </button>
@@ -444,19 +430,25 @@ export default function MyPage() {
                     <div className="mt-2 flex items-center gap-2 text-xs">
                       <span className="text-gray-500">本人確認</span>
 
-                      <KycStatusBadge
-                        status={creator.stripeKycStatus}
-                        disabledReason={creator.stripeKycDisabledReason}
-                      />
+                      {/* ✅ 未開始 */}
+                      {!creator.stripeAccountId ? (
+                        <span className="badge badge-gray">未開始</span>
+                      ) : (
+                        <KycStatusBadge
+                          // ✅ null のとき pending 表示に倒す（もしくはKycStatusBadge側で対応でもOK）
+                          status={(creator.stripeKycStatus ?? 'pending') as any}
+                          disabledReason={creator.stripeKycDisabledReason}
+                        />
+                      )}
 
-                      {creator.stripeKycStatus !== 'approved' && (
-                        <span className="text-gray-400">
-                          （出金には本人確認が必要です）
-                        </span>
+                      {needsKyc && (
+                        <span className="text-gray-400">（出金には本人確認が必要です）</span>
                       )}
                     </div>
+
                     <CreatorMonetizationStatus
-                      stripeKycStatus={creator.stripeKycStatus}
+                      // ✅ null のまま渡さない（コンポーネント側の表示も安定する）
+                      stripeKycStatus={(creator.stripeKycStatus ?? 'pending') as any}
                       stripeChargesEnabled={creator.stripeChargesEnabled}
                       stripePayoutsEnabled={creator.stripePayoutsEnabled}
                       stripeKycDisabledReason={creator.stripeKycDisabledReason}
@@ -604,12 +596,38 @@ export default function MyPage() {
         </div>
         {subscriptionCount === 0 ? (
           <p className="section-subtitle">
-            まだ購読中のプランはありません。お気に入りのクリエイターを探してみましょう。
+            まだ購読中のプランはありません。
           </p>
         ) : (
-          <pre className="mt-2 bg-gray-50 p-2 rounded text-xs overflow-auto">
-            {JSON.stringify(summary.subscriptions || [], null, 2)}
-          </pre>
+          <ul className="mt-3 space-y-2">
+            {summary.subscriptions!.map((sub) => (
+              <li
+                key={sub.id}
+                className="border rounded-lg p-3 flex items-center justify-between"
+              >
+                <div className="min-w-0">
+                  <div className="font-semibold text-sm truncate">
+                    {sub.plan?.name}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {sub.creator?.publicName} / ¥{sub.plan?.priceJpy} / {sub.plan?.billingInterval}
+                  </div>
+                  <div className="text-xs text-gray-400 mt-1">
+                    期間：
+                    {new Date(sub.currentPeriodStart).toLocaleDateString()} 〜{' '}
+                    {new Date(sub.currentPeriodEnd).toLocaleDateString()}
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-end gap-1">
+                  <SubStatusBadge status={sub.status} />
+                  {sub.cancelAtPeriodEnd && (
+                    <span className="text-xs text-red-500">次回更新で解約</span>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
         )}
       </section>
 
@@ -626,9 +644,32 @@ export default function MyPage() {
             まだ決済履歴がありません。
           </p>
         ) : (
-          <pre className="mt-2 bg-gray-50 p-2 rounded text-xs overflow-auto">
-            {JSON.stringify(summary.payments || [], null, 2)}
-          </pre>
+          <ul className="mt-3 space-y-2">
+            {summary.payments!.map((p) => (
+              <li
+                key={p.id}
+                className="border rounded-lg p-3 flex items-center justify-between"
+              >
+                <div className="min-w-0">
+                  <div className="font-semibold text-sm">
+                    ¥{p.amountJpy.toLocaleString()}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {p.kind === 'subscription'
+                      ? `プラン：${p.plan?.name}`
+                      : `単品購入：${p.post?.title}`}
+                  </div>
+                  <div className="text-xs text-gray-400 mt-1">
+                    {new Date(p.paidAt ?? p.createdAt).toLocaleString()}
+                  </div>
+                </div>
+
+                <div className="text-xs text-gray-500">
+                  {p.creator?.publicName}
+                </div>
+              </li>
+            ))}
+          </ul>
         )}
       </section>
 

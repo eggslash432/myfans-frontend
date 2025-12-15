@@ -8,7 +8,7 @@ type Props = {
   stripePayoutsEnabled: boolean;
   stripeKycDisabledReason?: string | null;
   stripeKycFieldsDue?: string[];
-  onClickFix?: () => void; // rejected のときに表示する「修正する」ボタン
+  onClickFix?: () => void; // ← “開始/続き/修正” 共通で使う
 };
 
 function SmallBadge({
@@ -39,20 +39,30 @@ export default function CreatorMonetizationStatus(props: Props) {
     onClickFix,
   } = props;
 
+  // ✅ 追加：未開始フェーズ
+  const isNotStarted = stripeKycStatus == null;
+
   const isApproved = stripeKycStatus === "approved";
   const isPending = stripeKycStatus === "pending";
   const isRejected = stripeKycStatus === "rejected";
 
-  // 収益化ざっくり判定（Stripe的に “受け取れる/出金できる” が重要）
+  const dueCount = stripeKycFieldsDue?.length ?? 0;
+
+  // ✅ 収益化ざっくり判定
+  // 未開始のときは “NG” ではなく “未設定” 扱いにしてユーザー混乱を防ぐ
   const monetizationTone =
-    stripeChargesEnabled && stripePayoutsEnabled
+    isNotStarted
+      ? "gray"
+      : stripeChargesEnabled && stripePayoutsEnabled
       ? "green"
       : stripeChargesEnabled || stripePayoutsEnabled
       ? "yellow"
       : "red";
 
   const monetizationText =
-    stripeChargesEnabled && stripePayoutsEnabled
+    isNotStarted
+      ? "未設定"
+      : stripeChargesEnabled && stripePayoutsEnabled
       ? "収益化OK"
       : stripeChargesEnabled && !stripePayoutsEnabled
       ? "出金準備中"
@@ -60,13 +70,29 @@ export default function CreatorMonetizationStatus(props: Props) {
       ? "決済準備中"
       : "収益化NG";
 
-  const dueCount = stripeKycFieldsDue?.length ?? 0;
+  // ✅ ボタン文言（onClickFix を共通利用）
+  const actionLabel = isRejected
+    ? "修正する"
+    : isPending
+    ? "本人確認を続ける"
+    : isNotStarted
+    ? "本人確認を開始"
+    : null;
+
+  const showActionButton =
+    !!onClickFix && (isNotStarted || isPending || isRejected);
 
   return (
     <div className="creator-status">
       <div className="creator-status-row">
         <span className="creator-status-label">本人確認</span>
-        <KycStatusBadge status={stripeKycStatus} disabledReason={stripeKycDisabledReason} />
+
+        {/* ✅ KycStatusBadge 側も status=null なら “未開始” 表示にしてね */}
+        <KycStatusBadge
+          status={stripeKycStatus}
+          disabledReason={stripeKycDisabledReason}
+        />
+
         <SmallBadge tone={monetizationTone}>{monetizationText}</SmallBadge>
       </div>
 
@@ -78,29 +104,47 @@ export default function CreatorMonetizationStatus(props: Props) {
           出金 {stripePayoutsEnabled ? "有効" : "無効"}
         </SmallBadge>
 
-        {dueCount > 0 && (
+        {/* ✅ 未開始では “未完了です” を出さない（まだ始めてないので） */}
+        {!isNotStarted && dueCount > 0 && (
           <span className="creator-status-hint">
             本人確認が未完了です（{dueCount}項目）
           </span>
         )}
       </div>
 
-      {(isPending || (!isApproved && dueCount > 0)) && (
+      {/* ✅ 未開始メッセージ */}
+      {isNotStarted && (
+        <div className="creator-status-note">
+          ※本人確認（Stripe）を開始すると、決済・出金の有効化が進められます。
+        </div>
+      )}
+
+      {/* ✅ 審査中/不足あり */}
+      {(isPending || (!isApproved && dueCount > 0)) && !isNotStarted && !isRejected && (
         <div className="creator-status-note">
           ※本人確認が完了すると、出金が可能になります。
         </div>
       )}
 
+      {/* ✅ 差し戻し */}
       {isRejected && (
         <div className="creator-status-actions">
           <div className="creator-status-note">
             ※本人確認が否認されています。内容を修正して再提出してください。
           </div>
-          {onClickFix && (
-            <button type="button" className="btn btn-primary btn-sm" onClick={onClickFix}>
-              修正する
-            </button>
-          )}
+        </div>
+      )}
+
+      {/* ✅ アクションボタン */}
+      {showActionButton && actionLabel && (
+        <div className="creator-status-actions">
+          <button
+            type="button"
+            className="btn btn-primary btn-sm"
+            onClick={onClickFix}
+          >
+            {actionLabel}
+          </button>
         </div>
       )}
     </div>

@@ -26,22 +26,48 @@ export type MeSummary = {
   /** 購読中プラン一覧 */
   subscriptions: Array<{
     id: string;
-    planId: string;
-    creatorId: string;
-    planName?: string;
-    priceJpy?: number;
-    status?: SubStatus;
-    startedAt?: string;
-    endedAt?: string | null;
+    status: SubStatus;
+    currentPeriodStart: string; // ISO
+    currentPeriodEnd: string;   // ISO
+    cancelAtPeriodEnd: boolean;
+    stripeSubscriptionId?: string;
+
+    plan?: {
+      id: string;
+      name: string;
+      priceJpy: number;
+      billingInterval: 'month' | 'year';
+    };
+
+    creator?: {
+      userId: string;
+      publicName: string;
+    };
   }>;
 
   /** 支払い履歴 */
   payments: Array<{
     id: string;
     amountJpy: number;
-    currency?: string;
-    status?: PaymentStatus;
+    kind: 'subscription' | 'one_time';
+    paymentStatus: PaymentStatus;
+    paidAt?: string | null;
     createdAt: string;
-    description?: string;
+
+    plan?: {
+      id: string;
+      name: string;
+    } | null;
+
+    post?: {
+      id: string;
+      title: string;
+    } | null;
+
+    creator?: {
+      userId: string;
+      publicName: string;
+    } | null;
   }>;
 };
+

@@ -1,4 +1,4 @@
-// front/src/lib/payments.ts
+// front/src/lib/api/payments.ts
 import type { CheckoutReq, CheckoutRes, CheckoutSessionResponse, PaymentRecord } from "../../shared/types";
 import { request } from "./apiClient";
 
@@ -22,10 +22,21 @@ export function createPpvCheckoutSession(postId: string): Promise<CheckoutSessio
   });
 }
 
-export function createPlanCheckoutSession(planId: string): Promise<CheckoutSessionResponse> {
-  return request<CheckoutSessionResponse>(`/payments/plans/${planId}/checkout`, {
-    method: 'POST',
+export async function createPlanCheckoutSession(planId: string): Promise<CheckoutSessionResponse> {
+  const origin = window.location.origin;
+
+  const body: CheckoutReq = {
+    planId,
+    successUrl: `${origin}/payments/success`, // あなたの画面に合わせて
+    cancelUrl: `${origin}/payments/cancel`,   // あなたの画面に合わせて
+  };
+
+  const data = await request<CheckoutRes>("/payments/checkout", {
+    method: "POST",
+    body,
   });
+
+  return { url: data.url };
 }
 
 export function getMyPaymentHistory(): Promise<PaymentRecord[]> {

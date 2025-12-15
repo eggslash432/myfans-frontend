@@ -1,9 +1,13 @@
 // front/src/lib/api/auth.ts
 import { request } from './apiClient';
-import type { Me } from '../../shared/types';
+import type { Me, MeSummary } from '../../shared/types';
 
 export function getMe(): Promise<Me> {
   return request<Me>('/auth/me');
+}
+
+export function getUserMe(): Promise<MeSummary> {
+  return request<MeSummary>('/auth/me/summary');
 }
 
 export async function login(payload: { email: string; password: string }) {
