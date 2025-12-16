@@ -26,6 +26,9 @@ import CreatorProfilePage from "./pages/creators/CreatorProfilePage";
 import PasswordChangePage from "./pages/settings/PasswordChangePage";
 import SettingsHomePage from "./pages/settings";
 import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
+import ShopDashboardPage from "./pages/shop/ShopDashboardPage";
+import ShopCreatorApplicationsPage from "./pages/shop/ShopCreatorApplicationsPage";
+import ShopSalesPage from "./pages/shop/ShopSalesPage";
 
 export default function App() {
   return (
@@ -40,7 +43,7 @@ export default function App() {
         <Route
           path="/admin"
           element={
-            <ProtectedRoute role="admin">
+            <ProtectedRoute roles={["admin", "sub_admin"]}>
               <Outlet />
             </ProtectedRoute>
           }
@@ -52,6 +55,20 @@ export default function App() {
           <Route path="reports" element={<AdminReportsPage />} />
           <Route path="settings" element={<AdminSettingsPage />} />
         </Route>
+
+        {/* ✅ Shop 配下（/shop, /shop/...） */}
+        <Route
+          path="/shop"
+          element={
+            <ProtectedRoute roles={["shop_admin", "shop_staff"]}>
+              <Outlet />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<ShopDashboardPage />} />
+          <Route path="creator-applications" element={<ShopCreatorApplicationsPage />} />
+          <Route path="sales" element={<ShopSalesPage />} />
+        </Route>        
 
         <Route
           path="/mypage"
