@@ -1,10 +1,14 @@
 // front/src/pages/admin/AdminReportsPage.tsx
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ApiError } from '../../lib/api/apiClient';
-import { adminListReports, adminResolveReport } from '../../lib/api/admin';
+import {
+  adminListReports,
+  adminResolveReport,
+  adminUpdatePostStatus,
+} from '../../lib/api/admin';
 import type { ReportItem } from '../../shared/types';
-
-type ResolveAction = 'reviewed' | 'dismissed';
+import type { ResolveAction } from '../../shared/prisma-enums';
 
 function getStatusMeta(status?: string | null) {
   if (status === 'reviewed') {
@@ -37,11 +41,17 @@ function getStatusMeta(status?: string | null) {
   };
 }
 
+function postStatusLabel(s?: string | null) {
+  if (s === 'published') return '公開';
+  if (s === 'private') return '非公開';
+  return '下書き';
+}
+
 export default function AdminReportsPage() {
   const [reports, setReports] = useState<ReportItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
-  const [resolvingId, setResolvingId] = useState<string | null>(null);
+  const [busyKey, setBusyKey] = useState<string | null>(null); // reportId or `post:${postId}`
 
   const load = async () => {
     try {
@@ -81,14 +91,29 @@ export default function AdminReportsPage() {
     if (!confirm(msg)) return;
 
     try {
-      setResolvingId(id);
+      setBusyKey(id);
       await adminResolveReport(id, action);
       await load();
     } catch (e: any) {
       console.error(e);
       alert(e?.message ?? '通報の更新に失敗しました。');
     } finally {
-      setResolvingId(null);
+      setBusyKey(null);
+    }
+  };
+
+  const handleMakePrivate = async (postId: string) => {
+    if (!confirm('この投稿を「非公開」にしますか？')) return;
+
+    try {
+      setBusyKey(`post:${postId}`);
+      await adminUpdatePostStatus(postId, 'private');
+      await load();
+    } catch (e: any) {
+      console.error(e);
+      alert(e?.message ?? '投稿の非公開に失敗しました。');
+    } finally {
+      setBusyKey(null);
     }
   };
 
@@ -123,9 +148,15 @@ export default function AdminReportsPage() {
         {!loading && reports.length > 0 && (
           <div className="space-y-3">
             {reports.map((r) => {
-              const meta = getStatusMeta((r as any).status);
-              const done = (r as any).status === 'reviewed' || (r as any).status === 'dismissed';
-              const busy = resolvingId === r.id;
+              const meta = getStatusMeta(r.status);
+              const done = r.status === 'reviewed' || r.status === 'dismissed';
+
+              const reportBusy = busyKey === r.id;
+              const postBusy = busyKey === `post:${r.postId}`;
+              const busy = reportBusy || postBusy;
+
+              const postStatus = (r as any).postPublishedStatus as string | null | undefined;
+              const isPrivate = postStatus === 'private';
 
               return (
                 <div key={r.id} className="card" style={{ padding: '12px 14px', fontSize: '13px' }}>
@@ -140,13 +171,40 @@ export default function AdminReportsPage() {
                     )}
                   </div>
 
+                  {/* ✅ 投稿ステータス表示 */}
+                  <div style={{ marginTop: 6 }}>
+                    投稿ステータス:{' '}
+                    <b>{postStatusLabel(postStatus)}</b>
+                  </div>
+
                   <div>通報者: {r.reporterEmail || '（不明）'}</div>
                   <div>理由: {r.reason || '(未入力)'}</div>
+
+                  {/* ✅ 投稿詳細へ */}
+                  {r.postId && (
+                    <div style={{ marginTop: 10, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      <Link className="btn btn-outline btn-sm" to={`/posts/${r.postId}`}>
+                        投稿詳細へ
+                      </Link>
+
+                      {/* ✅ 非公開ボタン */}
+                      <button
+                        type="button"
+                        disabled={isPrivate || busy}
+                        onClick={() => handleMakePrivate(r.postId)}
+                        className="btn btn-outline btn-sm"
+                        title={isPrivate ? '既に非公開です' : undefined}
+                        style={isPrivate || busy ? { opacity: 0.6, cursor: 'not-allowed' } : undefined}
+                      >
+                        {postBusy ? '更新中…' : 'この投稿を非公開にする'}
+                      </button>
+                    </div>
+                  )}
 
                   {/* 状態 + 日時 */}
                   <div
                     style={{
-                      marginTop: 8,
+                      marginTop: 10,
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
@@ -172,14 +230,7 @@ export default function AdminReportsPage() {
                     </span>
                   </div>
 
-                  <div
-                    style={{
-                      marginTop: 10,
-                      display: 'flex',
-                      gap: 8,
-                      justifyContent: 'flex-end',
-                    }}
-                  >
+                  <div style={{ marginTop: 10, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                     <button
                       type="button"
                       disabled={done || busy}
@@ -188,7 +239,7 @@ export default function AdminReportsPage() {
                       title={done ? '既に対応済み/却下済みです' : undefined}
                       style={done || busy ? { opacity: 0.6, cursor: 'not-allowed' } : undefined}
                     >
-                      {busy ? '更新中…' : '対応済みにする'}
+                      {reportBusy ? '更新中…' : '対応済みにする'}
                     </button>
 
                     <button
@@ -199,7 +250,7 @@ export default function AdminReportsPage() {
                       title={done ? '既に対応済み/却下済みです' : undefined}
                       style={done || busy ? { opacity: 0.6, cursor: 'not-allowed' } : undefined}
                     >
-                      {busy ? '更新中…' : '却下'}
+                      {reportBusy ? '更新中…' : '却下'}
                     </button>
                   </div>
                 </div>

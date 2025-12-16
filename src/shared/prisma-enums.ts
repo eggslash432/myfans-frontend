@@ -24,3 +24,5 @@ export type PayoutStatus = 'requested' | 'approved' | 'paid' | 'rejected';
 export type BillingInterval = 'month' | 'year';
 
 export type PlanModalMode = 'create' | 'edit';
+
+export type ResolveAction = 'reviewed' | 'dismissed';
