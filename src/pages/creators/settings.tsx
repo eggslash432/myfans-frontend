@@ -148,7 +148,7 @@ export default function CreatorSettingsPage() {
         <div className="pt-3">
           <button
             disabled={!isKycOk}
-            onClick={() => navigate('/creator/profile')}
+            onClick={() => navigate('/creators/profile')}
             className="btn btn-outline w-full disabled:opacity-50"
           >
             プロフィールを更新
