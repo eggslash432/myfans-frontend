@@ -22,13 +22,6 @@ export type AdminPost = {
   reportsCount: number;
 };
 
-export type AdminPostReport = {
-  id: string;
-  reason: string;
-  resolved: boolean;
-  createdAt: string;
-};
-
 export type AdminSummary = {
   salesMonthly: number;
   newUsersMonthly: number;

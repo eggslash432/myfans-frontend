@@ -123,7 +123,7 @@ export default function App() {
           }
         />
 
-        <Route path="/creators/@:id" element={<CreatorPage />} />
+        <Route path="/creators/:id" element={<CreatorPage />} />
 
         <Route
           path="/mypage/plans"

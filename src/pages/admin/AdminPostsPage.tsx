@@ -5,10 +5,11 @@ import {
   adminListPosts,
   adminDeletePost,
   adminUpdatePostStatus,
-  adminGetPostReports,
-  adminResolvePostReport,
-} from '../../lib/api/admin';
-import type { AdminPost, AdminPostReport } from '../../shared/types';
+  adminListReports,
+  adminResolveReport,
+} from '../../lib/api';
+import type { AdminPost, ReportItem } from '../../shared/types';
+
 import StatusBadge from '../../components/ui/StatusBadge';
 
 function normalizeStatus(s: any): 'draft' | 'published' | 'private' {
@@ -32,7 +33,7 @@ export default function AdminPostsPage() {
   const [list, setList] = useState<AdminPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
-  const [reports, setReports] = useState<AdminPostReport[]>([]);
+  const [reports, setReports] = useState<ReportItem[]>([]);
   const [reportsPostId, setReportsPostId] = useState<string | null>(null);
   // --- 検索/フィルタ/ソート ---
   const [q, setQ] = useState('');
@@ -94,7 +95,7 @@ export default function AdminPostsPage() {
 
   async function openReports(postId: string) {
     try {
-      const data = await adminGetPostReports(postId);
+      const data = await adminListReports({ postId });
       setReports(data);
       setReportsPostId(postId);
     } catch (e: any) {
@@ -102,11 +103,11 @@ export default function AdminPostsPage() {
     }
   }
 
-  async function resolveReport(reportId: string) {
+  async function resolveReport(reportId: string, action: 'reviewed' | 'dismissed') {
     try {
-      await adminResolvePostReport(reportId);
+      await adminResolveReport(reportId, action);
       if (reportsPostId) {
-        const data = await adminGetPostReports(reportsPostId);
+        const data = await adminListReports({ postId: reportsPostId });
         setReports(data);
       }
     } catch (e: any) {
@@ -576,17 +577,22 @@ export default function AdminPostsPage() {
 
                     <div style={{ marginTop: 8 }} className="text-xs">
                       ステータス:{' '}
-                      {r.resolved ? (
+                      {r.status === 'reviewed' ? (
                         <span style={{ color: '#065f46', fontWeight: 700 }}>対応済み</span>
+                      ) : r.status === 'dismissed' ? (
+                        <span style={{ color: '#374151', fontWeight: 700 }}>却下</span>
                       ) : (
                         <span style={{ color: '#991b1b', fontWeight: 700 }}>未対応</span>
                       )}
                     </div>
 
-                    {!r.resolved && (
-                      <div style={{ marginTop: 10 }}>
-                        <button className="btn btn-primary btn-xs" onClick={() => resolveReport(r.id)}>
+                    {!(r.status === 'reviewed' || r.status === 'dismissed') && (
+                      <div style={{ marginTop: 10, display: 'flex', gap: 8 }}>
+                        <button className="btn btn-primary btn-xs" onClick={() => resolveReport(r.id, 'reviewed')}>
                           対応済みにする
+                        </button>
+                        <button className="btn btn-outline btn-xs" onClick={() => resolveReport(r.id, 'dismissed')}>
+                          却下
                         </button>
                       </div>
                     )}

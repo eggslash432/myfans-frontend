@@ -5,7 +5,6 @@ import type {
   AdminPayout,
   PendingCreator,
   AdminPost,
-  AdminPostReport,
   AdminSummary,
   ResolveResult,
   ApprovePayoutResult,
@@ -67,9 +66,9 @@ export function adminUpdatePostStatus(postId: string, status: string): Promise<v
   });
 }
 
-export function adminGetPostReports(postId: string): Promise<AdminPostReport[]> {
-  return request<AdminPostReport[]>(`/admin/posts/${postId}/reports`);
-}
+// export function adminGetPostReports(postId: string): Promise<AdminPostReport[]> {
+//   return request<AdminPostReport[]>(`/admin/posts/${postId}/reports`);
+// }
 
 /** 通報対応済み（返り値を使わないなら void） */
 export function adminResolvePostReport(reportId: string): Promise<void> {
@@ -78,9 +77,10 @@ export function adminResolvePostReport(reportId: string): Promise<void> {
   });
 }
 
-export function adminListReports(params?: { status?: string }): Promise<ReportItem[]> {
+export function adminListReports(params?: { status?: string; postId?: string }): Promise<ReportItem[]> {
   const qs = new URLSearchParams();
   if (params?.status) qs.set('status', params.status);
+  if (params?.postId) qs.set('postId', params.postId);
   const q = qs.toString();
   return request<ReportItem[]>(`/admin/reports${q ? `?${q}` : ''}`);
 }
