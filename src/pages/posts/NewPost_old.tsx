@@ -39,7 +39,7 @@ function prune<T>(obj: T): T {
 type MediaPreview = {
   url: string;
   kind: 'image' | 'video' | 'audio';
-  isSample?: boolean; // ★ 追加：サンプル指定用
+  isSample?: boolean;
 };
 
 export default function NewPost() {
@@ -70,16 +70,17 @@ export default function NewPost() {
   // ★ メディア用 state
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const [mediaPreviews, setMediaPreviews] = useState<MediaPreview[]>([]);
-  const [sampleMediaIndex, setSampleMediaIndex] = useState<number | null>(null); // ★ どの動画をサンプルにするか
+  const [sampleMediaIndex, setSampleMediaIndex] = useState<number | null>(null); // ★ 任意
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  // ----------------------------
   // 初回：プラン取得（admin のときは呼ばない）
+  // ----------------------------
   useEffect(() => {
     if (isAdmin) {
       setPlans([]);
       return;
     }
-
     const loadPlansOnce = async () => {
       const plans = await fetchMyPlans();
       setPlans(plans ?? []);
@@ -87,7 +88,9 @@ export default function NewPost() {
     loadPlansOnce();
   }, [isAdmin]);
 
+  // ----------------------------
   // クリエイター情報取得（admin のときは呼ばない）
+  // ----------------------------
   useEffect(() => {
     if (isAdmin) {
       setCreator(null);
@@ -113,9 +116,7 @@ export default function NewPost() {
 
   // admin の場合は常に free に固定
   useEffect(() => {
-    if (isAdmin) {
-      setVisibility('free');
-    }
+    if (isAdmin) setVisibility('free');
   }, [isAdmin]);
 
   // visibility が変わったら不要な値をクリア
@@ -123,6 +124,9 @@ export default function NewPost() {
     if (visibility !== 'plan') setSelectedPlanId('');
     if (visibility !== 'paid_single') setPpvPrice('500');
   }, [visibility]);
+
+  const recalcIsSample = (previews: MediaPreview[], idx: number | null) =>
+    previews.map((p, i) => ({ ...p, isSample: idx !== null && i === idx }));
 
   const buildPayload = () => {
     const base: any = {
@@ -170,11 +174,10 @@ export default function NewPost() {
     if (isAdmin) return;
     if (!newPlanName || !newPlanPrice) return;
     try {
-      const res = await createPlanApi({
+      await createPlanApi({
         name: newPlanName,
         priceJpy: parseInt(newPlanPrice, 10),
       });
-      console.log('プラン作成成功', res);
       setShowPlanModal(false);
       await loadPlans();
     } catch (e) {
@@ -187,56 +190,41 @@ export default function NewPost() {
     setMediaFiles([]);
     setMediaPreviews([]);
     setSampleMediaIndex(null);
-  };  
+  };
+
+  // ✅ サンプル解除（任意化）
+  const clearSample = () => {
+    setSampleMediaIndex(null);
+    setMediaPreviews((prev) => recalcIsSample(prev, null));
+  };
 
   // ★ メディア選択（画像・動画・音声）
+  // ✅ 動画を選んでもサンプルを自動指定しない
   const handleMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
     const arr = Array.from(files);
 
-    // ★ 既存ファイルに追加
     setMediaFiles((prev) => [...prev, ...arr]);
 
-    let firstNewVideoIndex: number | null = null;
-    const baseIndex = mediaPreviews.length;
-
-    const newPreviews: MediaPreview[] = arr.map((f, idx) => {
+    const newPreviews: MediaPreview[] = arr.map((f) => {
       const url = URL.createObjectURL(f);
       const mime = f.type || '';
 
       let kind: MediaPreview['kind'] = 'image';
-      if (mime.startsWith('video/')) {
-        kind = 'video';
-        if (firstNewVideoIndex === null) {
-          firstNewVideoIndex = baseIndex + idx;
-        }
-      } else if (mime.startsWith('audio/')) {
-        kind = 'audio';
-      }
+      if (mime.startsWith('video/')) kind = 'video';
+      else if (mime.startsWith('audio/')) kind = 'audio';
 
       return { url, kind };
     });
 
-    // ★ サンプル未指定 & 今回動画があれば自動指定
-    const nextSampleIndex =
-      sampleMediaIndex !== null
-        ? sampleMediaIndex
-        : firstNewVideoIndex;
+    // ★ sampleMediaIndex の最新値で再計算したいので functional update に寄せる
+    setMediaPreviews((prev) => {
+      const merged = [...prev, ...newPreviews];
+      return recalcIsSample(merged, sampleMediaIndex);
+    });
 
-    if (sampleMediaIndex === null && firstNewVideoIndex !== null) {
-      setSampleMediaIndex(firstNewVideoIndex);
-    }
-
-    setMediaPreviews((prev) =>
-      [...prev, ...newPreviews].map((p, idx) => ({
-        ...p,
-        isSample: idx === nextSampleIndex,
-      })),
-    );
-
-    // ★ 同じファイルを再選択できるようにする
     e.target.value = '';
   };
 
@@ -262,10 +250,17 @@ export default function NewPost() {
         res?.data?.post?.id ??
         res?.data?.id;
 
-      // ★ postId が取れたらメディアも同時アップロード
       if (postId && mediaFiles.length > 0) {
-        // sampleMediaIndex が動画以外を指している場合は無視される前提
-        await uploadPostMedia(postId, mediaFiles, sampleMediaIndex ?? undefined);
+        // ✅ sampleIndex は「このアップロード files の index」
+        // ✅ さらに「サンプルは動画のみ」の前提で、動画じゃない index は送らない
+        const idx = sampleMediaIndex;
+        const isVideoSample =
+          typeof idx === 'number' &&
+          idx >= 0 &&
+          idx < mediaFiles.length &&
+          (mediaFiles[idx]?.type ?? '').startsWith('video/');
+
+        await uploadPostMedia(postId, mediaFiles, isVideoSample ? idx : undefined);
       }
 
       setOkMsg('投稿が完了しました。');
@@ -288,6 +283,13 @@ export default function NewPost() {
   const kyc = creator?.kyc ?? {};
   const kycStatus = kyc.status ?? creator?.stripeKycStatus ?? 'pending';
   const isKycOk = isAdmin ? true : kycStatus === 'approved';
+
+  const hasVideo = mediaPreviews.some((p) => p.kind === 'video');
+  const sampleSelected =
+    sampleMediaIndex !== null &&
+    sampleMediaIndex >= 0 &&
+    sampleMediaIndex < mediaPreviews.length &&
+    mediaPreviews[sampleMediaIndex]?.kind === 'video';
 
   return (
     <div className="page">
@@ -340,7 +342,7 @@ export default function NewPost() {
               />
             </div>
 
-            {/* ★ メディア（画像 / 動画 / 音声） */}
+            {/* メディア */}
             <div className="form-field">
               <label className="form-label">メディア（画像・動画・音声）</label>
 
@@ -352,6 +354,7 @@ export default function NewPost() {
                 >
                   ファイルを選択
                 </button>
+
                 {mediaFiles.length > 0 && (
                   <button
                     type="button"
@@ -361,6 +364,7 @@ export default function NewPost() {
                     すべて削除
                   </button>
                 )}
+
                 {mediaFiles.length > 0 && (
                   <span className="text-sm text-gray-600">
                     {mediaFiles.length} 件選択中
@@ -377,6 +381,23 @@ export default function NewPost() {
                 onChange={handleMediaChange}
               />
 
+              {/* ✅ サンプル解除ボタン（動画がある時のみ表示） */}
+              {hasVideo && (
+                <div className="mt-2 flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    onClick={clearSample}
+                    disabled={!sampleSelected}
+                  >
+                    サンプルなし（指定しない）
+                  </button>
+                  <span className="text-xs text-gray-500">
+                    ※ サンプル指定は任意です（未指定でも投稿できます）
+                  </span>
+                </div>
+              )}
+
               {mediaPreviews.length > 0 && (
                 <div className="mt-3 grid grid-cols-3 gap-2">
                   {mediaPreviews.map((p, i) => (
@@ -389,23 +410,14 @@ export default function NewPost() {
                           <img src={p.url} alt="" className="post-media" />
                         )}
                         {p.kind === 'video' && (
-                          <video
-                            src={p.url}
-                            className="post-media"
-                            muted
-                            controls
-                          />
+                          <video src={p.url} className="post-media" muted controls />
                         )}
                         {p.kind === 'audio' && (
-                          <audio
-                            src={p.url}
-                            controls
-                            className="w-full"
-                          />
+                          <audio src={p.url} controls className="w-full" />
                         )}
                       </div>
 
-                      {/* ★ サンプル指定用ラジオ（動画だけ） */}
+                      {/* サンプル指定用ラジオ（動画だけ） */}
                       {p.kind === 'video' && (
                         <label className="w-full px-2 py-1 flex items-center gap-1 text-[11px] border-t border-gray-200 bg-white/80">
                           <input
@@ -414,16 +426,17 @@ export default function NewPost() {
                             checked={sampleMediaIndex === i}
                             onChange={() => {
                               setSampleMediaIndex(i);
-                              setMediaPreviews((prev) =>
-                                prev.map((pp, idx) => ({
-                                  ...pp,
-                                  isSample: idx === i,
-                                })),
-                              );
+                              setMediaPreviews((prev) => recalcIsSample(prev, i));
                             }}
                           />
                           <span>この動画をサンプルとして表示する</span>
                         </label>
+                      )}
+
+                      {p.kind === 'video' && p.isSample && (
+                        <div className="w-full px-2 py-1 text-[11px] text-green-700 bg-green-50 border-t border-green-200">
+                          ✅ サンプルに設定中
+                        </div>
                       )}
                     </div>
                   ))}
@@ -432,12 +445,9 @@ export default function NewPost() {
 
               <p className="mt-1 text-xs text-gray-500">
                 ※ 投稿ボタンを押すと、本文と一緒に選択中のメディアもアップロードされます。
-                {`（動画を選択した場合は、1つを「サンプル動画」として指定できます）`}
+                （動画を選択した場合、任意で 1つを「サンプル動画」として指定できます）
               </p>
             </div>
-
-            {/* 公開範囲 */}
-            {/* ... 以下は元のまま ...（省略せずに実装済み） */}
 
             {/* 公開範囲 */}
             <div className="space-y-2">
