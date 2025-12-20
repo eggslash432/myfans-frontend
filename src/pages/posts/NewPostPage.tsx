@@ -9,7 +9,7 @@ import { VisibilitySection } from './newPost/VisibilitySection';
 import { AgeRatingSection } from './newPost/AgeRatingSection';
 import { PublishStatusSection } from './newPost/PublishStatusSection';
 
-export default function NewPostPage() {
+export function NewPostPage() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
 

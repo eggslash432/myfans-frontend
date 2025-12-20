@@ -20,7 +20,7 @@ import { MediaGallery } from './postDetail/MediaGallery';
 import { LockedPanel } from './postDetail/LockedPanel';
 import { ReportButton } from './postDetail/ReportButton';
 
-export default function PostDetailPage() {
+export function PostDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();

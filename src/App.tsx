@@ -1,6 +1,6 @@
 // front/src/App.tsx
 import { Routes, Route, Outlet } from "react-router-dom";
-import Home from "./pages/home/Home";
+import Home from "./pages/home/HomePage";
 import MyPage from "./pages/mypage/MyPage";
 import CreatorPage from "./pages/creators/CreatorPage";
 import PostDetail from "./pages/posts/PostDetailPage";

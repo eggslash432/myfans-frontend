@@ -1,6 +1,6 @@
 // front/src/pages/mypage/MyPage.tsx
 import { useState } from 'react';
-import { PostEditModal } from '../posts/PostEditModal';
+import { PostEditModal } from '../posts/postEditModal/PostEditModal';
 
 import { useMyPageData } from './mypage/useMyPageData';
 import { usePostEditor } from './mypage/usePostEditor';
@@ -11,7 +11,7 @@ import { MyPostsSection } from './mypage/sections/MyPostsSection';
 import { SubscriptionsSection } from './mypage/sections/SubscriptionsSection';
 import { PaymentsSection } from './mypage/sections/PaymentsSection';
 
-export default function MyPage() {
+export function MyPage() {
   const {
     ready,
     user,

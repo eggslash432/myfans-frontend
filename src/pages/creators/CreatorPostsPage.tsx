@@ -9,7 +9,7 @@ import {
 } from "../../lib/api";
 import type { PostSummary } from "../../shared/types";
 import StatusBadge from "../../components/ui/StatusBadge";
-import { PostEditModal } from "../posts/PostEditModal";
+import { PostEditModal } from "../posts/postEditModal/PostEditModal";
 import type { PublishedStatus } from "../../shared/prisma-enums";
 
 export default function CreatorPostsPage() {
