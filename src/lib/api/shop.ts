@@ -1,6 +1,8 @@
 // front/src/lib/api/shop.ts
 
+import type { ShopCreatorApplicationsRes } from "@/shared/types/shop";
 import { request } from "./apiClient";
+import { useQuery } from "@tanstack/react-query";
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === "1";
 
@@ -152,5 +154,30 @@ export async function createShop(name: string) {
   return request<{ ok: true; already: boolean; shopId?: string } | any>("/shop", {
     method: "POST",
     body: { name },
+  });
+}
+
+export async function shopListCreatorApplications(params?: {
+  status?: ShopCreatorApplicationStatus;
+  take?: number;
+  cursor?: string;
+}) {
+  const qs = new URLSearchParams();
+  if (params?.status) qs.set("status", params.status);
+  if (params?.take != null) qs.set("take", String(params.take));
+  if (params?.cursor) qs.set("cursor", params.cursor);
+
+  const url = qs.toString()
+    ? `/shop/creator-applications?${qs.toString()}`
+    : "/shop/creator-applications";
+
+  return request<ShopCreatorApplicationsRes>(url, { method: "GET" });
+}
+
+
+export function useShopCreatorApplications() {
+  return useQuery({
+    queryKey: ["shopCreatorApplications"],
+    queryFn: () => shopListCreatorApplications({ status: "pending" }),
   });
 }

@@ -1,51 +1,37 @@
 // front/src/components/ui/StatusBadge.tsx
 
-import type { Visibility, PublishedStatus } from "../../shared/prisma-enums";
+// StatusBadge.tsx
+import Badge, { type BadgeTone } from "@/components/ui/Badge";
 
-type Props = {
-  publishedStatus: PublishedStatus;
-  visibility?: Visibility | null;
-  className?: string;
-};
+/**
+ * ここは “何でもバッジ” として使い回す前提
+ * まずは creator申請(pending/approved/rejected) と
+ * 既存で使ってる free/plan/ppv/published などに対応しておく
+ */
+type AnyStatus = string;
 
-function statusText(publishedStatus: PublishedStatus) {
-  if (publishedStatus === "published") return "公開";
-  if (publishedStatus === "draft") return "下書き";
-  return "非公開";
+function meta(status: AnyStatus): { label: string; tone: BadgeTone } {
+  // ---- creator application ----
+  if (status === "pending") return { label: "承認待ち", tone: "warning" };
+  if (status === "approved") return { label: "承認済み", tone: "success" };
+  if (status === "rejected") return { label: "却下", tone: "danger" };
+
+  // ---- visibility / content ----
+  if (status === "free") return { label: "無料", tone: "success" };
+  if (status === "plan") return { label: "プラン", tone: "info" };
+  if (status === "ppv") return { label: "PPV", tone: "warning" };
+
+  // ---- published status ----
+  if (status === "published") return { label: "公開", tone: "success" };
+  if (status === "draft") return { label: "下書き", tone: "muted" };
+  if (status === "scheduled") return { label: "予約", tone: "info" };
+  if (status === "archived") return { label: "非公開", tone: "muted" };
+
+  return { label: status, tone: "muted" };
 }
 
-function visibilityText(v?: Visibility | null) {
-  if (!v) return "";
-  if (v === "free") return "無料";
-  if (v === "plan") return "プラン限定";
-  if (v === "paid_single") return "単品購入";
-  return String(v);
+export default function StatusBadge({ status }: { status: AnyStatus }) {
+  const m = meta(status);
+  return <Badge tone={m.tone}>{m.label}</Badge>;
 }
 
-/** 状態→色（バッジ用クラス） */
-function statusTone(publishedStatus: PublishedStatus) {
-  if (publishedStatus === "published") return "badge-success";
-  if (publishedStatus === "draft") return "badge-muted";
-  return "badge-warning"; // 非公開
-}
-
-/** visibility は薄い補助バッジにする */
-function visibilityTone(v?: Visibility | null) {
-  if (!v) return "badge-muted";
-  if (v === "free") return "badge-muted";
-  if (v === "plan") return "badge-info";
-  if (v === "paid_single") return "badge-info";
-  return "badge-muted";
-}
-
-export default function StatusBadge({ publishedStatus, visibility, className }: Props) {
-  const s = statusText(publishedStatus);
-  const v = visibilityText(visibility);
-
-  return (
-    <div className={`badges ${className ?? ""}`.trim()}>
-      <span className={`badge ${statusTone(publishedStatus)}`}>{s}</span>
-      {v && <span className={`badge ${visibilityTone(visibility)}`}>{v}</span>}
-    </div>
-  );
-}

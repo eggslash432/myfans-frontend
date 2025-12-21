@@ -1,22 +1,40 @@
-// front/src/components/ui/KycStatusBadge.tsx
-export default function KycStatusBadge({
-  status,
-  disabledReason,
-}: {
-  status: string | null | undefined;
+// KycStatusBadge.tsx
+import Badge, { type BadgeTone } from "@/components/ui/Badge";
+
+type Props = {
+  status: string | null;            // ✅ null許可
   disabledReason?: string | null;
-}) {
-  // ✅ 未開始（KYCまだstartしてない）
-  if (status == null) {
-    return <span className="badge">未開始</span>;
+};
+
+function meta(status: string | null): { label: string; tone: BadgeTone } {
+  if (status == null) return { label: "未開始", tone: "muted" };
+
+  switch (status) {
+    case "approved":
+    case "verified":
+      return { label: "承認済み", tone: "success" };
+    case "pending":
+      return { label: "審査中", tone: "warning" };
+    case "rejected":
+      return { label: "却下", tone: "danger" };
+    case "restricted":
+      return { label: "制限あり", tone: "warning" };
+    case "incomplete":
+      return { label: "未完了", tone: "muted" };
+    default:
+      return { label: status, tone: "muted" };
   }
+}
 
-  if (status === "approved") return <span className="badge badge-success">完了</span>;
-  if (status === "pending") return <span className="badge badge-warning">審査中</span>;
-  if (status === "rejected") return <span className="badge badge-red">差し戻し</span>;
+export default function KycStatusBadge({ status, disabledReason }: Props) {
+  const m = meta(status);
 
-  // disabledReasonが来る設計ならここで「要対応」に寄せてもOK
-  if (disabledReason) return <span className="badge badge-red">要対応</span>;
+  // 必要なら tooltip に理由を出せる
+  const title = disabledReason ?? undefined;
 
-  return <span className="badge">確認中</span>;
+  return (
+    <Badge tone={m.tone} title={title}>
+      {m.label}
+    </Badge>
+  );
 }

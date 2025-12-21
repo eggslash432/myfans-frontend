@@ -2,42 +2,22 @@
 
 import { ApiError } from "../../lib/api/apiClient";
 import { useShopCreatorApplications } from "../../hooks/useShopCreatorApplications";
-import type { ShopCreatorApplicationStatus } from "../../lib/api/shop";
-
-function StatusBadge({ status }: { status: ShopCreatorApplicationStatus }) {
-  const map = {
-    pending: { label: "承認待ち", bg: "#FFF7ED", color: "#9A3412" },
-    approved: { label: "承認済み", bg: "#ECFDF5", color: "#065F46" },
-    rejected: { label: "却下", bg: "#F3F4F6", color: "#374151" },
-  }[status];
-
-  return (
-    <span
-      style={{
-        padding: "2px 8px",
-        borderRadius: 999,
-        fontSize: 12,
-        background: map.bg,
-        color: map.color,
-        fontWeight: 600,
-      }}
-    >
-      {map.label}
-    </span>
-  );
-}
+import StatusBadge from "@/components/ui/StatusBadge";
 
 function fmtDate(iso: string) {
-  // "2025-12-14T..." -> "2025-12-14"
   if (!iso) return "";
   return iso.slice(0, 10);
 }
 
 export default function ShopCreatorApplicationsPage() {
-  const q = useShopCreatorApplications();
+  const q = useShopCreatorApplications("pending");
 
   const error =
-    q.error instanceof ApiError ? `${q.error.status}: ${q.error.message}` : q.error?.message;
+    q.error instanceof ApiError
+      ? `${q.error.status}: ${q.error.message}`
+      : q.error?.message;
+
+  const items = q.data?.items ?? [];
 
   return (
     <div className="page">
@@ -46,7 +26,9 @@ export default function ShopCreatorApplicationsPage() {
       <div className="card">
         {q.isLoading && <div>読み込み中…</div>}
         {!q.isLoading && error && (
-          <div style={{ color: "#b91c1c", fontWeight: 700 }}>取得失敗：{error}</div>
+          <div style={{ color: "#b91c1c", fontWeight: 700 }}>
+            取得失敗：{error}
+          </div>
         )}
 
         {!q.isLoading && !error && (
@@ -61,16 +43,16 @@ export default function ShopCreatorApplicationsPage() {
               </tr>
             </thead>
             <tbody>
-              {(q.data ?? []).map((a) => (
+              {items.map((a) => (
                 <tr key={a.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
                   <td>{fmtDate(a.createdAt)}</td>
                   <td>{a.publicName}</td>
                   <td>{a.email}</td>
                   <td>
+                    {/* StatusBadge の props 仕様に合わせる必要あり */}
                     <StatusBadge status={a.status} />
                   </td>
                   <td style={{ textAlign: "right" }}>
-                    {/* ここは次で詳細モーダルや承認ボタンにする想定 */}
                     <button className="btn" onClick={() => alert(`applicationId=${a.id}`)}>
                       詳細
                     </button>
@@ -78,7 +60,7 @@ export default function ShopCreatorApplicationsPage() {
                 </tr>
               ))}
 
-              {(q.data?.length ?? 0) === 0 && (
+              {items.length === 0 && (
                 <tr>
                   <td colSpan={5} style={{ padding: "12px 0", color: "#64748b" }}>
                     申請はありません

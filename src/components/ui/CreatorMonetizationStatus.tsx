@@ -1,5 +1,6 @@
 // front/src/components/ui/CreatorMonetizationStatus.tsx
 
+import Badge, { type BadgeTone } from "@/components/ui/Badge";
 import KycStatusBadge from "./KycStatusBadge";
 
 type Props = {
@@ -11,22 +12,18 @@ type Props = {
   onClickFix?: () => void; // ← “開始/続き/修正” 共通で使う
 };
 
-function SmallBadge({
-  children,
-  tone,
-}: {
-  children: React.ReactNode;
-  tone: "green" | "yellow" | "red" | "gray";
-}) {
-  const cls =
-    tone === "green"
-      ? "badge badge-green"
-      : tone === "yellow"
-      ? "badge badge-yellow"
-      : tone === "red"
-      ? "badge badge-red"
-      : "badge badge-gray";
-  return <span className={cls}>{children}</span>;
+function toneFromLegacy(tone: "green" | "yellow" | "red" | "gray"): BadgeTone {
+  switch (tone) {
+    case "green":
+      return "success";
+    case "yellow":
+      return "warning";
+    case "red":
+      return "danger";
+    case "gray":
+    default:
+      return "muted";
+  }
 }
 
 export default function CreatorMonetizationStatus(props: Props) {
@@ -39,7 +36,7 @@ export default function CreatorMonetizationStatus(props: Props) {
     onClickFix,
   } = props;
 
-  // ✅ 追加：未開始フェーズ
+  // ✅ 未開始フェーズ
   const isNotStarted = stripeKycStatus == null;
 
   const isApproved = stripeKycStatus === "approved";
@@ -49,8 +46,7 @@ export default function CreatorMonetizationStatus(props: Props) {
   const dueCount = stripeKycFieldsDue?.length ?? 0;
 
   // ✅ 収益化ざっくり判定
-  // 未開始のときは “NG” ではなく “未設定” 扱いにしてユーザー混乱を防ぐ
-  const monetizationTone =
+  const monetizationTone: "green" | "yellow" | "red" | "gray" =
     isNotStarted
       ? "gray"
       : stripeChargesEnabled && stripePayoutsEnabled
@@ -93,16 +89,19 @@ export default function CreatorMonetizationStatus(props: Props) {
           disabledReason={stripeKycDisabledReason}
         />
 
-        <SmallBadge tone={monetizationTone}>{monetizationText}</SmallBadge>
+        <Badge tone={toneFromLegacy(monetizationTone)}>
+          {monetizationText}
+        </Badge>
       </div>
 
       <div className="creator-status-row">
-        <SmallBadge tone={stripeChargesEnabled ? "green" : "gray"}>
+        <Badge tone={stripeChargesEnabled ? "success" : "muted"}>
           決済 {stripeChargesEnabled ? "有効" : "無効"}
-        </SmallBadge>
-        <SmallBadge tone={stripePayoutsEnabled ? "green" : "gray"}>
+        </Badge>
+
+        <Badge tone={stripePayoutsEnabled ? "success" : "muted"}>
           出金 {stripePayoutsEnabled ? "有効" : "無効"}
-        </SmallBadge>
+        </Badge>
 
         {/* ✅ 未開始では “未完了です” を出さない（まだ始めてないので） */}
         {!isNotStarted && dueCount > 0 && (
@@ -120,11 +119,13 @@ export default function CreatorMonetizationStatus(props: Props) {
       )}
 
       {/* ✅ 審査中/不足あり */}
-      {(isPending || (!isApproved && dueCount > 0)) && !isNotStarted && !isRejected && (
-        <div className="creator-status-note">
-          ※本人確認が完了すると、出金が可能になります。
-        </div>
-      )}
+      {(isPending || (!isApproved && dueCount > 0)) &&
+        !isNotStarted &&
+        !isRejected && (
+          <div className="creator-status-note">
+            ※本人確認が完了すると、出金が可能になります。
+          </div>
+        )}
 
       {/* ✅ 差し戻し */}
       {isRejected && (
