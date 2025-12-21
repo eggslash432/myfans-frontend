@@ -4,11 +4,21 @@ import type { SubTitleRule } from "../../shared/types";
 
 const SUB_TITLE_RULES: SubTitleRule[] = [
   // --- Creator ---
+  // 互換のため /creator と /creators の両方を拾う
   { match: (p) => p.startsWith("/creator/posts"), label: "クリエイター" },
   { match: (p) => p.startsWith("/creator/plans"), label: "クリエイター" },
   { match: (p) => p.startsWith("/creator/payouts"), label: "クリエイター" },
   { match: (p) => p.startsWith("/creator/analytics"), label: "クリエイター" },
+
+  { match: (p) => p.startsWith("/creators/posts"), label: "クリエイター" },
+  { match: (p) => p.startsWith("/creators/plans"), label: "クリエイター" },
+  { match: (p) => p.startsWith("/creators/payouts"), label: "クリエイター" },
+  { match: (p) => p.startsWith("/creators/analytics"), label: "クリエイター" },
+
   { match: (p) => p.startsWith("/creators/settings"), label: "クリエイター設定" },
+
+  // --- Shop ---
+  { match: (p) => p.startsWith("/shop"), label: "Shop管理" },
 
   // --- My page / User ---
   { match: (p) => p.startsWith("/mypage"), label: "マイページ" },

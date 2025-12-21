@@ -31,6 +31,8 @@ import ShopCreatorApplicationsPage from "./pages/shop/ShopCreatorApplicationsPag
 import ShopSalesPage from "./pages/shop/ShopSalesPage";
 import GenresPage from "./pages/genres/GenresPage";
 import { GenreDetailPage } from "./pages/home/GenreListPage";
+import ShopMembershipPage from "./pages/shop/ShopMembershipPage";
+import ShopCreatePage from "./pages/shop/ShopCreatePage";
 
 export default function App() {
   return (
@@ -70,7 +72,9 @@ export default function App() {
           <Route index element={<ShopDashboardPage />} />
           <Route path="creator-applications" element={<ShopCreatorApplicationsPage />} />
           <Route path="sales" element={<ShopSalesPage />} />
-        </Route>        
+          <Route path="membership" element={<ShopMembershipPage />} /> 
+          <Route path="create" element={<ShopCreatePage />} />
+        </Route>     
 
         <Route
           path="/mypage"
