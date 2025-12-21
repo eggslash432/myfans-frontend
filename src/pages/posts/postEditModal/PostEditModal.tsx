@@ -27,6 +27,13 @@ export function PostEditModal({
     onSubmit(form.buildPayload());
   };
 
+  const GENRES = [
+    { id: "zatsudan", label: "雑談" },
+    { id: "photo", label: "写真" },
+    { id: "movie", label: "動画" },
+    { id: "voice", label: "音声" },
+  ];
+
   return (
     <div className="modal-overlay">
       <div className="modal-dialog">
@@ -60,6 +67,27 @@ export function PostEditModal({
               rows={4}
             />
           </div>
+
+          {/* ジャンル（管理者のみ） */}
+          {isAdminAccount && (
+            <div>
+              <div className="modal-label">ジャンル</div>
+              <select
+                value={form.genreId ?? ""}
+                onChange={(e) =>
+                  form.setGenreId(e.target.value || null)
+                }
+                className="modal-input"
+              >
+                <option value="">未設定</option>
+                {GENRES.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <MediaEditor
             mediaAssets={mediaAssets}

@@ -29,6 +29,8 @@ import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
 import ShopDashboardPage from "./pages/shop/ShopDashboardPage";
 import ShopCreatorApplicationsPage from "./pages/shop/ShopCreatorApplicationsPage";
 import ShopSalesPage from "./pages/shop/ShopSalesPage";
+import GenresPage from "./pages/genres/GenresPage";
+import { GenreDetailPage } from "./pages/home/GenreListPage";
 
 export default function App() {
   return (
@@ -89,6 +91,9 @@ export default function App() {
         />
 
         <Route path="/posts/:id" element={<PostDetailPage />} />
+
+        <Route path="/genres" element={<GenresPage />} />
+        <Route path="/genres/:genreId" element={<GenreDetailPage />} />        
 
         {/* クリエイター用ページ */}
         <Route

@@ -9,7 +9,8 @@ import type {
   PostEditValues,
   ListResponse,
   CreatePostResponse,
-  UpdatePostResponse,  
+  UpdatePostResponse,
+  PostItem,  
 } from '../../shared/types';
 
 export function getPublicPosts(): Promise<ListResponse<PostSummary>> {
@@ -82,4 +83,11 @@ export function reportPost(
 
 export function getOfficialPosts() {
   return request<ListResponse<PostSummary>>('/posts?official=1', { method: 'GET' });
+}
+
+export async function listPostsByGenre(genreId: string) {
+  return request<{ items: PostItem[] }>(
+    `/posts/by-genre/${genreId}`,
+    { method: "GET" },
+  ).then((res) => res.items);
 }

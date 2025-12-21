@@ -20,6 +20,9 @@ export function usePostEditForm(params: {
   const [visibility, setVisibility] = useState<Visibility>("free");
   const [priceJpy, setPriceJpy] = useState<number | null>(null);
   const [status, setStatus] = useState<PublishedStatus>("draft");
+  const [genreId, setGenreId] = useState<string | null>(
+    rawPost?.genreId ?? null
+  );  
 
   useEffect(() => {
     if (!rawPost) return;
@@ -35,10 +38,16 @@ export function usePostEditForm(params: {
 
     const ps = String(rawPost.publishedStatus ?? "draft") as PublishedStatus;
     setStatus(ps === "published" ? "published" : ps === "private" ? "private" : "draft");
+    setGenreId(rawPost.genreId ?? null);
   }, [rawPost, isAdminAccount]);
 
   const buildPayload = () => {
-    const payload: any = { title, body, publishedStatus: status };
+    const payload: any = { 
+      title, 
+      body, 
+      publishedStatus: status,
+      genreId,
+    };
 
     // 公開前だけ販売条件を送る（あなたの現仕様）
     if (!isPublished) {
@@ -59,6 +68,7 @@ export function usePostEditForm(params: {
     priceJpy, setPriceJpy,
 
     status, setStatus,
+    genreId, setGenreId,
 
     buildPayload,
   };
