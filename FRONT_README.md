@@ -26,3 +26,11 @@ aws s3 sync dist/ s3://himefan-frontend-prod --delete
 aws cloudfront create-invalidation \
   --distribution-id E5YXR9HFNLKJ0 \
   --paths "/*"
+
+⚪︎まとめた処理
+cd front
+npm run build:prod
+aws s3 sync dist/ s3://himefan-frontend-prod --delete
+aws cloudfront create-invalidation \
+  --distribution-id E5YXR9HFNLKJ0 \
+  --paths "/*"

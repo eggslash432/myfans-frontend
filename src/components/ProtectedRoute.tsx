@@ -11,7 +11,7 @@ type Require = "auth" | "admin" | "shop" | "creator";
 type Props = {
   children: ReactNode;
 
-  /** 運営ロール（互換用・将来削除OK） */
+  /** 互換（旧方式） */
   role?: Role;
   roles?: Role[];
 
@@ -26,10 +26,10 @@ export default function ProtectedRoute({ children, role, roles, require }: Props
   const shopMe = useShopMe({ enabled: require === "shop" });
   const creatorMe = useCreatorMe({ enabled: require === "creator" });
 
-  // authの初期化待ち
+  // 1) auth 初期化待ち
   if (!ready) return <div className="p-6">読み込み中...</div>;
 
-  // 未ログイン
+  // 2) 未ログイン
   if (!user) {
     const next = encodeURIComponent(location.pathname + location.search);
     return <Navigate to={`/login?next=${next}`} replace />;
@@ -38,40 +38,57 @@ export default function ProtectedRoute({ children, role, roles, require }: Props
   // ============================
   // ✅ require 判定（新方式）
   // ============================
-  if (require) {
-    if (require === "auth") return <>{children}</>;
+  if (require === "auth") {
+    return <>{children}</>;
+  }
 
-    // 運営（User.role）
-    if (require === "admin") {
-      if (user.role !== "admin" && user.role !== "sub_admin") {
-        return <Navigate to="/" replace />;
-      }
-      return <>{children}</>;
+  if (require === "admin") {
+    if (user.role !== "admin" && user.role !== "sub_admin") {
+      return <Navigate to="/" replace />;
+    }
+    return <>{children}</>;
+  }
+
+  if (require === "shop") {
+    if (shopMe.isLoading) return <div className="p-6">読み込み中...</div>;
+    if (!shopMe.isSuccess) return <Navigate to="/" replace />;
+    return <>{children}</>;
+  }
+
+  // Creator（承認済み Creator の存在）
+  if (require === "creator") {
+    // ✅ isFetching も見る（SPA遷移時の一瞬の穴を潰す）
+    if (creatorMe.isLoading || (creatorMe as any).isFetching) {
+      return <div className="p-6">読み込み中...</div>;
     }
 
-    // Shop 所属（ShopMember の存在）
-    if (require === "shop") {
-      if (shopMe.isLoading) return <div className="p-6">読み込み中...</div>;
-      if (!shopMe.isSuccess) return <Navigate to="/" replace />;
-      return <>{children}</>;
+    // ✅ エラー時は無言で戻さず、原因が見えるようにする（後で戻してOK）
+    if ((creatorMe as any).isError) {
+      const err = (creatorMe as any).error;
+      return (
+        <div className="p-6">
+          <div className="text-red-600 font-semibold">クリエイター権限確認に失敗</div>
+          <pre className="text-xs whitespace-pre-wrap mt-2">
+            {String(err?.message ?? err)}
+          </pre>
+        </div>
+      );
     }
 
-    // Creator（承認済み Creator の存在）
-    if (require === "creator") {
-      if (creatorMe.isLoading) return <div className="p-6">読み込み中...</div>;
-      if (!creatorMe.isSuccess) return <Navigate to="/" replace />;
+    if (!creatorMe.isSuccess) return <Navigate to="/" replace />;
 
-      if (creatorMe.data.approvalStatus !== "approved") {
-        return <Navigate to="/" replace />;
-      }
-      return <>{children}</>;
+    if (creatorMe.data?.approvalStatus !== "approved") {
+      return <Navigate to="/" replace />;
     }
+    return <>{children}</>;
   }
 
   // ============================
   // ⚠️ 互換：旧 role / roles 判定
+  // （require 未指定のときのみ）
   // ============================
-  const allowedRoles: Role[] | null = roles ? roles : role ? [role] : null;
+  const allowedRoles: Role[] | null =
+    roles ? roles : role ? [role] : null;
 
   if (allowedRoles) {
     if (!allowedRoles.includes(user.role as Role)) {
@@ -79,5 +96,6 @@ export default function ProtectedRoute({ children, role, roles, require }: Props
     }
   }
 
+  // ⭐ 最後は必ず children を返す
   return <>{children}</>;
 }

@@ -8,11 +8,13 @@ import type { CreatorMeResponse, MeSummary, PostSummary } from '../../../shared/
 
 function unwrapCreator(res: any): CreatorMeResponse | null {
   const c = res?.data ?? res?.creator ?? res?.item ?? res;
-  const ok =
-    c && typeof c === 'object' && (
-      typeof c.id === 'string' || typeof c.approvalStatus === 'string'
-    );
-  return ok ? (c as CreatorMeResponse) : null;
+  if (!c || typeof c !== 'object') return null;
+
+  if (typeof (c as any).approvalStatus === 'string') {
+    return c as CreatorMeResponse;
+  }
+
+  return null;
 }
 
 export function useMyPageData() {
@@ -48,16 +50,30 @@ export function useMyPageData() {
 
     try {
       const res = await getCreatorMe();
-      setCreator(unwrapCreator(res));
+      const c = unwrapCreator(res);
+
+      if (c) {
+        setCreator(c);
+      } else {
+        // レスポンスはあるが creator ではない → 未申請扱い
+        setCreator(null);
+      }
     } catch (e: any) {
-      const msg = e?.message ?? '';
       console.error('getCreatorMe failed:', e);
 
-      // “not found” 系は未申請扱い
-      if (/creator not found/i.test(msg) || /404/.test(msg)) {
+      const status = e?.response?.status;
+      const msg =
+        e?.response?.data?.message ??
+        e?.message ??
+        '';
+
+      // ✅ 404 のみ「未申請」
+      if (status === 404 || /creator not found/i.test(msg)) {
         setCreator(null);
       } else {
-        setCreator(null);
+        // ❗ それ以外は未申請にしない
+        // 一時エラーとして「読み込み中」に戻す
+        setCreator(undefined);
       }
     }
   }, [ready, user]);

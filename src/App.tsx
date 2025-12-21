@@ -107,7 +107,7 @@ export default function App() {
         <Route
           path="/creators/settings"
           element={
-            <ProtectedRoute require="creator">
+            <ProtectedRoute require="auth">
               <CreatorSettingsPage />
             </ProtectedRoute>
           }
@@ -115,7 +115,7 @@ export default function App() {
         <Route
           path="/creators/posts"
           element={
-            <ProtectedRoute require="creator">
+            <ProtectedRoute require="auth">
               <CreatorPostsPage />
             </ProtectedRoute>
           }
@@ -123,7 +123,7 @@ export default function App() {
         <Route
           path="/creators/plans"
           element={
-            <ProtectedRoute require="creator">
+            <ProtectedRoute require="auth">
               <CreatorPlansPage />
             </ProtectedRoute>
           }
@@ -131,7 +131,7 @@ export default function App() {
         <Route
           path="/creators/payouts"
           element={
-            <ProtectedRoute require="creator">
+            <ProtectedRoute require="auth">
               <PayoutsPage />
             </ProtectedRoute>
           }
@@ -139,7 +139,7 @@ export default function App() {
         <Route
           path="/creators/analytics"
           element={
-            <ProtectedRoute require="creator">
+            <ProtectedRoute require="auth">
               <CreatorAnalyticsPage />
             </ProtectedRoute>
           }
@@ -147,7 +147,7 @@ export default function App() {
         <Route
           path="/creators/profile"
           element={
-            <ProtectedRoute require="creator">
+            <ProtectedRoute require="auth">
               <CreatorProfilePage />
             </ProtectedRoute>
           }

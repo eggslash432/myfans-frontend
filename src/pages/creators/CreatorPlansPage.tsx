@@ -1,24 +1,35 @@
 // front/src/pages/creators/CreatorPlansPage.tsx
-
-import { useEffect, useState } from 'react';
-import { 
+import { useEffect, useMemo, useState } from 'react';
+import {
   getMyPlans,
-  reorderPlans, 
-  deactivatePlan, 
+  reorderPlans,
+  deactivatePlan,
   reactivatePlan,
   createPlan,
   updatePlan,
-  getMe,
+  getCreatorMe,
 } from '../../lib/api';
 import type { Plan, PlansResponse } from '../../shared/types';
-import type { PlanModalMode, Role } from '../../shared/prisma-enums';
+import type { PlanModalMode } from '../../shared/prisma-enums';
+import type { CreatorMeResponse } from '../../shared/types';
+
+function unwrapCreator(res: any): CreatorMeResponse | null {
+  const c = res?.data ?? res?.creator ?? res?.item ?? res;
+  const ok =
+    c && typeof c === 'object' && (
+      typeof c.id === 'string' || typeof c.approvalStatus === 'string'
+    );
+  return ok ? (c as CreatorMeResponse) : null;
+}
 
 export default function CreatorPlansPage() {
   const [_, setData] = useState<PlansResponse | null>(null);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
-  const [role, setRole] = useState<Role>('fan');
+
+  // ✅ 役割判定は creator/me のみ
+  const [creator, setCreator] = useState<CreatorMeResponse | null>(null);
 
   // ▼ モーダル状態
   const [showModal, setShowModal] = useState(false);
@@ -29,21 +40,36 @@ export default function CreatorPlansPage() {
   const [saving, setSaving] = useState(false);
   const [modalErr, setModalErr] = useState('');
 
+  const isCreatorApproved = useMemo(
+    () => creator?.approvalStatus === 'approved',
+    [creator],
+  );
+
   async function loadPlans() {
     try {
       setLoading(true);
       setErr('');
-      const me = await getMe(); // GET /auth/me（JWT必須）
-      setRole(me.role);
+      setModalErr('');
 
-      if (me.role !== 'creator') {
-        // admin / fan はプラン管理できない → 403を出さずに終了
+      // ✅ まず creator 状態を取得
+      let c: CreatorMeResponse | null = null;
+      try {
+        const cres = await getCreatorMe(); // GET /creator/me (or /creators/me)
+        c = unwrapCreator(cres);
+      } catch (e: any) {
+        // 404などは未申請扱い
+        c = null;
+      }
+      setCreator(c);
+
+      if (!c || c.approvalStatus !== 'approved') {
         setData(null);
         setPlans([]);
-        setErr('このページはクリエイターのみ利用できます。');
+        setErr('このページは承認済みクリエイターのみ利用できます。');
         return;
       }
 
+      // ✅ 承認済みならプラン取得
       const res = await getMyPlans(); // GET /plans/me
       setData(res);
       setPlans(res?.plans ?? []);
@@ -124,9 +150,13 @@ export default function CreatorPlansPage() {
     }
   }
 
-
   // ====== 作成 / 更新 ======
   const handleSavePlan = async () => {
+    if (!isCreatorApproved) {
+      setModalErr('承認済みクリエイターのみ操作できます。');
+      return;
+    }
+
     if (!planName.trim()) {
       setModalErr('プラン名を入力してください');
       return;
@@ -182,15 +212,15 @@ export default function CreatorPlansPage() {
             type="button"
             className="btn btn-primary btn-sm"
             onClick={openCreateModal}
-            disabled={role !== 'creator'}
+            disabled={!isCreatorApproved}
+            title={!isCreatorApproved ? '承認済みクリエイターのみ利用できます' : undefined}
           >
             新規プラン作成
           </button>
         </div>
 
-        {loading && (
-          <p className="text-sm text-gray-500">読み込み中...</p>
-        )}
+        {loading && <p className="text-sm text-gray-500">読み込み中...</p>}
+
         {friendlyErr && (
           <p className="text-sm text-red-600 whitespace-pre-wrap">
             {friendlyErr}
@@ -223,7 +253,6 @@ export default function CreatorPlansPage() {
                 </div>
 
                 <div className="flex items-center gap-1 ml-2">
-                  {/* 並び替え */}
                   <button
                     type="button"
                     className="btn btn-ghost btn-icon"
@@ -243,22 +272,20 @@ export default function CreatorPlansPage() {
                     ↓
                   </button>
 
-                  {/* 編集ボタン */}
                   <button
                     type="button"
                     className="btn btn-ghost btn-xs text-pink-500"
                     onClick={() => openEditModal(p)}
-                    disabled={role !== 'creator'}
+                    disabled={!isCreatorApproved}
                   >
                     編集
                   </button>
 
-                  {/* 停止 / 再開 トグル */}
                   {p.isActive ? (
                     <button
                       className="btn btn-outline btn-xs text-gray-600"
                       onClick={() => deactivate(p.id)}
-                      disabled={role !== 'creator'}
+                      disabled={!isCreatorApproved}
                     >
                       停止
                     </button>
@@ -266,7 +293,7 @@ export default function CreatorPlansPage() {
                     <button
                       className="btn btn-primary btn-xs"
                       onClick={() => reactivate(p.id)}
-                      disabled={role !== 'creator'}
+                      disabled={!isCreatorApproved}
                     >
                       再開
                     </button>
@@ -333,7 +360,8 @@ export default function CreatorPlansPage() {
                   type="button"
                   className="btn btn-primary btn-sm"
                   onClick={handleSavePlan}
-                  disabled={saving}
+                  disabled={saving || !isCreatorApproved}
+                  title={!isCreatorApproved ? '承認済みクリエイターのみ利用できます' : undefined}
                 >
                   {saving ? '保存中…' : '保存'}
                 </button>

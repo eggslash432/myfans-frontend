@@ -1,6 +1,6 @@
 // front/src/pages/mypage/mypage/sections/CreatorArea.tsx
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+
+import { Link, useNavigate } from 'react-router-dom';
 import {
   API_ORIGIN,
   applyCreator,
@@ -188,20 +188,21 @@ export function CreatorArea({
 
         <div className="mt-1 space-y-2">
           {creatorMenuItems.map((item) => (
-            <button
+            <Link
               key={item.path}
-              type="button"
-              onClick={() => navigate(item.path)}
+              to={item.path}
               className="btn btn-outline w-full justify-between"
+              style={{ display: 'flex', alignItems: 'center' }} // btn が button 前提CSSでも崩れないよう保険
             >
               <span className="flex items-center gap-2">
                 <span className="text-lg">{item.icon}</span>
                 <span className="text-sm font-semibold">{item.label}</span>
               </span>
               <span className="text-xs text-gray-400">›</span>
-            </button>
+            </Link>
           ))}
         </div>
+
       </section>
     </>
   );

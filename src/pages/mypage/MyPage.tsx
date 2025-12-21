@@ -29,12 +29,10 @@ export function MyPage() {
     isNotApplied,
 
     setPosts,
-    splitPosts,
+    splitPosts = { publicPosts: [], privatePosts: [], draftPosts: [] },
   } = useMyPageData();
 
   const [loading, setLoading] = useState(false);
-
-  const { publicPosts, privatePosts, draftPosts } = splitPosts;
 
   const needsKyc = !creator?.stripePayoutsEnabled;
 
@@ -64,6 +62,8 @@ export function MyPage() {
     );
   }
   if (!summary) return <div className="p-4">読み込み中...</div>;
+
+  const { publicPosts, privatePosts, draftPosts } = splitPosts;
 
   return (
     <div className="page space-y-4">
@@ -96,15 +96,18 @@ export function MyPage() {
       <SubscriptionsSection summary={summary} />
       <PaymentsSection summary={summary} />
 
-      <PostEditModal
-        post={editor.editingPost}
-        open={editor.editOpen}
-        saving={editor.saving}
-        onClose={editor.closeEdit}
-        onSubmit={editor.submitEdit}
-        onAddMedia={editor.addMedia}
-        onRemoveMedia={editor.removeMedia}
-      />
+      {editor.editOpen && editor.editingPost && (
+        <PostEditModal
+          post={editor.editingPost}
+          open={editor.editOpen}
+          saving={editor.saving}
+          onClose={editor.closeEdit}
+          onSubmit={editor.submitEdit}
+          onAddMedia={editor.addMedia}
+          onRemoveMedia={editor.removeMedia}
+        />
+      )}
+
     </div>
   );
 }

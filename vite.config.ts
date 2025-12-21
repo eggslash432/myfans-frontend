@@ -3,15 +3,16 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { fileURLToPath } from "url";
 
-console.log("✅ vite.config.ts loaded");
-console.log("✅ cwd =", process.cwd());
+
+const srcPath = fileURLToPath(new URL("./src/", import.meta.url));
 
 export default defineConfig({
   plugins: [react()],
   resolve: {
-    alias: {
-      "@": fileURLToPath(new URL("./src", import.meta.url)),
-    },
+    alias: [
+      // ✅ "@/..." にだけ効く（scoped package を壊さない）
+      { find: /^@\//, replacement: srcPath },
+    ],
   },
   server: {
     port: 5173,
