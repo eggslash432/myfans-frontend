@@ -34,6 +34,7 @@ import { GenreDetailPage } from "./pages/home/GenreListPage";
 import ShopMembershipPage from "./pages/shop/ShopMembershipPage";
 import ShopCreatePage from "./pages/shop/ShopCreatePage";
 import CreatorOrAdminRoute from "./CreatorOrAdminRoute";
+import AdminShopMembersPage from "./pages/admin/AdminShopMembersPage";
 
 export default function App() {
   return (
@@ -59,6 +60,7 @@ export default function App() {
           <Route path="posts" element={<AdminPostsPage />} />
           <Route path="reports" element={<AdminReportsPage />} />
           <Route path="settings" element={<AdminSettingsPage />} />
+          <Route path="shop-members" element={<AdminShopMembersPage />} />
         </Route>
 
         {/* ✅ Shop 配下（/shop, /shop/...） */}

@@ -6,11 +6,15 @@ export type CreatorMe = {
   approvalStatus: "pending" | "approved" | "rejected";
 };
 
-export function useCreatorMe() {
+type Options = {
+  enabled?: boolean;
+};
+
+export function useCreatorMe(options?: Options) {
   return useQuery({
     queryKey: ["creatorMe"],
-    queryFn: () =>
-      request<CreatorMe>("/creator/me", { method: "GET" }),
+    enabled: options?.enabled ?? true,
+    queryFn: () => request<CreatorMe>("/creator/me", { method: "GET" }),
     retry: false, // 403 は未登録扱い
   });
 }

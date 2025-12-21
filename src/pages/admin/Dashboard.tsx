@@ -88,6 +88,19 @@ function AdminInner() {
             <span className="text-lg text-gray-400">›</span>
           </div>
         </Link>
+
+        <Link to="/admin/shop-members" className="card card-link">
+          <div className="flex justify-between items-center">
+            <div>
+              <div className="font-semibold text-sm">Shopメンバー復旧</div>
+              <div className="text-xs text-gray-500 mt-1">
+                shopId と userId を指定して ShopMember（owner/admin/staff）を付与
+              </div>
+            </div>
+            <span className="text-lg text-gray-400">›</span>
+          </div>
+        </Link>
+
       </section>
 
       {/* サマリー */}

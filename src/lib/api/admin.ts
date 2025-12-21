@@ -189,3 +189,51 @@ export function adminRejectCreatorApplication(userId: string, reason: string): P
     body: { reason },
   });
 }
+
+
+export async function adminUpsertShopMember(
+  shopId: string,
+  input: { userId: string; role: "owner" | "admin" | "staff" }
+) {
+  return request<{ ok: true; member: any }>(`/admin/shops/${shopId}/members`, {
+    method: "POST",
+    body: input,
+  });
+}
+
+// ---- shops list
+export async function adminListShops(params?: { q?: string; take?: number; cursor?: string }) {
+  const qs = new URLSearchParams();
+  if (params?.q) qs.set("q", params.q);
+  if (params?.take != null) qs.set("take", String(params.take));
+  if (params?.cursor) qs.set("cursor", params.cursor);
+  const url = qs.toString() ? `/admin/shops?${qs.toString()}` : "/admin/shops";
+  return request<any>(url, { method: "GET" });
+}
+
+// ---- shop members list
+export async function adminGetShopMembers(shopId: string) {
+  return request<any>(`/admin/shops/${shopId}/members`, { method: "GET" });
+}
+
+// ---- delete member
+export async function adminDeleteShopMember(shopId: string, userId: string) {
+  return request<any>(`/admin/shops/${shopId}/members/${userId}`, { method: "DELETE" });
+}
+
+// ---- restore owner（body省略＝自分）
+export async function adminRestoreShopOwner(shopId: string, body?: { userId?: string }) {
+  return request<any>(`/admin/shops/${shopId}/restore-owner`, {
+    method: "POST",
+    body: body ?? {},
+  });
+}
+
+// ---- user search（AdminUsersController に GET /admin/users/search を追加してある前提）
+export async function adminSearchUsers(params: { q: string; take?: number; cursor?: string }) {
+  const qs = new URLSearchParams();
+  qs.set("q", params.q);
+  if (params.take != null) qs.set("take", String(params.take));
+  if (params.cursor) qs.set("cursor", params.cursor);
+  return request<any>(`/admin/users/search?${qs.toString()}`, { method: "GET" });
+}

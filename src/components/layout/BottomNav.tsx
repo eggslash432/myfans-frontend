@@ -29,7 +29,7 @@ export default function BottomNav() {
   const isShop = path.startsWith("/shop");
 
   // ✅ Shopタブ表示判定：所属していれば isSuccess
-  const shopMe = useShopMe();
+  const shopMe = useShopMe({ enabled: !!user });
   const canSeeShop = shopMe.isSuccess;
 
   const canSeeAdmin = isAdminRole(user?.role);

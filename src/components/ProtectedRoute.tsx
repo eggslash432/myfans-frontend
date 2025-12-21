@@ -23,8 +23,8 @@ export default function ProtectedRoute({ children, role, roles, require }: Props
   const { user, ready } = useAuth();
   const location = useLocation();
 
-  const shopMe = useShopMe();
-  const creatorMe = useCreatorMe();
+  const shopMe = useShopMe({ enabled: require === "shop" });
+  const creatorMe = useCreatorMe({ enabled: require === "creator" });
 
   // authの初期化待ち
   if (!ready) return <div className="p-6">読み込み中...</div>;

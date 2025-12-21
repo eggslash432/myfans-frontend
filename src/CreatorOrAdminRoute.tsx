@@ -17,7 +17,7 @@ export default function CreatorOrAdminRoute({ children }: { children: ReactNode 
 
 function CreatorOrAdminInner({ children }: { children: ReactNode }) {
   const { user, ready } = useAuth();
-  const creatorMe = useCreatorMe();
+  const creatorMe = useCreatorMe({ enabled: !!user && user.role !== "admin" && user.role !== "sub_admin" });
 
   if (!ready) return <div className="p-6">読み込み中...</div>;
 
