@@ -26,13 +26,14 @@ function normalizeMe(raw: any): Me | null {
   const id = String(src.id ?? "");
   if (!id) return null;
 
-  const role = (src.role as Role | undefined) ?? "fan";
+  // ✅ サーバ仕様：一般ユーザーは role=null
+  const role = (src.role as Role | null | undefined) ?? null;
 
   return {
     id,
     email: (src.email as string) ?? "",
     role,
-  };
+  } as Me;
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -66,7 +67,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signup = async (email: string, password: string) => {
-    await apiSignup({ email, password, role: "fan" });
+    // ✅ role は送らない
+    await apiSignup({ email, password });
     await login(email, password);
   };
 

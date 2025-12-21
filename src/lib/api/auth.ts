@@ -22,11 +22,8 @@ export async function login(payload: { email: string; password: string }) {
   return data;
 }
 
-export async function signup(payload: {
-  email: string;
-  password: string;
-  role?: 'fan' | 'creator';
-}) {
+// ✅ role を送らない（サーバが決める）
+export async function signup(payload: { email: string; password: string }) {
   const data = await request<{ access_token?: string }>('/auth/signup', {
     method: 'POST',
     body: payload,
@@ -42,4 +39,3 @@ export async function logout() {
   await request('/auth/logout', { method: 'POST' });
   localStorage.removeItem('access_token');
 }
-
