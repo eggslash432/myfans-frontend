@@ -2,7 +2,6 @@
 
 import type { ShopCreatorApplicationsRes, ShopMe } from "@/shared/types/shop";
 import { request } from "./apiClient";
-import { useQuery } from "@tanstack/react-query";
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === "1";
 
@@ -95,9 +94,7 @@ export async function getShopCreatorApplications(): Promise<ShopCreatorApplicati
  * 自分の所属Shopの「売上サマリ」
  * GET /shop/sales/summary?range=today|month|all
  */
-export async function getShopSalesSummary(
-  range: ShopSalesRange,
-): Promise<ShopSalesSummary> {
+export async function getShopSalesSummary(range: ShopSalesRange): Promise<ShopSalesSummary> {
   if (USE_MOCK) return mockSalesSummary(range);
 
   const qs = new URLSearchParams({ range }).toString();
@@ -148,17 +145,6 @@ export async function shopListCreatorApplications(params?: {
   return request<ShopCreatorApplicationsRes>(url, { method: "GET" });
 }
 
-
-export function useShopCreatorApplications() {
-  return useQuery({
-    queryKey: ["shopCreatorApplications"],
-    queryFn: () => shopListCreatorApplications({ status: "pending" }),
-  });
-}
-
-export function useShopMe() {
-  return useQuery<ShopMe>({
-    queryKey: ["shopMe"],
-    queryFn: () => request<ShopMe>("/shop/me", { method: "GET" }),
-  });
+export async function getShopMe() {
+  return request<ShopMe>("/shop/me", { method: "GET" });
 }

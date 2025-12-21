@@ -1,7 +1,7 @@
 // front/src/pages/shop/ShopCreatorApplicationsPage.tsx
 
-import { ApiError } from "../../lib/api/apiClient";
-import { useShopCreatorApplications } from "../../hooks/useShopCreatorApplications";
+import { ApiError } from "@/lib/api/apiClient";
+import { useShopCreatorApplications } from "@/hooks/useShopCreatorApplications";
 import StatusBadge from "@/components/ui/StatusBadge";
 
 function fmtDate(iso: string) {

@@ -1,5 +1,5 @@
 // front/src/lib/api/admin.ts
-import { request } from '@/lib';
+import { request } from '@/lib/api/apiClient';
 import type {
   CreatorApprovalStatus, 
   KycStatus, 

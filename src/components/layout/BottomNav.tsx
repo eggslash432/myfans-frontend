@@ -1,9 +1,9 @@
 // front/src/components/layout/BottomNav.tsx
 
 import { Link, useLocation } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
-import { useShopMe } from "../../hooks/useShopMe";
-import { isAdminRole } from "../../lib/authz";
+import { useAuth } from "@/hooks/useAuth";
+import { useShopMe } from "@/hooks/useShopMe";
+import { isAdminRole } from "@/lib/authz";
 import {
   HomeIcon,
   UserIcon,

@@ -1,10 +1,10 @@
 // front/src/components/ProtectedRoute.tsx
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
-import { useShopMe } from "../hooks/useShopMe";
-import { useCreatorMe } from "../hooks/useCreatorMe";
+import { useAuth } from "@/hooks/useAuth";
+import { useShopMe } from "@/hooks/useShopMe";
+import { useCreatorMe } from "@/hooks/useCreatorMe";
 import type { ReactNode } from "react";
-import type { Role } from "../shared/prisma-enums";
+import type { Role } from "@/shared/prisma-enums";
 
 type Require = "auth" | "admin" | "shop" | "creator";
 

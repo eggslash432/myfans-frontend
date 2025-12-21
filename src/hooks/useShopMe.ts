@@ -1,12 +1,8 @@
 // front/src/hooks/useShopMe.ts
 
 import { useQuery } from "@tanstack/react-query";
-import { request } from "../lib/api/apiClient";
-
-export type ShopMe = {
-  shopId: string;
-  role: "owner" | "admin" | "staff";
-};
+import { request } from "@/lib/api/apiClient";
+import type { ShopMe } from "@/shared";
 
 export function useShopMe() {
   return useQuery({

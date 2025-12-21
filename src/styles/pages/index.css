@@ -1,0 +1,7 @@
+/* front/src/styles/pages/index.css */
+@import "./home.css";
+@import "./auth.css";
+@import "./settings.css";
+@import "./posts.css";
+@import "./admin.css";
+@import "./admin-news.css";
