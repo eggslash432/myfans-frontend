@@ -2,6 +2,8 @@
 
 export type ShopCreatorApplicationStatus = "pending" | "approved" | "rejected";
 
+export type ShopMe = { shopId: string; role: "owner" | "admin" | "staff" };
+
 export type ShopCreatorApplication = {
   id: string;
   userId: string;

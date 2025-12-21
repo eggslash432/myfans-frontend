@@ -1,7 +1,9 @@
 // front/src/lib/api/admin.ts
-import { request } from './apiClient';
-import type { KycStatus } from '../../shared/prisma-enums';
+import { request } from '@/lib';
 import type {
+  CreatorApprovalStatus, 
+  KycStatus, 
+  ReportStatus,
   AdminPayout,
   PendingCreator,
   AdminPost,
@@ -12,10 +14,9 @@ import type {
   FeeSettings,
   AdminUser,
   ListItems,
-  UploadSetting,
-  CreatorApprovalStatus,
+  UploadSetting,  
   CreatorApplication,  
-} from '../../shared/types';
+} from '@/shared';
 
 //
 // API
@@ -87,7 +88,7 @@ export function adminListReports(params?: { status?: string; postId?: string }):
 
 export function adminResolveReport(
   reportId: string,
-  action: 'reviewed' | 'dismissed' = 'reviewed',
+  action: ReportStatus,
 ): Promise<ResolveResult> {
   return request<ResolveResult>(`/admin/reports/${reportId}/resolve`, {
     method: 'PATCH',

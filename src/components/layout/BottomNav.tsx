@@ -1,5 +1,9 @@
+// front/src/components/layout/BottomNav.tsx
+
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import { useShopMe } from "../../hooks/useShopMe";
+import { isAdminRole } from "../../lib/authz";
 import {
   HomeIcon,
   UserIcon,
@@ -22,16 +26,17 @@ export default function BottomNav() {
   const isCreator = path.startsWith("/creators");
   const isAdmin = path.startsWith("/admin");
   const isSettings = path.startsWith("/settings");
-  const isShop = path.startsWith("/shop"); // ✅ /shop 配下で active
+  const isShop = path.startsWith("/shop");
 
-  // ✅ shop_admin / shop_staff のときだけ Shop タブ表示
-  const canSeeShop =
-    user?.role === "shop_admin" || user?.role === "shop_staff";
+  // ✅ Shopタブ表示判定：所属していれば isSuccess
+  const shopMe = useShopMe();
+  const canSeeShop = shopMe.isSuccess;
+
+  const canSeeAdmin = isAdminRole(user?.role);
 
   return (
     <nav className="bottom-nav">
       <div className="bottom-nav-inner">
-        {/* ホーム */}
         <Link
           to="/"
           className={"bottom-nav-item " + (isHome ? "bottom-nav-item-active" : "")}
@@ -40,7 +45,6 @@ export default function BottomNav() {
           <span className="bottom-nav-label">ホーム</span>
         </Link>
 
-        {/* マイページ */}
         <Link
           to="/mypage"
           className={"bottom-nav-item " + (isMyPage ? "bottom-nav-item-active" : "")}
@@ -49,7 +53,6 @@ export default function BottomNav() {
           <span className="bottom-nav-label">マイページ</span>
         </Link>
 
-        {/* 新規投稿 */}
         <Link
           to="/posts/new"
           className={"bottom-nav-item " + (isNewPost ? "bottom-nav-item-active" : "")}
@@ -58,7 +61,6 @@ export default function BottomNav() {
           <span className="bottom-nav-label">投稿作成</span>
         </Link>
 
-        {/* クリエイター設定 */}
         <Link
           to="/creators/settings"
           className={"bottom-nav-item " + (isCreator ? "bottom-nav-item-active" : "")}
@@ -67,7 +69,7 @@ export default function BottomNav() {
           <span className="bottom-nav-label">クリエイター</span>
         </Link>
 
-        {/* ✅ Shop（shop_admin / shop_staff のときだけ表示） */}
+        {/* ✅ Shop（所属している人だけ表示） */}
         {canSeeShop && (
           <Link
             to="/shop"
@@ -78,7 +80,6 @@ export default function BottomNav() {
           </Link>
         )}
 
-        {/* 設定 */}
         <Link
           to="/settings"
           className={"bottom-nav-item " + (isSettings ? "bottom-nav-item-active" : "")}
@@ -87,8 +88,8 @@ export default function BottomNav() {
           <span className="bottom-nav-label">設定</span>
         </Link>
 
-        {/* 管理者タブ：admin ロールのときだけ表示 */}
-        {user?.role === "admin" && (
+        {/* ✅ 管理者タブ：admin/sub_admin のときだけ表示 */}
+        {canSeeAdmin && (
           <Link
             to="/admin"
             className={"bottom-nav-item " + (isAdmin ? "bottom-nav-item-active" : "")}

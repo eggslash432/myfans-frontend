@@ -8,10 +8,11 @@ import { PlanModal } from './newPost/PlanModal';
 import { VisibilitySection } from './newPost/VisibilitySection';
 import { AgeRatingSection } from './newPost/AgeRatingSection';
 import { PublishStatusSection } from './newPost/PublishStatusSection';
+import { isAdminRole } from '@/lib/authz';
 
 export function NewPostPage() {
   const { user } = useAuth();
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = isAdminRole(user?.role);
 
   const f = useNewPostForm(isAdmin);
 

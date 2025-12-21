@@ -1,6 +1,6 @@
 // front/src/lib/api/shop.ts
 
-import type { ShopCreatorApplicationsRes } from "@/shared/types/shop";
+import type { ShopCreatorApplicationsRes, ShopMe } from "@/shared/types/shop";
 import { request } from "./apiClient";
 import { useQuery } from "@tanstack/react-query";
 
@@ -31,22 +31,6 @@ export type ShopSalesSummary = {
   net: number; // 入金対象
   transactions: number; // 取引数
 };
-
-export type ShopDashboardSummary = {
-  todayGross: number;
-  monthGross: number;
-  activeSubscribers: number;
-  pendingCreatorApplications: number;
-};
-
-function mockDashboardSummary(): ShopDashboardSummary {
-  return {
-    todayGross: 12800,
-    monthGross: 356000,
-    activeSubscribers: 42,
-    pendingCreatorApplications: 3,
-  };
-}
 
 // ==============================
 // Mocks
@@ -120,16 +104,6 @@ export async function getShopSalesSummary(
   return request<ShopSalesSummary>(`/shop/sales/summary?${qs}`, { method: "GET" });
 }
 
-/**
- * Shopダッシュボード サマリ
- * GET /shop/dashboard/summary
- */
-export async function getShopDashboardSummary(): Promise<ShopDashboardSummary> {
-  if (USE_MOCK) return mockDashboardSummary();
-  // ✅ /api は付けない（request側が付ける）
-  return request<ShopDashboardSummary>("/shop/dashboard/summary", { method: "GET" });
-}
-
 export type ShopInvite = {
   code: string;
   role: "owner" | "admin" | "staff";
@@ -179,5 +153,12 @@ export function useShopCreatorApplications() {
   return useQuery({
     queryKey: ["shopCreatorApplications"],
     queryFn: () => shopListCreatorApplications({ status: "pending" }),
+  });
+}
+
+export function useShopMe() {
+  return useQuery<ShopMe>({
+    queryKey: ["shopMe"],
+    queryFn: () => request<ShopMe>("/shop/me", { method: "GET" }),
   });
 }

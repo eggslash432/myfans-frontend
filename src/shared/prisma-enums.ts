@@ -1,6 +1,4 @@
-// front/src/shared/prisma-enums.ts
-
-export type Role = 'fan' | 'creator' | 'admin' | 'sub_admin' | 'shop_admin' | 'shop_staff';
+export type Role = 'user' | 'sub_admin' | 'admin';
 
 export type ShopMemberRole = 'owner' | 'admin' | 'staff';
 
@@ -29,5 +27,7 @@ export type SubStatus = 'active' | 'trialing' | 'past_due' | 'incomplete' | 'can
 export type TransferKind = 'platform' | 'shop' | 'creator';
 
 export type PayoutStatus = 'requested' | 'approved' | 'paid' | 'rejected';
+
+export type ReportStatus = 'pending' | 'reviewed' | 'dismissed';
 
 export type PlanModalMode = 'create' | 'edit';

@@ -24,3 +24,4 @@ export async function getShopDashboardSummary(): Promise<ShopDashboardSummary> {
   if (USE_MOCK) return mockSummary();
   return request<ShopDashboardSummary>("/shop/dashboard/summary", { method: "GET" });
 }
+

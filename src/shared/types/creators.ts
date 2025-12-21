@@ -1,4 +1,5 @@
 // front/src/shared/types/creators.ts
+import type { CreatorApprovalStatus } from "../prisma-enums";
 import type { Plan } from "./plans";
 
 export type Creator = {
@@ -8,11 +9,6 @@ export type Creator = {
   bio?: string;
   plans: Plan[];
 };
-
-export type CreatorApprovalStatus =
-  | 'pending'
-  | 'approved'
-  | 'rejected';
 
 // 申請用（管理画面）
 export type CreatorApplication = {
@@ -31,15 +27,6 @@ export type CreatorApplication = {
   // ③の履歴用（あとで追加）
   applicationCount?: number;
   lastAppliedAt?: string | null;
-};
-
-// 既存クリエイター一覧用
-export type PendingCreator = {
-  userId: string;
-  email: string;
-  publicName: string | null;
-  isListed: boolean;
-  kycStatus?: string;
 };
 
 export type CreatorMeResponse = {

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getUserMe, getCreatorMe, myPosts } from '../../../lib/api';
 import { useAuth } from '../../../hooks/useAuth';
+import { isAdminRole } from "../../../lib/authz";
 import type { CreatorMeResponse, MeSummary, PostSummary } from '../../../shared/types';
 
 function unwrapCreator(res: any): CreatorMeResponse | null {
@@ -19,7 +20,7 @@ export function useMyPageData() {
   const navigate = useNavigate();
 
   const role = (user as any)?.role;
-  const isAdmin = role === 'admin';
+  const isAdmin = isAdminRole(role);
 
   const [summary, setSummary] = useState<MeSummary | undefined>(undefined);
   const [summaryErr, setSummaryErr] = useState<string>('');

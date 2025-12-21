@@ -4,6 +4,7 @@ import { MediaEditor } from "./MediaEditor";
 import { PublishSettings } from "./PublishSettings";
 import { useAuth } from "../../../hooks/useAuth";
 import type { PostProps } from "../../../shared/types";
+import { isAdminRole } from "@/lib/authz";
 
 export function PostEditModal({
   post,
@@ -15,7 +16,7 @@ export function PostEditModal({
   onRemoveMedia,
 }: PostProps) {
   const { user } = useAuth();
-  const isAdminAccount = user?.role === "admin" || user?.role === "sub_admin";
+  const isAdminAccount = isAdminRole(user?.role);
 
   const form = usePostEditForm({ post, isAdminAccount });
 

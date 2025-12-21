@@ -6,6 +6,7 @@ export type PendingCreator = {
   email: string;
   publicName: string | null;
   createdAt: string;
+  isListed: boolean;
   stripeKycStatus?: string | null;
 };
 
