@@ -189,7 +189,7 @@ export default function CreatorPostsPage() {
                     <li key={p.id} className="py-2 flex items-center justify-between text-sm">
                       <div className="flex-1 min-w-0">
                         <div className="font-medium truncate">{p.title}</div>
-                       <StatusBadge publishedStatus={p.publishedStatus} visibility={p.visibility} />
+                        <StatusBadge status={p.publishedStatus} />
                       </div>
                       <div className="flex items-center gap-2 ml-3">
                         <button
@@ -225,7 +225,7 @@ export default function CreatorPostsPage() {
                     <li key={p.id} className="py-2 flex items-center justify-between text-sm">
                       <div className="flex-1 min-w-0">
                         <div className="font-medium truncate">{p.title}</div>
-                        <StatusBadge publishedStatus={p.publishedStatus} visibility={p.visibility} />
+                        <StatusBadge status={p.publishedStatus} />
                       </div>
                       <button
                         type="button"
@@ -252,7 +252,7 @@ export default function CreatorPostsPage() {
                     <li key={p.id} className="py-2 flex items-center justify-between text-sm">
                       <div className="flex-1 min-w-0">
                         <div className="font-medium truncate">{p.title}</div>
-                        <StatusBadge publishedStatus={p.publishedStatus} visibility={p.visibility} />
+                        <StatusBadge status={p.publishedStatus} />
                       </div>
                       <button
                         type="button"
