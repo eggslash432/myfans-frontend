@@ -1,13 +1,12 @@
 // front/src/pages/home/HomePage.tsx
 
 import { useNavigate } from "react-router-dom";
-import AdminNewsSection from "../../components/home/AdminNewsSection";
-import CreatorListSection from "../../components/home/CreatorListSection";
+import { AdminNewsSection, CampaignBanner, CreatorListSection, GenreGridSection } from '@/components';
 import { useHomeData } from "./useHomeData";
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const { creators, adminPosts, loading, error } = useHomeData();
+  const { creators, adminPosts, genres, loading, error } = useHomeData();
 
   if (loading) {
     return (
@@ -38,12 +37,7 @@ export default function HomePage() {
 
       {/* ジャンル */}
       <GenreGridSection
-        genres={[
-          { id: "1", name: "雑談", count: 123456 },
-          { id: "2", name: "写真", count: 23456 },
-          { id: "3", name: "動画", count: 34567 },
-          { id: "4", name: "音声", count: 4567 },
-        ]}
+        genres={genres}
         onOpenGenre={(id) => navigate(`/genres/${id}`)}
         onMore={() => navigate("/genres")}
       />

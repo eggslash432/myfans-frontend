@@ -1,17 +1,26 @@
 /* front/src/styles/tokens.css */
 
+/* front/src/styles/tokens.css */
 :root {
   --color-bg-root: #020617;
   --color-app-bg: #f9fafb;
   --color-surface: #ffffff;
-  --color-primary: #8b5cf6;
-  --color-primary-soft: #ede9fe;
+
+  /* ✅ ブランド色（ピンク赤系） */
+  --color-primary: #ff2f70;
+  --color-primary-soft: #ffe4ee;
+
   --color-text-main: #111827;
   --color-text-muted: #6b7280;
-  --color-border: #e5e7eb;
-  --shadow-soft: 0 10px 25px rgba(15, 23, 42, 0.08);
-  --radius-lg: 16px;
+  --color-border: rgba(17, 24, 39, 0.08);
+
+  /* ✅ 影を軽く（これ超大事） */
+  --shadow-soft: 0 6px 18px rgba(15, 23, 42, 0.06);
+
+  /* ✅ 角丸を少し大きく */
+  --radius-lg: 18px;
 }
+
 
 *,
 *::before,

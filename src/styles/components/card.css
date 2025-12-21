@@ -1,10 +1,24 @@
 /* front/src/styles/components/card.css */
 
 .card {
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-soft);
+  background: #fff;
+  border-radius: 18px;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
   padding: 16px 18px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 900;
+  color: #111827;
+  letter-spacing: -0.01em;
+}
+.section-subtitle {
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #6b7280;
 }
 
 /* カードをリンクとして使うときのスタイル */
@@ -15,22 +29,11 @@
 }
 
 .card-link:hover {
-  background: #f9fafb;
+  background: rgba(255, 47, 112, 0.04);
 }
 
 /* 念のため: a.card にも効くようにしておく */
 a.card {
   text-decoration: none;
   color: var(--color-text-main);
-}
-
-.section-title {
-  font-size: 1.15rem;
-  font-weight: 700;
-  margin-bottom: 0.4rem;
-}
-
-.section-subtitle {
-  font-size: 0.85rem;
-  color: var(--color-text-muted);
 }

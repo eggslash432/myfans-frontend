@@ -3,7 +3,7 @@
 .page {
   padding-top: 8px;
   padding-bottom: 16px;
-  background: #f9fafb;  /* ほんのりグレー */
+  background: transparent; /* ← これ */
 }
 
 .page-title {

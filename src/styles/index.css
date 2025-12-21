@@ -16,6 +16,7 @@
 @import "./components/status-badge.css";
 
 /* pages */
+@import "./pages/home.css";
 @import "./pages/auth.css";
 @import "./pages/settings.css";
 @import "./pages/posts.css";

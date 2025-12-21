@@ -1,15 +1,15 @@
 // front/src/App.tsx
 import { Routes, Route, Outlet } from "react-router-dom";
 import Home from "./pages/home/HomePage";
-import MyPage from "./pages/mypage/MyPage";
+import { MyPage } from "@/pages/mypage/MyPage";
 import CreatorPage from "./pages/creators/CreatorPage";
-import PostDetail from "./pages/posts/PostDetailPage";
+import { PostDetailPage } from "@/pages/posts/PostDetailPage";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import Success from "./pages/payments/Success";
 import Cancel from "./pages/payments/Cancel";
 import ProtectedRoute from "./components/ProtectedRoute";
-import NewPost from "./pages/posts/NewPostPage";
+import { NewPostPage } from "@/pages/posts/NewPostPage";
 import MyPlansPage from "./pages/plans/Plans";
 import CreatorsAdminPage from "./pages/admin/AdminCreatorsPage";
 import CreatorSettingsPage from "./pages/creators/settings";
@@ -83,12 +83,12 @@ export default function App() {
           path="/posts/new"
           element={
             <ProtectedRoute roles={["creator", "admin"]}>
-              <NewPost />
+              <NewPostPage />
             </ProtectedRoute>
           }
         />
 
-        <Route path="/posts/:id" element={<PostDetail />} />
+        <Route path="/posts/:id" element={<PostDetailPage />} />
 
         {/* クリエイター用ページ */}
         <Route

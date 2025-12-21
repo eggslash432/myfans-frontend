@@ -1,9 +1,9 @@
 // front/src/pages/home/useHomeData.ts
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { listCreators, getOfficialPosts } from "../../lib/api";
 import { normalizeList } from "../../lib/domain/normalize";
-import type { UiAdminPost, UiCreator } from "./types";
+import type { UiAdminPost, UiCreator, Genre } from "./types";
 
 function toInitial(name: string) {
   const trimmed = String(name ?? "").trim();
@@ -49,6 +49,18 @@ export function useHomeData() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // ✅ 追加：ひとまず固定（導線をまず完成させる）
+  // 後で「投稿タグから自動生成」などに差し替え可能
+  const genres: Genre[] = useMemo(
+    () => [
+      { id: "zatsudan", name: "雑談", count: 0 },
+      { id: "photo", name: "写真", count: 0 },
+      { id: "movie", name: "動画", count: 0 },
+      { id: "voice", name: "音声", count: 0 },
+    ],
+    [],
+  );
+
   useEffect(() => {
     (async () => {
       try {
@@ -75,5 +87,6 @@ export function useHomeData() {
     })();
   }, []);
 
-  return { creators, adminPosts, loading, error };
+  // ✅ genres を返す
+  return { creators, adminPosts, genres, loading, error };
 }

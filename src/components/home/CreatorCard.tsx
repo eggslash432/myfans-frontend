@@ -10,8 +10,12 @@ export function CreatorCard({
   onClick: () => void;
 }) {
   return (
-    <button type="button" onClick={onClick} className="card-link w-full text-left">
-      <div className="card flex items-center gap-3">
+    <button
+      type="button"
+      onClick={onClick}
+      className="creator-card"
+    >
+      <div className="creator-card__inner">
         <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-sm font-bold text-pink-500 flex-shrink-0 overflow-hidden">
           {creator.avatarUrl ? (
             <img src={creator.avatarUrl} alt="avatar" className="w-full h-full object-cover" />

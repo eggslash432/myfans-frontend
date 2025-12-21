@@ -9,15 +9,18 @@
 
 /* 1件分のカード */
 .post-list-item {
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: #f9fafb;
-  border: 1px solid #f3f4f6;
-  transition:
-    background-color 0.15s ease,
-    box-shadow 0.15s ease,
-    transform 0.08s ease;
+  padding: 12px 12px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.08s ease;
 }
+
+.post-list-item:hover {
+  background-color: rgba(255, 47, 112, 0.04);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+}
+
 
 /* Link だけど普通のテキスト色のままにする */
 a.post-list-item {
@@ -27,11 +30,6 @@ a.post-list-item {
 
 a.post-list-item:visited {
   color: var(--color-text-main);
-}
-
-.post-list-item:hover {
-  background-color: #f3f4f6;
-  box-shadow: 0 5px 16px rgba(15, 23, 42, 0.06);
 }
 
 .post-list-item:active {

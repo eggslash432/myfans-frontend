@@ -7,12 +7,11 @@
   justify-content: center;
 }
 
-/* スマホ本体っぽい白いパネル */
 .app-shell {
   width: 100%;
-  max-width: 480px;          /* スマホ横幅の上限 */
+  max-width: 480px;
   min-height: 100vh;
-  background: #ffffff;
+  background: #f9fafb; /* ← 白→薄グレーに */
   display: flex;
   flex-direction: column;
 }

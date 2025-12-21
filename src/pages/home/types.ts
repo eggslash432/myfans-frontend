@@ -10,6 +10,11 @@ export type UiCreator = {
   fanCount: number;
 };
 
+
+export type UiPost = {
+  genreId: string;
+};
+
 export type UiAdminPost = {
   id: string;
   title: string;

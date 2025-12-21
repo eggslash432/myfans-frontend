@@ -1,5 +1,4 @@
 // front/src/components/home/GenreGridSection.tsx
-
 import type { Genre } from "../../pages/home/types";
 
 type Props = {
@@ -8,47 +7,32 @@ type Props = {
   onMore: () => void;
 };
 
-export function GenreGridSection({
-  genres,
-  onOpenGenre,
-  onMore,
-}: Props) {
+export function GenreGridSection({ genres, onOpenGenre, onMore }: Props) {
   return (
-    <section className="space-y-3">
-      <div className="flex items-center gap-2 font-semibold">
-        <span className="text-pink-500">▦</span>
-        <span>ジャンル一覧</span>
+    <section className="genre">
+      <div className="genre__head">
+        <span className="genre__icon" aria-hidden>
+          ▦
+        </span>
+        <span className="genre__title">ジャンル一覧</span>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="genre__grid">
         {genres.map((g) => (
           <button
             key={g.id}
+            type="button"
             onClick={() => onOpenGenre(g.id)}
-            className="
-              rounded-xl border bg-white px-4 py-3
-              text-left
-              hover:bg-pink-50
-            "
+            className="genre__item"
           >
-            <div className="font-semibold">{g.name}</div>
-            <div className="text-xs text-gray-500 mt-0.5">
-              {g.count.toLocaleString()} 件
-            </div>
+            <div className="genre__name">{g.name}</div>
+            <div className="genre__count">{g.count.toLocaleString()} 件</div>
           </button>
         ))}
       </div>
 
-      <button
-        onClick={onMore}
-        className="
-          w-full mt-2 rounded-full border
-          py-2 text-sm font-semibold
-          text-pink-500
-          hover:bg-pink-50
-        "
-      >
-        ジャンルをもっと見る →
+      <button type="button" onClick={onMore} className="genre__more">
+        ジャンルをもっと見る <span aria-hidden>→</span>
       </button>
     </section>
   );

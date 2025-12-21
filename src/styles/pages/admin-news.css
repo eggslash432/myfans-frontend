@@ -16,20 +16,17 @@
 .admin-news-item {
   width: 100%;
   text-align: left;
-  border: none;
-  background: #f9fafb;
-  border-radius: 12px;
-  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 12px 12px;
   cursor: pointer;
-  transition:
-    background-color 0.15s ease,
-    box-shadow 0.15s ease,
-    transform 0.08s ease;
+  transition: background-color 0.15s ease, transform 0.08s ease, box-shadow 0.15s ease;
 }
 
 .admin-news-item:hover {
-  background-color: #f3f4f6;
-  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
+  background-color: rgba(255, 47, 112, 0.04);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
 }
 
 .admin-news-item:active {
