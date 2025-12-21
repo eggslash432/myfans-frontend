@@ -33,6 +33,7 @@ import GenresPage from "./pages/genres/GenresPage";
 import { GenreDetailPage } from "./pages/home/GenreListPage";
 import ShopMembershipPage from "./pages/shop/ShopMembershipPage";
 import ShopCreatePage from "./pages/shop/ShopCreatePage";
+import CreatorOrAdminRoute from "./CreatorOrAdminRoute";
 
 export default function App() {
   return (
@@ -47,7 +48,7 @@ export default function App() {
         <Route
           path="/admin"
           element={
-            <ProtectedRoute roles={["admin", "sub_admin"]}>
+            <ProtectedRoute require="admin">
               <Outlet />
             </ProtectedRoute>
           }
@@ -64,7 +65,7 @@ export default function App() {
         <Route
           path="/shop"
           element={
-            <ProtectedRoute roles={["shop_admin", "shop_staff"]}>
+            <ProtectedRoute require="shop">
               <Outlet />
             </ProtectedRoute>
           }
@@ -72,9 +73,10 @@ export default function App() {
           <Route index element={<ShopDashboardPage />} />
           <Route path="creator-applications" element={<ShopCreatorApplicationsPage />} />
           <Route path="sales" element={<ShopSalesPage />} />
-          <Route path="membership" element={<ShopMembershipPage />} /> 
+          <Route path="membership" element={<ShopMembershipPage />} />
           <Route path="create" element={<ShopCreatePage />} />
-        </Route>     
+        </Route>
+
 
         <Route
           path="/mypage"
@@ -88,9 +90,9 @@ export default function App() {
         <Route
           path="/posts/new"
           element={
-            <ProtectedRoute roles={["creator", "admin"]}>
+            <CreatorOrAdminRoute>
               <NewPostPage />
-            </ProtectedRoute>
+            </CreatorOrAdminRoute>
           }
         />
 
@@ -103,7 +105,7 @@ export default function App() {
         <Route
           path="/creators/settings"
           element={
-            <ProtectedRoute role="creator">
+            <ProtectedRoute require="creator">
               <CreatorSettingsPage />
             </ProtectedRoute>
           }
@@ -111,7 +113,7 @@ export default function App() {
         <Route
           path="/creators/posts"
           element={
-            <ProtectedRoute role="creator">
+            <ProtectedRoute require="creator">
               <CreatorPostsPage />
             </ProtectedRoute>
           }
@@ -119,7 +121,7 @@ export default function App() {
         <Route
           path="/creators/plans"
           element={
-            <ProtectedRoute role="creator">
+            <ProtectedRoute require="creator">
               <CreatorPlansPage />
             </ProtectedRoute>
           }
@@ -127,7 +129,7 @@ export default function App() {
         <Route
           path="/creators/payouts"
           element={
-            <ProtectedRoute role="creator">
+            <ProtectedRoute require="creator">
               <PayoutsPage />
             </ProtectedRoute>
           }
@@ -135,7 +137,7 @@ export default function App() {
         <Route
           path="/creators/analytics"
           element={
-            <ProtectedRoute role="creator">
+            <ProtectedRoute require="creator">
               <CreatorAnalyticsPage />
             </ProtectedRoute>
           }
@@ -143,7 +145,7 @@ export default function App() {
         <Route
           path="/creators/profile"
           element={
-            <ProtectedRoute role="creator">
+            <ProtectedRoute require="creator">
               <CreatorProfilePage />
             </ProtectedRoute>
           }

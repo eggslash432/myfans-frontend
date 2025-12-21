@@ -19,20 +19,17 @@ type Props = {
   require?: Require;
 };
 
-export default function ProtectedRoute({
-  children,
-  role,
-  roles,
-  require,
-}: Props) {
+export default function ProtectedRoute({ children, role, roles, require }: Props) {
   const { user, ready } = useAuth();
   const location = useLocation();
 
   const shopMe = useShopMe();
   const creatorMe = useCreatorMe();
 
+  // authの初期化待ち
   if (!ready) return <div className="p-6">読み込み中...</div>;
 
+  // 未ログイン
   if (!user) {
     const next = encodeURIComponent(location.pathname + location.search);
     return <Navigate to={`/login?next=${next}`} replace />;
@@ -54,18 +51,17 @@ export default function ProtectedRoute({
 
     // Shop 所属（ShopMember の存在）
     if (require === "shop") {
-      if (!shopMe.isSuccess) {
-        return <Navigate to="/" replace />;
-      }
+      if (shopMe.isLoading) return <div className="p-6">読み込み中...</div>;
+      if (!shopMe.isSuccess) return <Navigate to="/" replace />;
       return <>{children}</>;
     }
 
     // Creator（承認済み Creator の存在）
     if (require === "creator") {
-      if (
-        !creatorMe.isSuccess ||
-        creatorMe.data.approvalStatus !== "approved"
-      ) {
+      if (creatorMe.isLoading) return <div className="p-6">読み込み中...</div>;
+      if (!creatorMe.isSuccess) return <Navigate to="/" replace />;
+
+      if (creatorMe.data.approvalStatus !== "approved") {
         return <Navigate to="/" replace />;
       }
       return <>{children}</>;
@@ -74,13 +70,8 @@ export default function ProtectedRoute({
 
   // ============================
   // ⚠️ 互換：旧 role / roles 判定
-  // （段階的に削除していく）
   // ============================
-  const allowedRoles: Role[] | null = roles
-    ? roles
-    : role
-    ? [role]
-    : null;
+  const allowedRoles: Role[] | null = roles ? roles : role ? [role] : null;
 
   if (allowedRoles) {
     if (!allowedRoles.includes(user.role as Role)) {

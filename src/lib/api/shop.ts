@@ -1,35 +1,17 @@
 // front/src/lib/api/shop.ts
 
-import type { ShopCreatorApplicationsRes, ShopMe } from "@/shared/types/shop";
-import { request } from "./apiClient";
+import type { 
+  ShopCreatorApplication,
+  ShopCreatorApplicationsRes, 
+  ShopCreatorApplicationStatus, 
+  ShopMe,
+  ShopMemberRole,
+  ShopSalesRange,
+  ShopSalesSummary,
+} from "@/shared";
+import { request } from "@/lib/api";
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === "1";
-
-// ==============================
-// Types
-// ==============================
-
-export type ShopCreatorApplicationStatus = "pending" | "approved" | "rejected";
-
-export type ShopCreatorApplication = {
-  id: string;
-  userId: string;
-  publicName: string;
-  email: string;
-  status: ShopCreatorApplicationStatus;
-  createdAt: string; // ISO string
-  rejectReason?: string | null;
-};
-
-export type ShopSalesRange = "today" | "month" | "all";
-
-export type ShopSalesSummary = {
-  range: ShopSalesRange;
-  gross: number; // 総売上
-  platformFee: number; // 手数料
-  net: number; // 入金対象
-  transactions: number; // 取引数
-};
 
 // ==============================
 // Mocks
@@ -103,11 +85,11 @@ export async function getShopSalesSummary(range: ShopSalesRange): Promise<ShopSa
 
 export type ShopInvite = {
   code: string;
-  role: "owner" | "admin" | "staff";
+  role: ShopMemberRole;
   expiresAt?: string | null;
 };
 
-export async function createShopInvite(input?: { role?: "staff" | "admin"; expiresAt?: string }) {
+export async function createShopInvite(input?: { role?: ShopMemberRole; expiresAt?: string }) {
   return request<ShopInvite>("/shop/invites", {
     method: "POST",
     body: input ?? {},

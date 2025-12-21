@@ -1,10 +1,14 @@
 // front/src/shared/types/shop.ts
 
+import type { ShopMemberRole } from "../prisma-enums";
+
 export type ShopCreatorApplicationStatus = "pending" | "approved" | "rejected";
+
+export type ShopSalesRange = "today" | "month" | "all";
 
 export type ShopMe = {
   shopId: string;
-  role: "owner" | "admin" | "staff";
+  role: ShopMemberRole;
 };
 
 export type ShopCreatorApplication = {
@@ -20,4 +24,12 @@ export type ShopCreatorApplication = {
 export type ShopCreatorApplicationsRes = {
   items: ShopCreatorApplication[];
   nextCursor: string | null;
+};
+
+export type ShopSalesSummary = {
+  range: ShopSalesRange;
+  gross: number; // 総売上
+  platformFee: number; // 手数料
+  net: number; // 入金対象
+  transactions: number; // 取引数
 };
