@@ -32,9 +32,9 @@ import ShopSalesPage from "./pages/shop/ShopSalesPage";
 import GenresPage from "./pages/genres/GenresPage";
 import { GenreDetailPage } from "./pages/home/GenreListPage";
 import ShopMembershipPage from "./pages/shop/ShopMembershipPage";
-import ShopCreatePage from "./pages/shop/ShopCreatePage";
 import CreatorOrAdminRoute from "./CreatorOrAdminRoute";
 import AdminShopMembersPage from "./pages/admin/AdminShopMembersPage";
+import AdminShopCreatePage from "./pages/admin/AdminShopCreatePage";
 
 export default function App() {
   return (
@@ -60,12 +60,13 @@ export default function App() {
           <Route path="posts" element={<AdminPostsPage />} />
           <Route path="reports" element={<AdminReportsPage />} />
           <Route path="settings" element={<AdminSettingsPage />} />
-          <Route path="shop-members" element={<AdminShopMembersPage />} />
+          <Route path="shops/members" element={<AdminShopMembersPage />} />
+          <Route path="shops/create" element={<AdminShopCreatePage />} />
         </Route>
 
-        {/* ✅ Shop 配下（/shop, /shop/...） */}
+        {/* ✅ Shops 配下（/shops, /shops/...） */}
         <Route
-          path="/shop"
+          path="/shops"
           element={
             <ProtectedRoute require="shop">
               <Outlet />
@@ -76,7 +77,6 @@ export default function App() {
           <Route path="creator-applications" element={<ShopCreatorApplicationsPage />} />
           <Route path="sales" element={<ShopSalesPage />} />
           <Route path="membership" element={<ShopMembershipPage />} />
-          <Route path="create" element={<ShopCreatePage />} />
         </Route>
 
 

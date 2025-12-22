@@ -89,7 +89,19 @@ function AdminInner() {
           </div>
         </Link>
 
-        <Link to="/admin/shop-members" className="card card-link">
+        <Link to="/admin/shops/create" className="card card-link">
+          <div className="flex justify-between items-center">
+            <div>
+              <div className="font-semibold text-sm">Shop作成</div>
+              <div className="text-xs text-gray-500 mt-1">
+                運営管理者がShopを新規発行（owner紐付けは任意）
+              </div>
+            </div>
+            <span className="text-lg text-gray-400">›</span>
+          </div>
+        </Link>        
+
+        <Link to="/admin/shops/members" className="card card-link">
           <div className="flex justify-between items-center">
             <div>
               <div className="font-semibold text-sm">Shopメンバー復旧</div>

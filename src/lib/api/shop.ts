@@ -103,13 +103,6 @@ export async function joinShopByCode(code: string) {
   });
 }
 
-export async function createShop(name: string) {
-  return request<{ ok: true; already: boolean; shopId?: string } | any>("/shop", {
-    method: "POST",
-    body: { name },
-  });
-}
-
 export async function shopListCreatorApplications(params?: {
   status?: ShopCreatorApplicationStatus;
   take?: number;
