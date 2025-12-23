@@ -45,21 +45,21 @@ function mockDashboardSummary(): ShopDashboardSummary {
 
 async function fetchShopMe(): Promise<ShopMe> {
   if (USE_MOCK) return mockShopMe();
-  return request<ShopMe>("/shop/me", { method: "GET" });
+  return request<ShopMe>("/shops/me", { method: "GET" });
 }
 
 async function fetchShopDashboardSummary(): Promise<ShopDashboardSummary> {
   if (USE_MOCK) return mockDashboardSummary();
 
   // ✅ /api は付けない（requestがbaseURL側で付ける）
-  const res = await request<any>("/shop/dashboard/summary", { method: "GET" });
+  const res = await request<any>("/shops/dashboard/summary", { method: "GET" });
   return normalizeSummary(res);
 }
 
 export function useShopDashboardSummary() {
-  // 先に /shop/me を取得（shopログイン済みか・shopId）
+  // 先に /shops/me を取得（shopログイン済みか・shopId）
   const meQuery = useQuery({
-    queryKey: ["shop", "me"],
+    queryKey: ["shops", "me"],
     queryFn: fetchShopMe,
     staleTime: 60_000,
     retry: (failureCount, err: any) => {
