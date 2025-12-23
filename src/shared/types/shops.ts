@@ -1,4 +1,4 @@
-// front/src/shared/types/shop.ts
+// front/src/shared/types/shops.ts
 
 import type { ShopMemberRole } from "../prisma-enums";
 

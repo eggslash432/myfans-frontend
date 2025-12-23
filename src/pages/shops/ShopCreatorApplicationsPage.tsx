@@ -1,4 +1,4 @@
-// front/src/pages/shop/ShopCreatorApplicationsPage.tsx
+// front/src/pages/shops/ShopCreatorApplicationsPage.tsx
 
 import { ApiError } from "@/lib/api/apiClient";
 import { useShopCreatorApplications } from "@/hooks/useShopCreatorApplications";

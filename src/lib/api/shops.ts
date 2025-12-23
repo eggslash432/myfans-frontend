@@ -1,4 +1,4 @@
-// front/src/lib/api/shop.ts
+// front/src/lib/api/shops.ts
 
 import type { 
   ShopCreatorApplication,
@@ -69,7 +69,7 @@ function mockSalesSummary(range: ShopSalesRange): ShopSalesSummary {
  */
 export async function getShopCreatorApplications(): Promise<ShopCreatorApplication[]> {
   if (USE_MOCK) return mockCreatorApplications();
-  return request<ShopCreatorApplication[]>("/shop/creator-applications", { method: "GET" });
+  return request<ShopCreatorApplication[]>("/shops/creator-applications", { method: "GET" });
 }
 
 /**
@@ -80,7 +80,7 @@ export async function getShopSalesSummary(range: ShopSalesRange): Promise<ShopSa
   if (USE_MOCK) return mockSalesSummary(range);
 
   const qs = new URLSearchParams({ range }).toString();
-  return request<ShopSalesSummary>(`/shop/sales/summary?${qs}`, { method: "GET" });
+  return request<ShopSalesSummary>(`/shops/sales/summary?${qs}`, { method: "GET" });
 }
 
 export type ShopInvite = {
@@ -90,14 +90,14 @@ export type ShopInvite = {
 };
 
 export async function createShopInvite(input?: { role?: ShopMemberRole; expiresAt?: string }) {
-  return request<ShopInvite>("/shop/invites", {
+  return request<ShopInvite>("/shops/invites", {
     method: "POST",
     body: input ?? {},
   });
 }
 
 export async function joinShopByCode(code: string) {
-  return request<{ ok: true; already: boolean }>("/shop/join", {
+  return request<{ ok: true; already: boolean }>("/shops/join", {
     method: "POST",
     body: { code },
   });
@@ -114,12 +114,13 @@ export async function shopListCreatorApplications(params?: {
   if (params?.cursor) qs.set("cursor", params.cursor);
 
   const url = qs.toString()
-    ? `/shop/creator-applications?${qs.toString()}`
-    : "/shop/creator-applications";
+    ? `/shops/creator-applications?${qs.toString()}`
+    : "/shops/creator-applications";
 
   return request<ShopCreatorApplicationsRes>(url, { method: "GET" });
 }
 
 export async function getShopMe() {
-  return request<ShopMe>("/shop/me", { method: "GET" });
+  return request<ShopMe>("/shops/me", { method: "GET" });
 }
+

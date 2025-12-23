@@ -26,7 +26,7 @@ export default function BottomNav() {
   const isCreator = path.startsWith("/creators");
   const isAdmin = path.startsWith("/admin");
   const isSettings = path.startsWith("/settings");
-  const isShop = path.startsWith("/shop");
+  const isShop = path.startsWith("/shops");
 
   // ✅ Shopタブ表示判定：所属していれば isSuccess
   const shopMe = useShopMe({ enabled: !!user });
@@ -72,7 +72,7 @@ export default function BottomNav() {
         {/* ✅ Shop（所属している人だけ表示） */}
         {canSeeShop && (
           <Link
-            to="/shop"
+            to="/shops"
             className={"bottom-nav-item " + (isShop ? "bottom-nav-item-active" : "")}
           >
             <BuildingStorefrontIcon className="bottom-nav-icon" />

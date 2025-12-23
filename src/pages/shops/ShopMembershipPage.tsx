@@ -1,7 +1,7 @@
-// front/src/pages/shop/ShopMembershipPage.tsx
+// front/src/pages/shops/ShopMembershipPage.tsx
 import { useState } from "react";
 import ProtectedRoute from "../../components/ProtectedRoute";
-import { createShopInvite, joinShopByCode } from "../../lib/api/shop";
+import { createShopInvite, joinShopByCode } from "../../lib/api/shops";
 
 export default function ShopMembershipPage() {
   const [invite, setInvite] = useState<string>("");
@@ -9,7 +9,7 @@ export default function ShopMembershipPage() {
   const [msg, setMsg] = useState<string | null>(null);
 
   return (
-    <ProtectedRoute roles={["shop_admin", "shop_staff"]}>
+    <ProtectedRoute require="shop">
       <div className="page">
         <h1 className="page-title">Shop所属</h1>
 
@@ -29,7 +29,7 @@ export default function ShopMembershipPage() {
               const res = await joinShopByCode(invite.trim());
               setMsg(res.already ? "すでに所属済みです" : "参加しました！");
               // 参加後は /shop に戻してOK（再取得させる）
-              window.location.href = "/shop";
+              window.location.href = "/shops";
             }}
           >
             参加する

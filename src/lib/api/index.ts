@@ -14,6 +14,6 @@ export * from './payments';
 export * from './media';
 export * from './stripe';
 export * from './users';
-export * from './shop';
+export * from './shops';
 export * from './shopDashboard';
 

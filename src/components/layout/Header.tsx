@@ -18,7 +18,7 @@ const SUB_TITLE_RULES: SubTitleRule[] = [
   { match: (p) => p.startsWith("/creators/settings"), label: "クリエイター設定" },
 
   // --- Shop ---
-  { match: (p) => p.startsWith("/shop"), label: "Shop管理" },
+  { match: (p) => p.startsWith("/shops"), label: "Shop管理" },
 
   // --- My page / User ---
   { match: (p) => p.startsWith("/mypage"), label: "マイページ" },

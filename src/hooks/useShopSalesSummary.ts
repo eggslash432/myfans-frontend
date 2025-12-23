@@ -1,7 +1,8 @@
 // front/src/hooks/useShopSalesSummary.ts
 
 import { useQuery } from "@tanstack/react-query";
-import { getShopSalesSummary, type ShopSalesRange } from "../lib/api/shop";
+import { getShopSalesSummary } from "../lib/api/shops";
+import type { ShopSalesRange } from "@/shared";
 
 export function useShopSalesSummary(range: ShopSalesRange) {
   return useQuery({

@@ -1,9 +1,9 @@
-// front/src/pages/shop/ShopSalesPage.tsx
+// front/src/pages/shops/ShopSalesPage.tsx
 
 import { useMemo, useState } from "react";
 import { ApiError } from "../../lib/api/apiClient";
 import { useShopSalesSummary } from "../../hooks/useShopSalesSummary";
-import type { ShopSalesRange } from "../../lib/api/shop";
+import type { ShopSalesRange } from "@/shared";
 
 const yen = (n: number) =>
   new Intl.NumberFormat("ja-JP", { style: "currency", currency: "JPY" }).format(n);
