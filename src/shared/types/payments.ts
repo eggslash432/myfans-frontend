@@ -21,6 +21,7 @@ export type Payout = {
   note?: string | null;
 };
 
+
 export interface PaymentRecord {
   id: string;
   amountJpy: number;

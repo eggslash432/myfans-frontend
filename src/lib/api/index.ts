@@ -8,7 +8,6 @@ export * from './auth';
 export * from './posts';
 export * from './creators';
 export * from './plans';
-export * from './admin';
 export * from './axiosLike';
 export * from './payments';
 export * from './media';
@@ -16,4 +15,7 @@ export * from './stripe';
 export * from './users';
 export * from './shops';
 export * from './shopDashboard';
+export * from './admin';
+export * from './adminPayouts';
+export * from './adminShop';
 

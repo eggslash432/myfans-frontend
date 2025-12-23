@@ -9,7 +9,6 @@ import type {
   AdminPost,
   AdminSummary,
   ResolveResult,
-  ApprovePayoutResult,
   ReportItem,
   FeeSettings,
   AdminUser,
@@ -98,19 +97,6 @@ export function adminResolveReport(
 
 export function adminListPayoutRequests(): Promise<AdminPayout[]> {
   return request<AdminPayout[]>('/admin/payouts');
-}
-
-export function adminApprovePayout(payoutId: string): Promise<ApprovePayoutResult> {
-  return request<ApprovePayoutResult>(`/admin/payouts/${payoutId}/approve`, {
-    method: 'POST',
-  });
-}
-
-export function adminRejectPayout(payoutId: string, reason?: string): Promise<void> {
-  return request<void>(`/admin/payouts/${payoutId}/reject`, {
-    method: 'POST',
-    body: reason ? { reason } : {},
-  });
 }
 
 // 料金・手数料設定取得

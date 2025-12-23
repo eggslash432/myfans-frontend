@@ -2,6 +2,8 @@ export type Role = 'user' | 'sub_admin' | 'admin';
 
 export type ShopMemberRole = 'owner' | 'admin' | 'staff';
 
+export type CreatorRole = 'normal' | 'system';
+
 export type CreatorApprovalStatus = 'pending' | 'approved' | 'rejected';
 
 export type KycStatus = 'pending' | 'approved' | 'rejected';
@@ -21,6 +23,8 @@ export type CheckoutMode = 'payment' | 'subscription';
 export type PaymentKind = 'subscription' | 'one_time';
 
 export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
+
+export type PayoutTargetType = 'CREATOR' | 'SHOP';
 
 export type SubStatus = 'active' | 'trialing' | 'past_due' | 'incomplete' | 'canceled';
 

@@ -31,11 +31,37 @@ export type AdminSummary = {
 
 export type AdminPayout = {
   id: string;
-  creatorId: string;
+
+  // 出金対象
+  targetType: 'CREATOR' | 'SHOP';
+
+  // 金額・状態
   amountJpy: number;
-  payoutStatus: string;
+  
+  payoutStatus: 'requested' | 'approved' | 'paid' | 'rejected';
+
+  // 日時
   requestedAt: string;
+  paidAt?: string | null;
+
+  // CREATOR 出金用
+  creatorId?: string | null;
+  creator?: {
+    userId: string;
+    publicName: string;
+  } | null;
+
+  // SHOP 出金用
+  shopId?: string | null;
+  shop?: {
+    id: string;
+    name: string;
+  } | null;
+
+  // 管理メモ
+  note?: string | null;
 };
+
 
 export type AdminReport = {
   id: string;
