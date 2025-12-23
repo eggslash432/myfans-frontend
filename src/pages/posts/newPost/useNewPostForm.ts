@@ -21,6 +21,10 @@ async function fetchMyPlans(): Promise<Plan[]> {
   }
 }
 
+function extractErrorMessage(e: any, fallback: string) {
+  return e?.response?.data?.message ?? e?.message ?? fallback;
+}
+
 export function useNewPostForm(isAdmin: boolean) {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
@@ -80,9 +84,20 @@ export function useNewPostForm(isAdmin: boolean) {
         setCreator(res);
         setCreatorErr('');
       } catch (e: any) {
-        const msg =
-          e?.response?.data?.message ?? e?.message ?? 'クリエイター情報の取得に失敗しました';
+        const status = e?.response?.status;
+
+        // ✅ 404 は「未登録/未承認」など “想定内” として扱う
+        if (status === 404) {
+          setCreator(null);
+          setCreatorErr(
+            'クリエイター登録（または承認）が未完了です。管理画面で承認後に再度お試しください。'
+          );
+          return;
+        }
+
+        const msg = extractErrorMessage(e, 'クリエイター情報の取得に失敗しました');
         console.error('getCreatorMe failed:', e);
+        setCreator(null);
         setCreatorErr(msg);
       }
     })();
@@ -94,11 +109,15 @@ export function useNewPostForm(isAdmin: boolean) {
     if (visibility !== 'paid_single') setPpvPrice('500');
   }, [visibility]);
 
+  // KYC判定（creator が取れない場合は pending 扱い）
   const kyc = creator?.kyc ?? {};
   const kycStatus = kyc.status ?? creator?.stripeKycStatus ?? 'pending';
   const isKycOk = isAdmin ? true : kycStatus === 'approved';
 
-  const hasVideo = useMemo(() => mediaPreviews.some((p) => p.kind === 'video'), [mediaPreviews]);
+  const hasVideo = useMemo(
+    () => mediaPreviews.some((p) => p.kind === 'video'),
+    [mediaPreviews]
+  );
 
   const sampleSelected = useMemo(() => {
     const idx = sampleMediaIndex;
@@ -206,6 +225,11 @@ export function useNewPostForm(isAdmin: boolean) {
     if (!title.trim()) throw new Error('タイトルを入力してください');
     if (!body) throw new Error('本文を入力してください');
 
+    // ✅ KYC未完了でも draft はOK（UI側でも制御してるが念のため二重防御）
+    if (!isAdmin && !isKycOk && !isDraft) {
+      throw new Error('本人確認（KYC）が未完了のため、公開投稿はできません。下書きで保存してください。');
+    }
+
     const payload = buildPayload();
 
     setSubmitting(true);
@@ -231,7 +255,7 @@ export function useNewPostForm(isAdmin: boolean) {
         await uploadPostMedia(postId, mediaFiles, isVideoSample ? idx : undefined);
       }
 
-      setOkMsg('投稿が完了しました。');
+      setOkMsg(isDraft ? '下書きを保存しました。' : '投稿が完了しました。');
 
       // reset
       setTitle('');
@@ -241,7 +265,7 @@ export function useNewPostForm(isAdmin: boolean) {
       setMediaPreviews([]);
       setSampleMediaIndex(null);
     } catch (e: any) {
-      const msg = e?.message ?? (typeof e === 'string' ? e : JSON.stringify(e));
+      const msg = extractErrorMessage(e, '投稿に失敗しました');
       setError(`投稿失敗: ${msg}`);
       throw e;
     } finally {

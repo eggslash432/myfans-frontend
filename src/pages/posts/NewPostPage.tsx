@@ -21,11 +21,15 @@ export function NewPostPage() {
     await f.submit();
   };
 
+  const canSubmit = isAdmin || f.isDraft || f.isKycOk; // ✅ KYC未完了でも下書きならOK
+  const submitDisabled = !canSubmit || f.submitting;
+
   return (
     <div className="page">
       <div className="max-w-3xl mx-auto space-y-4">
         <h1 className="page-title">新規投稿作成</h1>
 
+        {/* クリエイター情報取得エラー（未登録/未承認もここに入る） */}
         {!isAdmin && f.creatorErr && (
           <section className="card">
             <div className="text-sm text-red-700">
@@ -35,11 +39,23 @@ export function NewPostPage() {
           </section>
         )}
 
-        {f.creator && !f.isKycOk && (
+        {/* KYCが未完了：公開は制限（下書きはOK） */}
+        {!isAdmin && f.creator && !f.isKycOk && (
           <section className="card border border-yellow-300 bg-yellow-50/80">
             <p className="text-sm text-yellow-800">
-              本人確認（KYC）が未完了のため、投稿の公開や販売機能が制限されます。
-              先に「クリエイター設定」から本人確認を完了してください。
+              本人確認（KYC）が未完了のため、公開（Publish）や販売機能が制限されます。
+              「下書き」で保存するか、先に「クリエイター設定」から本人確認を完了してください。
+            </p>
+          </section>
+        )}
+
+        {/* クリエイター情報が取れない（未登録/未承認）時の補足 */}
+        {!isAdmin && !f.creator && (
+          <section className="card border border-yellow-300 bg-yellow-50/80">
+            <p className="text-sm text-yellow-800">
+              クリエイター登録（または承認）が未完了の可能性があります。
+              管理画面で承認後に投稿作成が利用できるようになります。
+              （下書き保存だけ許可する運用にする場合は、API側の許可も必要です）
             </p>
           </section>
         )}
@@ -108,15 +124,15 @@ export function NewPostPage() {
             <div className="pt-2">
               <button
                 type="submit"
-                disabled={(!f.isKycOk && !isAdmin) || f.submitting}
+                disabled={submitDisabled}
                 className="btn btn-primary w-full sm:w-auto"
               >
-                {f.submitting ? '投稿中…' : '投稿する'}
+                {f.submitting ? '投稿中…' : f.isDraft ? '下書きを保存' : '投稿する'}
               </button>
 
-              {!isAdmin && !f.isKycOk && (
+              {!isAdmin && !f.isKycOk && !f.isDraft && (
                 <p className="mt-2 text-xs text-gray-500">
-                  ※ 本人確認（KYC）が完了すると投稿を公開できるようになります。
+                  ※ 本人確認（KYC）が完了すると公開（Publish）が可能になります。いまは「下書き」で保存できます。
                 </p>
               )}
             </div>

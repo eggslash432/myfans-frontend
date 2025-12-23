@@ -25,7 +25,7 @@ export function useCreatorMe(options?: Options) {
     enabled: options?.enabled ?? true,
     queryFn: async (): Promise<CreatorMeOrNull> => {
       try {
-        const res = await request<any>("/creator/me", { method: "GET" });
+        const res = await request<any>("/creators/me", { method: "GET" });
         return unwrap<CreatorMe>(res);
       } catch (e: any) {
         const status = e?.response?.status;

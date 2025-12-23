@@ -1,18 +1,15 @@
 // front/src/lib/api/users.ts
-
 import { request } from "./apiClient";
 
-// front/src/lib/api/users.ts
 export function changePassword(input: {
   oldPassword: string;
   newPassword: string;
 }) {
-  return request<{ ok: true }>('/users/password', {
+  return request<{ ok: true }>('/users/me/password', {
     method: 'PATCH',
-    body: input,
+    body: {
+      currentPassword: input.oldPassword, // ✅ APIが期待するキーに合わせる
+      newPassword: input.newPassword,
+    },
   });
 }
-
-// export function getUserMe(): Promise<MeSummary> {
-//   return request<MeSummary>("/users/me");
-// }
