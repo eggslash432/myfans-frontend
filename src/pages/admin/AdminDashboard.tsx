@@ -1,4 +1,4 @@
-// front/src/pages/admin/Dashboard.tsx
+// front/src/pages/admin/AdminDashboard.tsx
 
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -132,12 +132,12 @@ function AdminInner() {
         )}
 
         <div className="summary-grid">
-          <div className="summary-item">
+          <Link to="/admin/summary" className="summary-item">
             <div className="summary-label">月間売上</div>
             <div className="summary-value">
               ¥{summary.salesMonthly.toLocaleString()}
             </div>
-          </div>
+          </Link>
 
           <Link to="/admin/creators" className="summary-item">
             <div className="summary-label">新規登録</div>

@@ -17,7 +17,7 @@ import AdminPayoutsPage from "./pages/admin/AdminPayoutsPage";
 import AdminPostsPage from "./pages/admin/AdminPostsPage";
 import AppLayout from "./components/layout/AppLayout";
 import AdminReportsPage from "./pages/admin/AdminReportsPage";
-import AdminDashboard from "./pages/admin/Dashboard";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 import CreatorPostsPage from "./pages/creators/CreatorPostsPage";
 import CreatorPlansPage from "./pages/creators/CreatorPlansPage";
 import PayoutsPage from "./pages/creators/CreatorPayoutsPage";
@@ -35,6 +35,7 @@ import ShopMembershipPage from "./pages/shops/ShopMembershipPage";
 import CreatorOrAdminRoute from "./CreatorOrAdminRoute";
 import AdminShopMembersPage from "./pages/admin/AdminShopMembersPage";
 import AdminShopCreatePage from "./pages/admin/AdminShopCreatePage";
+import AdminSummaryPage from "./pages/admin/AdminSummaryPage";
 
 export default function App() {
   return (
@@ -57,6 +58,7 @@ export default function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="creators" element={<CreatorsAdminPage />} />
           <Route path="payouts" element={<AdminPayoutsPage />} />
+          <Route path="summary" element={<AdminSummaryPage/>}/>
           <Route path="posts" element={<AdminPostsPage />} />
           <Route path="reports" element={<AdminReportsPage />} />
           <Route path="settings" element={<AdminSettingsPage />} />
