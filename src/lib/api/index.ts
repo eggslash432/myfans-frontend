@@ -18,4 +18,4 @@ export * from './shopDashboard';
 export * from './admin';
 export * from './adminPayouts';
 export * from './adminShop';
-
+export * from './adminNotifications';

@@ -34,4 +34,8 @@ export type PayoutStatus = 'requested' | 'approved' | 'paid' | 'rejected';
 
 export type ReportStatus = 'pending' | 'reviewed' | 'dismissed';
 
+export type NotificationType = 'SYSTEM' | 'PAYMENT' | 'KYC' | 'REPORT' | 'POST' | 'ANNOUNCEMENT' | 'CREATOR';
+
+export type NotificationSource = 'SYSTEM' | 'ADMIN' | 'WEBHOOK';
+
 export type PlanModalMode = 'create' | 'edit';

@@ -36,6 +36,7 @@ import CreatorOrAdminRoute from "./CreatorOrAdminRoute";
 import AdminShopMembersPage from "./pages/admin/AdminShopMembersPage";
 import AdminShopCreatePage from "./pages/admin/AdminShopCreatePage";
 import AdminSummaryPage from "./pages/admin/AdminSummaryPage";
+import AdminNotificationsPage from "./pages/admin/AdminNotificationsPage";
 
 export default function App() {
   return (
@@ -61,6 +62,7 @@ export default function App() {
           <Route path="summary" element={<AdminSummaryPage/>}/>
           <Route path="posts" element={<AdminPostsPage />} />
           <Route path="reports" element={<AdminReportsPage />} />
+          <Route path="notifications" element={<AdminNotificationsPage />} />
           <Route path="settings" element={<AdminSettingsPage />} />
           <Route path="shops/members" element={<AdminShopMembersPage />} />
           <Route path="shops/create" element={<AdminShopCreatePage />} />
