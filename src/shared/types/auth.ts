@@ -22,3 +22,5 @@ export interface AuthMe {
   email: string;
   subscription?: Subscription | null;
 }
+
+export type Require = "auth" | "admin" | "shop" | "creator";

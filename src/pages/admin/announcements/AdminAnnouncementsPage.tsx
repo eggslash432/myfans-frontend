@@ -12,6 +12,19 @@ import { AnnouncementEditModal } from "./AnnouncementEditModal";
 import { fromLocalInputValue, isActiveNow, toLocalInputValue } from "./announcementUtils";
 import { emptyEdit, type EditState } from "./types";
 
+function pickCreatedId(res: any): number | null {
+  // 返却形式が揺れても拾えるように保険
+  const candidates = [
+    res?.data?.id,
+    res?.data?.data?.id,
+    res?.data?.item?.id,
+    res?.data?.announcement?.id,
+    res?.id,
+  ];
+  const v = candidates.find((x) => typeof x === "number");
+  return v ?? null;
+}
+
 export default function AdminAnnouncementsPage() {
   const [items, setItems] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,6 +57,8 @@ export default function AdminAnnouncementsPage() {
       body: a.body ?? "",
       linkUrl: a.linkUrl ?? "",
       bannerImageUrl: a.bannerImageUrl ?? "",
+      // ✅ 追加してるならここも
+      bannerMediaId: (a as any).bannerMediaId ?? null,
       startsAt: toLocalInputValue(a.startsAt),
       endsAt: toLocalInputValue(a.endsAt),
       isEnabled: !!a.isEnabled,
@@ -63,11 +78,13 @@ export default function AdminAnnouncementsPage() {
       return alert("開始日時は終了日時以前にしてください。");
     }
 
-    const payload = {
+    const payload: any = {
       title,
       body,
       linkUrl: editing.linkUrl.trim() || null,
       bannerImageUrl: editing.bannerImageUrl.trim() || null,
+      // ✅ APIが受けるなら送りたい（受けないならこの行は消してOK）
+      bannerMediaId: editing.bannerMediaId ?? null,
       startsAt,
       endsAt,
       isEnabled: editing.isEnabled,
@@ -75,15 +92,28 @@ export default function AdminAnnouncementsPage() {
 
     try {
       setSaving(true);
-      if (editing.id) await adminUpdateAnnouncement(editing.id, payload);
-      else await adminCreateAnnouncement(payload);
-      setEditing(null);
+
+      if (editing.id) {
+        await adminUpdateAnnouncement(editing.id, payload);
+        setEditing(null); // 編集は保存したら閉じる運用でOK
+      } else {
+        const created = await adminCreateAnnouncement(payload);
+
+        // ✅ 新規作成は「閉じない」。idを入れて継続編集可にする
+        const createdId = pickCreatedId(created);
+        if (!createdId) {
+          // idが取れない場合は仕方ないので閉じる（or 一覧から再度編集してね、でもOK）
+          setEditing(null);
+        } else {
+          setEditing({ ...editing, id: createdId });
+        }
+      }
+
       await load();
     } catch (e) {
       console.error(e);
 
       let msg = "保存に失敗しました。";
-
       if (e instanceof Error && e.message) {
         msg = e.message;
       } else if (typeof e === "object" && e !== null) {
@@ -94,7 +124,6 @@ export default function AdminAnnouncementsPage() {
           anyE?.message ||
           msg;
       }
-
       alert(msg);
     } finally {
       setSaving(false);

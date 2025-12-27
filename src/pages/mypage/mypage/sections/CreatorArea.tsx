@@ -5,11 +5,10 @@ import {
   API_ORIGIN,
   applyCreator,
   createStripeOnboardingLink,
-} from '../../../../lib/api';
-import type { CreatorMeResponse } from '../../../../shared/types';
-import KycStatusBadge from '../../../../components/ui/KycStatusBadge';
-import CreatorMonetizationStatus from '../../../../components/ui/CreatorMonetizationStatus';
+} from '@/lib/api';
+import type { CreatorMeResponse } from '@/shared/types';
 import { creatorMenuItems } from '../creatorMenu';
+import { CreatorMonetizationStatus, KycStatusBadge } from '@/components';
 
 type Props = {
   user: any;

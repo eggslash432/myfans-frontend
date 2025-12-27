@@ -1,3 +1,5 @@
+// front/src/hooks/index.ts
+
 export * from './useAuth';
 export * from './useCreatorMe';
 export * from './useMeSummary';

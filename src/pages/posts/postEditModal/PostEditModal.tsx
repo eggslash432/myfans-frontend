@@ -2,9 +2,10 @@
 import { usePostEditForm } from "./usePostEditForm";
 import { MediaEditor } from "./MediaEditor";
 import { PublishSettings } from "./PublishSettings";
-import { useAuth } from "../../../hooks/useAuth";
-import type { PostProps } from "../../../shared/types";
+import { useAuth } from "@/hooks/useAuth";
+import type { PostProps } from "@/shared/types";
 import { isAdminRole } from "@/lib/authz";
+import { deletePostMedia } from "@/lib/api/media"; // ✅ 追加
 
 export function PostEditModal({
   post,
@@ -26,6 +27,24 @@ export function PostEditModal({
 
   const handleSaveClick = () => {
     onSubmit(form.buildPayload());
+  };
+
+  // ✅ 追加：削除をAPIへ接続してから、UI反映（親に任せる）
+  const handleRemoveMedia = async (mediaId: string) => {
+    if (!post?.id) return;
+    if (saving) return;
+
+    if (!confirm("このメディアを削除しますか？")) return;
+
+    try {
+      await deletePostMedia(String(post.id), mediaId);
+
+      // 親が state から消す or 再fetch する想定
+      onRemoveMedia?.(mediaId);
+    } catch (e) {
+      console.error(e);
+      alert("メディアの削除に失敗しました。");
+    }
   };
 
   const GENRES = [
@@ -75,9 +94,7 @@ export function PostEditModal({
               <div className="modal-label">ジャンル</div>
               <select
                 value={form.genreId ?? ""}
-                onChange={(e) =>
-                  form.setGenreId(e.target.value || null)
-                }
+                onChange={(e) => form.setGenreId(e.target.value || null)}
                 className="modal-input"
               >
                 <option value="">未設定</option>
@@ -94,7 +111,8 @@ export function PostEditModal({
             mediaAssets={mediaAssets}
             saving={saving}
             onAddMedia={onAddMedia}
-            onRemoveMedia={onRemoveMedia}
+            // ✅ ここを差し替え（API呼ぶ方に）
+            onRemoveMedia={handleRemoveMedia}
           />
 
           <PublishSettings

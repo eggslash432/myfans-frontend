@@ -1,6 +1,6 @@
 // front/src/lib/api/shopDashboard.ts
 
-import { request } from "./apiClient";
+import { request } from "@/lib/api";
 
 export type ShopDashboardSummary = {
   todayGross: number;

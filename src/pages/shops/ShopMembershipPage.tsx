@@ -1,7 +1,10 @@
 // front/src/pages/shops/ShopMembershipPage.tsx
 import { useState } from "react";
-import ProtectedRoute from "../../components/ProtectedRoute";
-import { createShopInvite, joinShopByCode } from "../../lib/api/shops";
+import { ProtectedRoute } from "@/components";
+import { 
+  createShopInvite, 
+  joinShopByCode 
+} from "@/lib/api";
 
 export default function ShopMembershipPage() {
   const [invite, setInvite] = useState<string>("");

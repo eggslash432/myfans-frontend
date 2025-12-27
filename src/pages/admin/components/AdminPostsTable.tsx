@@ -1,8 +1,14 @@
 // front/src/pages/admin/components/AdminPostsTable.tsx
 
-import type { AdminPost } from "../../../shared/types";
-import StatusBadge from "../../../components/ui/StatusBadge";
-import { creatorLabel, normalizeStatus, statusLabel, toPostBadgeStatus, type SortKey } from "../domain/adminPostsView";
+import type { AdminPost } from "@/shared";
+import { StatusBadge } from "@/components";
+import { 
+  creatorLabel, 
+  normalizeStatus, 
+  statusLabel, 
+  toPostBadgeStatus, 
+  type SortKey 
+} from "../domain/adminPostsView";
 
 export function AdminPostsTable(props: {
   viewList: AdminPost[];

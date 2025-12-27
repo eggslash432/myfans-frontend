@@ -5,8 +5,7 @@ import { useShopMe } from "@/hooks/useShopMe";
 import { useCreatorMe } from "@/hooks/useCreatorMe";
 import type { ReactNode } from "react";
 import type { Role } from "@/shared/prisma-enums"; // ✅ 型は type import のまま
-
-type Require = "auth" | "admin" | "shop" | "creator";
+import type { Require } from "@/shared";
 
 type Props = {
   children: ReactNode;
@@ -19,7 +18,7 @@ type Props = {
   require?: Require;
 };
 
-export default function ProtectedRoute({ children, role, roles, require }: Props) {
+export function ProtectedRoute({ children, role, roles, require }: Props) {
   const { user, ready } = useAuth();
   const location = useLocation();
 

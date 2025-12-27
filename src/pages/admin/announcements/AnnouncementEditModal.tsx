@@ -71,14 +71,29 @@ export function AnnouncementEditModal({
     setMediaErr("");
     setUploading(true);
     try {
-      await uploadAnnouncementMedia(announcementId, Array.from(files));
+      const res = await uploadAnnouncementMedia(announcementId, Array.from(files));
+
+      // ✅ 追加: アップロード結果から「最後の画像」を自動選択
+      const uploadedItems = res.items ?? [];
+      const lastImage = [...uploadedItems]
+        .filter((m) => (m.mediaType ?? "").toLowerCase().includes("image"))
+        .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+        .at(-1);
+
       await loadMedia();
+
+      if (lastImage) {
+        onChange({
+          ...editing,
+          bannerMediaId: lastImage.id,
+          bannerImageUrl: lastImage.url, // 互換（詳細画面がこれを見るなら必須）
+        });
+      }
     } catch (e) {
       console.error(e);
       setMediaErr("アップロードに失敗しました。");
     } finally {
       setUploading(false);
-      // 同じファイルを連続で選べるようにしたい場合は input 側で value をクリアする
     }
   };
 

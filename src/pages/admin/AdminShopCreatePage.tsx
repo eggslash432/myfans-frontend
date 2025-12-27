@@ -3,10 +3,12 @@ import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
-import ProtectedRoute from "@/components/ProtectedRoute";
-import { adminCreateShop } from "@/lib/api";
-import { adminSearchUsers } from "@/lib/api"; // ✅ 既存部品を流用（admin.zip側にある想定）
-import { ApiError } from "@/lib/api/apiClient";
+import { ProtectedRoute } from "@/components";
+import { 
+  adminCreateShop,
+  adminSearchUsers,
+  ApiError,
+} from "@/lib/api";
 
 type PickUser = {
   id: string;

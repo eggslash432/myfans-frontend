@@ -1,6 +1,6 @@
 // src/components/PurchaseButton.tsx
 import { useState } from 'react';
-import { createCheckoutSession } from '../lib/api/payments';
+import { createCheckoutSession } from '@/lib/api';
 
 type Props = {
   postId?: string;
@@ -10,7 +10,7 @@ type Props = {
 };
 
 //購入ボタン
-export default function PurchaseButton({ postId, priceYen, disabled, className }: Props) {
+export function PurchaseButton({ postId, priceYen, disabled, className }: Props) {
   // 価格 0 / 未設定で無料判定されるレイアウトの時はボタンを出さない
   if (priceYen === 0) return null;
   const [loading, setLoading] = useState(false);
@@ -18,8 +18,11 @@ export default function PurchaseButton({ postId, priceYen, disabled, className }
   const onClick = async () => {
     try {
       setLoading(true);
-      const url = await createCheckoutSession({ postId });
-      window.location.href = url;
+
+      const res = await createCheckoutSession({ postId });
+      // 👇 ここが修正点
+      window.location.href = res.url;
+
     } catch (e: any) {
       alert(e?.message || '決済開始に失敗しました');
     } finally {

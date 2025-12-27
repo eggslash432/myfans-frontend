@@ -1,10 +1,10 @@
 // PostGrid.tsx
-import PostCard from './PostCard';
 import type { PostItem } from '../shared/types';  
+import { PostCard } from './PostCard';
 
 export type { PostItem }; // ← 再エクスポートも「type」扱い
 
-export default function PostGrid({
+export function PostGrid({
   posts,
   onOpen,
 }: {

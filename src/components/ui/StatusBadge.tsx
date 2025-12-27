@@ -1,7 +1,8 @@
 // front/src/components/ui/StatusBadge.tsx
 
 // StatusBadge.tsx
-import Badge, { type BadgeTone } from "@/components/ui/Badge";
+import { Badge } from "@/components";
+import type { BadgeTone } from "@/shared";
 
 /**
  * ここは “何でもバッジ” として使い回す前提
@@ -30,7 +31,7 @@ function meta(status: AnyStatus): { label: string; tone: BadgeTone } {
   return { label: status, tone: "muted" };
 }
 
-export default function StatusBadge({ status }: { status: AnyStatus }) {
+export function StatusBadge({ status }: { status: AnyStatus }) {
   const m = meta(status);
   return <Badge tone={m.tone}>{m.label}</Badge>;
 }

@@ -1,7 +1,7 @@
 // front/src/pages/mypage/mypage/sections/MyPostsSection.tsx
-import React from 'react';
-import StatusBadge from '../../../../components/ui/StatusBadge';
-import type { PostSummary } from '../../../../shared/types';
+
+import {StatusBadge} from '@/components';
+import type { PostSummary } from '@/shared/types';
 
 type Props = {
   publicPosts: PostSummary[];
@@ -17,7 +17,7 @@ function PostsList({ items, onOpenEdit }: { items: PostSummary[]; onOpenEdit: (p
         <li key={p.id} className="py-2 text-sm flex items-center justify-between">
           <div className="flex-1 min-w-0">
             <div className="font-medium truncate">{p.title}</div>
-            <StatusBadge publishedStatus={p.publishedStatus} visibility={p.visibility} />
+            <StatusBadge status={p.publishedStatus} />
           </div>
           <button
             onClick={() => onOpenEdit(p)}

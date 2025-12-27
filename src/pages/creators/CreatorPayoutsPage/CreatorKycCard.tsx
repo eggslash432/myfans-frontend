@@ -1,5 +1,5 @@
 // front/src/pages/creator/CreatorPayoutsPage/CreatorKycCard.tsx
-import KycStatusBadge from "@/components/ui/KycStatusBadge";
+import {KycStatusBadge} from "@/components";
 
 export function CreatorKycCard(props: {
   kycStatus: string;

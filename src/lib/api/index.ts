@@ -17,3 +17,4 @@ export * from './users';
 export * from './shops';
 export * from './shopDashboard';
 export * from './announcements';
+export * from './announcementMedia';

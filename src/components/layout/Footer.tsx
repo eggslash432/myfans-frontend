@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";  // パスはプロジェクトに合わせて
 import { isAdminRole } from "@/lib/authz";
 
-export default function Footer() {
+export function Footer() {
   const { user } = useAuth();  // { id, email, role, ... } みたいなのが入っている想定
 
   // ここの条件はプロジェクトの仕様に合わせて調整

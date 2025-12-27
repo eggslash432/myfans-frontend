@@ -1,7 +1,7 @@
 // front/src/pages/mypage/mypage/sections/SubscriptionsSection.tsx
-import React from 'react';
-import SubStatusBadge from '../../../../components/ui/SubStatusBadge';
-import type { MeSummary } from '../../../../shared/types';
+
+import { SubStatusBadge } from '@/components';
+import type { MeSummary } from '@/shared';
 
 export function SubscriptionsSection({
   summary,

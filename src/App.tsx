@@ -8,14 +8,16 @@ import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import Success from "./pages/payments/Success";
 import Cancel from "./pages/payments/Cancel";
-import ProtectedRoute from "./components/ProtectedRoute";
+import { 
+  ProtectedRoute,
+  AppLayout, 
+} from "@/components";
 import { NewPostPage } from "@/pages/posts/NewPostPage";
 import MyPlansPage from "./pages/plans/Plans";
 import CreatorsAdminPage from "./pages/admin/AdminCreatorsPage";
 import CreatorSettingsPage from "./pages/creators/settings";
 import AdminPayoutsPage from "./pages/admin/AdminPayoutsPage";
 import AdminPostsPage from "./pages/admin/AdminPostsPage";
-import AppLayout from "./components/layout/AppLayout";
 import AdminReportsPage from "./pages/admin/AdminReportsPage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import CreatorPostsPage from "./pages/creators/CreatorPostsPage";

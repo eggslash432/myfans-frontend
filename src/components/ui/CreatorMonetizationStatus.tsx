@@ -1,7 +1,7 @@
 // front/src/components/ui/CreatorMonetizationStatus.tsx
 
-import Badge, { type BadgeTone } from "@/components/ui/Badge";
-import KycStatusBadge from "./KycStatusBadge";
+import {Badge, KycStatusBadge } from "@/components";
+import type { BadgeTone } from "@/shared";
 
 type Props = {
   stripeKycStatus: string | null; // approved | pending | rejected | ...
@@ -26,7 +26,7 @@ function toneFromLegacy(tone: "green" | "yellow" | "red" | "gray"): BadgeTone {
   }
 }
 
-export default function CreatorMonetizationStatus(props: Props) {
+export function CreatorMonetizationStatus(props: Props) {
   const {
     stripeKycStatus,
     stripeChargesEnabled,

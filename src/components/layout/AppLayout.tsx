@@ -1,11 +1,12 @@
 // front/src/components/layout/AppLayout.tsx
-import Header from "./Header";
-import Footer from "./Footer";
-import BottomNav from "./BottomNav";
-import type { Props } from "../../shared/types";
+
+import type { Props } from "@/shared/types";
+import { Header } from "./Header";
+import { Footer } from "./Footer";
+import { BottomNav } from "./BottomNav";
 
 
-export default function AppLayout({ children }: Props) {
+export function AppLayout({ children }: Props) {
   return (
     <div className="app-root">
       {/* ブラウザ全体の背景（グレー） */}

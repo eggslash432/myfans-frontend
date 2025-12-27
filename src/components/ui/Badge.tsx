@@ -1,7 +1,6 @@
 // front/src/components/ui/Badge.tsx
+import type { BadgeTone } from "@/shared";
 import * as React from "react";
-
-export type BadgeTone = "success" | "warning" | "danger" | "info" | "muted";
 
 type Props = {
   tone: BadgeTone;
@@ -18,7 +17,7 @@ const toneClass: Record<BadgeTone, string> = {
   muted: "badge-muted",
 };
 
-export default function Badge({ tone, children, className, title }: Props) {
+export function Badge({ tone, children, className, title }: Props) {
   const cls = ["badge", toneClass[tone], className]
     .filter(Boolean)
     .join(" ");

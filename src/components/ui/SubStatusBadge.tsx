@@ -1,6 +1,7 @@
 // front/src/components/ui/SubStatusBadge.tsx
 
-import Badge, { type BadgeTone } from "@/components/ui/Badge";
+import { Badge } from "@/components";
+import type { BadgeTone } from "@/shared";
 
 type SubStatus =
   | "trialing"
@@ -36,7 +37,7 @@ function meta(status: SubStatus): { label: string; tone: BadgeTone } {
   }
 }
 
-export default function SubStatusBadge({ status }: { status: SubStatus }) {
+export function SubStatusBadge({ status }: { status: SubStatus }) {
   const m = meta(status);
   return <Badge tone={m.tone}>{m.label}</Badge>;
 }

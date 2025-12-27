@@ -10,3 +10,4 @@ export * from "./payments";
 export * from "./reports";
 export * from "./admin";
 export * from "./shops";
+export * from "./badge";

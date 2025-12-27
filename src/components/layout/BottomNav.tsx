@@ -14,7 +14,7 @@ import {
   BuildingStorefrontIcon,
 } from "@heroicons/react/24/outline";
 
-export default function BottomNav() {
+export function BottomNav() {
   const location = useLocation();
   const { user } = useAuth();
 

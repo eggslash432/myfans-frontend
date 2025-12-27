@@ -24,6 +24,12 @@ export function uploadPostMedia(
   });
 }
 
+export function deletePostMedia(postId: string, mediaId: string) {
+  return request<{ ok: true }>(`/posts/${postId}/media/${mediaId}`, {
+    method: "DELETE",
+  });
+}
+
 /**
  * 複数ファイルを一括アップロード（backend が対応している場合）
  */

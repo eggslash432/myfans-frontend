@@ -1,8 +1,8 @@
 // front/src/pages/auth/Login.tsx
 import { useState } from "react";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "@/hooks";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import PasswordField from "../../components/PasswordField";
+import { PasswordField } from "@/components";
 
 function safeNext(next: string | null): string {
   // 外部URLや怪しい値を弾く（オープンリダイレクト対策）

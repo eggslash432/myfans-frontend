@@ -6,11 +6,14 @@ import {
   updateMyPost, 
   uploadPostMedia, 
   deleteMyPostMedia 
-} from "../../lib/api";
-import type { PostSummary } from "../../shared/types";
-import StatusBadge from "../../components/ui/StatusBadge";
+} from "@/lib/api";
+import type { 
+  PostSummary, 
+  PublishedStatus 
+} from "@/shared";
+import { StatusBadge }from "@/components";
 import { PostEditModal } from "../posts/postEditModal/PostEditModal";
-import type { PublishedStatus } from "../../shared/prisma-enums";
+
 
 export default function CreatorPostsPage() {
   const [items, setItems] = useState<PostSummary[]>([]);

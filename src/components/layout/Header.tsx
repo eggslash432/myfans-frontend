@@ -28,7 +28,7 @@ const SUB_TITLE_RULES: SubTitleRule[] = [
   { match: (p) => p.startsWith("/admin"), label: "管理画面" },
 ];
 
-export default function Header() {
+export function Header() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, ready, logout } = useAuth();

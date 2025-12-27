@@ -1,9 +1,9 @@
 // front/src/pages/shops/ShopDashboardPage.tsx
 
-import ProtectedRoute from "../../components/ProtectedRoute";
-import { useShopDashboardSummary } from "../../hooks/useShopDashboardSummary";
+import { ProtectedRoute } from "@/components";
+import { useShopDashboardSummary } from "@/hooks";
 import { Link } from "react-router-dom";
-import { ApiError } from "../../lib/api/apiClient";
+import { ApiError } from "@/lib/api";
 
 function KpiCard({ title, value }: { title: string; value: string }) {
   return (

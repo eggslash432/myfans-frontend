@@ -11,7 +11,7 @@ import type {
   CreatePostResponse,
   UpdatePostResponse,
   PostItem,  
-} from '../../shared/types';
+} from '@/shared/types';
 
 export function getPublicPosts(): Promise<ListResponse<PostSummary>> {
   return request<ListResponse<PostSummary>>('/posts', { method: 'GET' });

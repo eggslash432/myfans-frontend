@@ -1,9 +1,9 @@
 // front/src/components/PostCard.tsx
 
 import type { PostItem } from '../shared/types';
-import PurchaseButton from './PurchaseButton';
+import {PurchaseButton} from './PurchaseButton';
 
-export default function PostCard({ post, onOpen }: { post: PostItem; onOpen: (id: string) => void }) {
+export function PostCard({ post, onOpen }: { post: PostItem; onOpen: (id: string) => void }) {
   const derivedFree =
     (post.visibility === 'free') ||
     (typeof post.price === 'number' ? post.price === 0 : false);

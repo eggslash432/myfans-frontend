@@ -1,5 +1,6 @@
 // KycStatusBadge.tsx
-import Badge, { type BadgeTone } from "@/components/ui/Badge";
+import {Badge, } from "@/components";
+import type { BadgeTone } from "@/shared";
 
 type Props = {
   status: string | null;            // ✅ null許可
@@ -26,7 +27,7 @@ function meta(status: string | null): { label: string; tone: BadgeTone } {
   }
 }
 
-export default function KycStatusBadge({ status, disabledReason }: Props) {
+export function KycStatusBadge({ status, disabledReason }: Props) {
   const m = meta(status);
 
   // 必要なら tooltip に理由を出せる

@@ -13,7 +13,7 @@ type Props = {
   inputClassName?: string;
 };
 
-export default function PasswordField({
+export function PasswordField({
   label = 'パスワード',
   value,
   onChange,
