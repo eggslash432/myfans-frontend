@@ -1,41 +1,11 @@
 // front/src/pages/shops/ShopSalesPage.tsx
-
 import { useMemo, useState } from "react";
 import { ApiError } from "../../lib/api/apiClient";
 import { useShopSalesSummary } from "../../hooks/useShopSalesSummary";
-import type { ShopSalesRange } from "@/shared";
+import { yen, type ShopSalesRange } from "@/shared";
+import { RangeButton } from "@/components";
 
-const yen = (n: number) =>
-  new Intl.NumberFormat("ja-JP", { style: "currency", currency: "JPY" }).format(n);
-
-function RangeButton({
-  label,
-  value,
-  current,
-  onClick,
-}: {
-  label: string;
-  value: ShopSalesRange;
-  current: ShopSalesRange;
-  onClick: (v: ShopSalesRange) => void;
-}) {
-  const active = value === current;
-  return (
-    <button
-      className="btn"
-      onClick={() => onClick(value)}
-      style={{
-        fontWeight: 700,
-        opacity: active ? 1 : 0.6,
-        borderColor: active ? "#94a3b8" : undefined,
-      }}
-    >
-      {label}
-    </button>
-  );
-}
-
-export default function ShopSalesPage() {
+export function ShopSalesPage() {
   const [range, setRange] = useState<ShopSalesRange>("month");
   const q = useShopSalesSummary(range);
 

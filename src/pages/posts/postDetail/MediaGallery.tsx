@@ -1,15 +1,10 @@
 // front/src/pages/posts/postDetail/MediaGallery.tsx
-import React from 'react';
-import { resolveMediaUrl } from './resolveMediaUrl';
-import { isAudio, isVideo } from './mediaType';
-
-type Asset = {
-  id?: string;
-  url: string;
-  kind?: string;
-  mediaType?: string;
-  mimeType?: string;
-};
+import { 
+  resolveMediaUrl,
+  isAudio, 
+  isVideo,
+} from '@/shared';
+import type { Asset } from '@/shared';
 
 type Props = {
   assets: Asset[];

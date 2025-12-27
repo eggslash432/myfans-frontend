@@ -3,8 +3,12 @@
 // 低レイヤ
 export * from "./apiClient";
 
-// 機能別API
+// フォルダ
 export * from './admin';
+export * from './announcements';
+export * from './shops';
+
+//単体
 export * from './auth';
 export * from './posts';
 export * from './creators';
@@ -14,7 +18,3 @@ export * from './payments';
 export * from './media';
 export * from './stripe';
 export * from './users';
-export * from './shops';
-export * from './shopDashboard';
-export * from './announcements';
-export * from './announcementMedia';

@@ -1,6 +1,6 @@
 // front/src/pages/posts/PostEditModal/usePostEditForm.ts
 import { useEffect, useMemo, useState } from "react";
-import type { PublishedStatus, Visibility } from "../../../shared/prisma-enums";
+import type { PublishedStatus, Visibility } from "@/shared";
 
 export function unwrapPost(post: any) {
   return post?.data ?? post?.post ?? post;

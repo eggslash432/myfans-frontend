@@ -1,7 +1,9 @@
 // front/src/pages/posts/newPost/VisibilitySection.tsx
 
-import type { Visibility } from '../../../shared/prisma-enums';
-import type { Plan } from '../../../shared/types';
+import type { 
+  Visibility,
+  Plan, 
+} from '@/shared';
 
 type Props = {
   isAdmin: boolean;

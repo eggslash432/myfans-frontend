@@ -1,7 +1,8 @@
 // front/src/shred/postLabels.ts
-
-import type { PostSummary } from "./types";
-import type { Visibility } from "./prisma-enums";
+import type { 
+  PostSummary,
+  Visibility,
+} from '@/shared';
 
 /** 公開状態ラベル */
 export function statusLabel(p: Pick<PostSummary, "publishedStatus">): string {
@@ -38,4 +39,14 @@ export function postStatusText(p: Pick<PostSummary, "publishedStatus" | "visibil
   const s = statusLabel(p);
   const v = visibilityLabel(p.visibility);
   return v ? `${s}・${v}` : s;
+}
+
+export function getPostStatusLabel(p: PostSummary) {
+  // 公開状態でまず分ける
+  if (p.publishedStatus === "published") return "公開中";
+  if (p.publishedStatus === "draft") return "下書き";
+  if (p.publishedStatus === 'private') return "非公開";
+
+  // それ以外は「非公開」扱い（unlisted/private等）
+  return "非公開";
 }

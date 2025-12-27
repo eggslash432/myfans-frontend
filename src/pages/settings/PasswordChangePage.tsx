@@ -3,7 +3,7 @@ import { useState } from "react";
 import { ApiError } from "../../lib/api/apiClient";
 import { changePassword } from "../../lib/api/users";
 
-export default function PasswordChangePage() {
+export function PasswordChangePage() {
   const [oldPassword, setOld] = useState("");
   const [newPassword, setNew] = useState("");
   const [message, setMessage] = useState<string | null>(null);

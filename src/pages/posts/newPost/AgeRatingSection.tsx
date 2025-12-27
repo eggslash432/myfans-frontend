@@ -1,6 +1,6 @@
 // front/src/pages/posts/newPost/AgeRatingSection.tsx
 
-import type { AgeRating } from '../../../shared/prisma-enums';
+import type { AgeRating } from '@/shared';
 
 type Props = {
   ageRating: AgeRating;

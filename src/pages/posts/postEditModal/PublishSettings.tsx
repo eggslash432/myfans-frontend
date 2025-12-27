@@ -1,5 +1,5 @@
 // front/src/pages/posts/PostEditModal/PublishSettings.tsx
-import type { PublishedStatus, Visibility } from "../../../shared/prisma-enums";
+import type { PublishedStatus, Visibility } from "@/shared";
 
 export function PublishSettings(props: {
   isAdminAccount: boolean;

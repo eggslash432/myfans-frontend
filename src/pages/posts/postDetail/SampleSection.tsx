@@ -1,6 +1,6 @@
 // front/src/pages/posts/postDetail/SampleSection.tsx
 import React from 'react';
-import { resolveMediaUrl } from './resolveMediaUrl';
+import { resolveMediaUrl } from '@/shared';
 
 type SampleAsset = {
   id?: string;

@@ -27,6 +27,7 @@ export function MediaEditor(props: {
           {mediaAssets.map((m: any) => {
             const mediaType = String(m.type ?? m.mediaType ?? "").toLowerCase();
             const key = m.id ?? m.url;
+            const canRemove = !!m.id;
 
             return (
               <div key={key} className="modal-media-item">
@@ -37,8 +38,12 @@ export function MediaEditor(props: {
                 <button
                   type="button"
                   className="btn btn-ghost btn-sm modal-media-remove"
-                  onClick={() => m.id && onRemoveMedia(m.id)}
-                  disabled={saving}
+                  onClick={() => {
+                    if (!m.id) return;
+                    onRemoveMedia(String(m.id));
+                  }}
+                  disabled={saving || !canRemove}
+                  title={!canRemove ? "このメディアはIDが無いため削除できません（データ整合性要確認）" : undefined}
                 >
                   ✕
                 </button>

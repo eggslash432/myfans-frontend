@@ -1,7 +1,5 @@
 // front/src/pages/posts/newPost/PlanModal.tsx
 
-import React from 'react';
-
 type Props = {
   open: boolean;
   newPlanName: string;

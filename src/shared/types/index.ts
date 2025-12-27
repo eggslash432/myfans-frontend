@@ -11,3 +11,4 @@ export * from "./reports";
 export * from "./admin";
 export * from "./shops";
 export * from "./badge";
+export * from './media';

@@ -1,6 +1,5 @@
 // front/src/pages/posts/postDetail/PostHeader.tsx
-import React from 'react';
-import type { PostDetail } from '../../../shared/types';
+import type { PostDetail } from '@/shared';
 
 type Props = {
   post: PostDetail;

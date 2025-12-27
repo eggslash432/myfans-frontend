@@ -3,13 +3,10 @@
 import { ApiError } from "@/lib/api";
 import { useShopCreatorApplications } from "@/hooks";
 import { StatusBadge } from "@/components";
+import { fmtDate } from "@/shared/utils";
 
-function fmtDate(iso: string) {
-  if (!iso) return "";
-  return iso.slice(0, 10);
-}
 
-export default function ShopCreatorApplicationsPage() {
+export function ShopCreatorApplicationsPage() {
   const q = useShopCreatorApplications("pending");
 
   const error =

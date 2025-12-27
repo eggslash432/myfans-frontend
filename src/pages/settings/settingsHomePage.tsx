@@ -1,7 +1,7 @@
 // front/src/pages/settings/index.tsx
 import { Link } from "react-router-dom";
 
-export default function SettingsHomePage() {
+export function SettingsHomePage() {
   return (
     <div className="settings-page">
       <h1 className="settings-title">設定</h1>

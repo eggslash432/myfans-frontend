@@ -1,4 +1,4 @@
-// front/src/pages/posts/postDetail/useSampleLock.ts
+// front/src/hooks/useSampleLock.ts
 import { useCallback, useMemo, useState } from 'react';
 
 export function useSampleLock(sampleLimitSec: number) {

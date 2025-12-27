@@ -4,6 +4,7 @@ export * from './useAuth';
 export * from './useCreatorMe';
 export * from './useMeSummary';
 export * from './usePlans';
+export * from './useSampleLock';
 export * from './useShopCreatorApplications';
 export * from './useShopDashboardSummary';
 export * from './useShopMe';

@@ -1,6 +1,6 @@
 // front/src/lib/api/posts.ts
 
-import { request } from './apiClient';
+import { apiDelete, request } from '@/lib/api';
 import { normalizePostDetail } from '../domain/post';
 import type {
   PostSummary,
@@ -33,9 +33,18 @@ export function updateMyPost(
   postId: string,
   payload: PostEditValues,
 ): Promise<UpdatePostResponse> {
+  const body = {
+    title: payload.title,
+    body: payload.body,
+    visibility: payload.visibility,
+    priceJpy: payload.priceJpy ?? null,
+    publishedStatus: payload.publishedStatus,
+    // ✅ genreId は送らない（DTOに無いので弾かれる）
+  };
+
   return request<UpdatePostResponse>(`/posts/me/${postId}`, {
     method: 'PATCH',
-    body: payload,
+    body,
   });
 }
 
@@ -64,10 +73,8 @@ export function createPostSmart(
   return createPost(payload as CreatePostPayload);
 }
 
-export function deleteMyPostMedia(postId: string, mediaId: string): Promise<void> {
-  return request<void>(`/creators/me/posts/${postId}/media/${mediaId}`, {
-    method: 'DELETE',
-  });
+export async function deleteMyPostMedia(postId: string, mediaId: string) {
+  return apiDelete(`/posts/${postId}/media/${mediaId}`);
 }
 
 /** 投稿通報（旧: reportPost） */

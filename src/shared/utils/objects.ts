@@ -1,4 +1,4 @@
-// front/src/pages/posts/newPost/helpers.ts
+// front/src/shared/utils/objects.ts
 
 export function prune<T>(obj: T): T {
   if (Array.isArray(obj)) {
@@ -12,14 +12,4 @@ export function prune<T>(obj: T): T {
     return out;
   }
   return obj;
-}
-
-export type MediaPreview = {
-  url: string;
-  kind: 'image' | 'video' | 'audio';
-  isSample?: boolean;
-};
-
-export function recalcIsSample(previews: MediaPreview[], idx: number | null) {
-  return previews.map((p, i) => ({ ...p, isSample: idx !== null && i === idx }));
 }

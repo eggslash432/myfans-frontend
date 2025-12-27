@@ -6,7 +6,7 @@ import {
   joinShopByCode 
 } from "@/lib/api";
 
-export default function ShopMembershipPage() {
+export function ShopMembershipPage() {
   const [invite, setInvite] = useState<string>("");
   const [created, setCreated] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);

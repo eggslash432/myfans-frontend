@@ -7,10 +7,17 @@ import {
   getMyPlans,
   createPlan as createPlanApi,
   uploadPostMedia,
-} from '../../../lib/api';
-import type { AgeRating, Visibility } from '../../../shared/prisma-enums';
-import type { Plan } from '../../../shared/types';
-import { type MediaPreview, prune, recalcIsSample } from './helpers';
+} from '@/lib/api';
+import type { 
+  AgeRating, 
+  Visibility, 
+  Plan,
+  MediaPreview, 
+} from '@/shared';
+import { 
+  prune, 
+  recalcIsSample,  
+} from '@/shared';
 
 async function fetchMyPlans(): Promise<Plan[]> {
   try {

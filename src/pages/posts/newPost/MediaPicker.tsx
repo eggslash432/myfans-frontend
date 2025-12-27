@@ -1,7 +1,7 @@
 // front/src/pages/posts/newPost/MediaPicker.tsx
 
 import React from 'react';
-import type { MediaPreview } from './helpers';
+import type { MediaPreview } from '@/shared';
 
 type Props = {
   mediaFilesCount: number;

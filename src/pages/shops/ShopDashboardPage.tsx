@@ -1,49 +1,10 @@
 // front/src/pages/shops/ShopDashboardPage.tsx
-
-import { ProtectedRoute } from "@/components";
+import { KpiCard, ProtectedRoute } from "@/components";
 import { useShopDashboardSummary } from "@/hooks";
+import { getErrorMessage, getStatus, yen } from "@/shared/utils";
 import { Link } from "react-router-dom";
-import { ApiError } from "@/lib/api";
 
-function KpiCard({ title, value }: { title: string; value: string }) {
-  return (
-    <div className="card">
-      <div className="section-subtitle">{title}</div>
-      <div style={{ fontSize: "1.6rem", fontWeight: 800, marginTop: 6 }}>
-        {value}
-      </div>
-    </div>
-  );
-}
-
-function yen(n: number) {
-  return new Intl.NumberFormat("ja-JP", {
-    style: "currency",
-    currency: "JPY",
-  }).format(n);
-}
-
-function getErrorMessage(err: unknown): string {
-  if (!err) return "";
-  if (err instanceof ApiError) {
-    const msg = (err.body?.message ?? err.message ?? "") as string;
-    return String(msg);
-  }
-  if (err instanceof Error) return err.message;
-  return String(err);
-}
-
-function getStatus(err: unknown): number | null {
-  if (!err) return null;
-  if (err instanceof ApiError) {
-    // apiClient の実装次第で err.status or err.response.status の場合がある
-    const s = (err as any).status ?? (err as any).response?.status ?? null;
-    return typeof s === "number" ? s : null;
-  }
-  return null;
-}
-
-export default function ShopDashboardPage() {
+export function ShopDashboardPage() {
   const { data, isLoading, error, me, refetch } = useShopDashboardSummary();
 
   const errMsg = getErrorMessage(error);

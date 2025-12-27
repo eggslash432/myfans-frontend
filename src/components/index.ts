@@ -1,6 +1,6 @@
 // front/src/components/index.ts
 
-//フォルダ
+//ディレクトリ
 export * from './home';
 export * from './layout';
 export * from './ui';
@@ -13,4 +13,6 @@ export { PostCard } from './PostCard';
 export { PostGrid } from './PostGrid';
 export { ProtectedRoute } from './ProtectedRoute';
 export { PurchaseButton } from './PurchaseButton';
+export { KpiCard } from './KpiCard';
+export { RangeButton } from './RangeButton';
 

@@ -5,9 +5,11 @@ import {
   getPost,
   updateMyPost,
   uploadPostMedia,
-} from '../../../lib/api';
-import type { PublishedStatus } from '../../../shared/prisma-enums';
-import type { PostSummary } from '../../../shared/types';
+} from '@/lib/api';
+import type { 
+  PublishedStatus,
+  PostSummary, 
+} from '@/shared';
 
 function unwrapPost(res: any) {
   return res?.data ?? res?.post ?? res;
