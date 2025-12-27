@@ -5,6 +5,10 @@ export type EditState = {
   body: string;
   linkUrl: string;
   bannerImageUrl: string;
+
+  // ✅ number に統一（AnnouncementMedia.id が number なので）
+  bannerMediaId?: number | null;
+
   startsAt: string; // datetime-local
   endsAt: string; // datetime-local
   isEnabled: boolean;
@@ -16,6 +20,7 @@ export function emptyEdit(): EditState {
     body: "",
     linkUrl: "",
     bannerImageUrl: "",
+    bannerMediaId: null, // ✅ 追加
     startsAt: "",
     endsAt: "",
     isEnabled: true,
