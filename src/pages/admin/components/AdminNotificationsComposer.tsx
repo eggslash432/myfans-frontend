@@ -1,7 +1,7 @@
 // front/src/pages/admin/components/AdminNotificationsComposer.tsx
 import { useState } from "react";
 import type { NotificationType } from "@/shared/prisma-enums";
-import { adminSendNotification } from "@/lib/api/adminNotifications";
+import { adminSendNotification } from "@/lib/api";
 
 export function AdminNotificationsComposer(props: { onSent?: () => void }) {
   const { onSent } = props;

@@ -2,8 +2,8 @@
 
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { adminGetSummary } from '../../lib/api/admin';
-import type { AdminSummary } from '../../shared/types';
+import { adminGetSummary } from '@/lib/api/admin';
+import type { AdminSummary } from '@/shared/types';
 
 function AdminInner() {
   const { data, isLoading, error } = useQuery<AdminSummary>({
@@ -112,6 +112,28 @@ function AdminInner() {
             <span className="text-lg text-gray-400">›</span>
           </div>
         </Link>
+
+          <Link to="/admin/notifications" className="card card-link">
+            <div className="flex justify-between items-center">
+              <div>
+                <div className="font-semibold text-sm">通知一覧</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  通報・出金申請・KYCなどの運営向け通知
+                </div>
+              </div>
+              <span className="text-lg text-gray-400">›</span>
+            </div>
+          </Link>
+
+          <Link to="/admin/announcements" className="card card-link" style={{ textDecoration: "none" }}>
+            <div className="section-subtitle">サイト設定・告知管理</div>
+            <div style={{ fontSize: "1.2rem", fontWeight: 800, marginTop: 6 }}>
+              キャンペーン告知
+            </div>
+            <div className="section-subtitle" style={{ marginTop: 6 }}>
+              バナー/本文・期間・有効/無効
+            </div>
+          </Link>   
 
       </section>
 

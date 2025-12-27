@@ -1,5 +1,5 @@
 // front/src/lib/api/admin/adminNotifications.ts
-import type { NotificationSource, NotificationType } from "../../shared/prisma-enums";
+import type { NotificationSource, NotificationType } from "@/shared/prisma-enums";
 
 export type AdminNotifRow = {
   id: string;

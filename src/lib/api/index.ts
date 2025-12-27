@@ -4,6 +4,7 @@
 export * from "./apiClient";
 
 // 機能別API
+export * from './admin';
 export * from './auth';
 export * from './posts';
 export * from './creators';
@@ -15,7 +16,4 @@ export * from './stripe';
 export * from './users';
 export * from './shops';
 export * from './shopDashboard';
-export * from './admin';
-export * from './adminPayouts';
-export * from './adminShop';
-export * from './adminNotifications';
+export * from './announcements';

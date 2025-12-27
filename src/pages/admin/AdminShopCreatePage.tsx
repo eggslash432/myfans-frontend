@@ -4,8 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { adminCreateShop } from "@/lib/api/adminShop";
-import { adminSearchUsers } from "@/lib/api/admin"; // ✅ 既存部品を流用（admin.zip側にある想定）
+import { adminCreateShop } from "@/lib/api";
+import { adminSearchUsers } from "@/lib/api"; // ✅ 既存部品を流用（admin.zip側にある想定）
 import { ApiError } from "@/lib/api/apiClient";
 
 type PickUser = {

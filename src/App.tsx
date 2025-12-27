@@ -37,12 +37,15 @@ import AdminShopMembersPage from "./pages/admin/AdminShopMembersPage";
 import AdminShopCreatePage from "./pages/admin/AdminShopCreatePage";
 import AdminSummaryPage from "./pages/admin/AdminSummaryPage";
 import AdminNotificationsPage from "./pages/admin/AdminNotificationsPage";
+import AdminAnnouncementsPage from "./pages/admin/announcements/AdminAnnouncementsPage";
+import CampaignPage from "./pages/home/CampaignPage";
 
 export default function App() {
   return (
     <AppLayout>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/campaign" element={<CampaignPage />} />
 
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
@@ -62,6 +65,7 @@ export default function App() {
           <Route path="summary" element={<AdminSummaryPage/>}/>
           <Route path="posts" element={<AdminPostsPage />} />
           <Route path="reports" element={<AdminReportsPage />} />
+          <Route path="announcements" element={<AdminAnnouncementsPage/>}/>
           <Route path="notifications" element={<AdminNotificationsPage />} />
           <Route path="settings" element={<AdminSettingsPage />} />
           <Route path="shops/members" element={<AdminShopMembersPage />} />

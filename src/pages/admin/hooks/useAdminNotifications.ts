@@ -5,7 +5,7 @@ import {
   adminListNotifications,
   markNotificationAsRead,
   type AdminNotifRow,
-} from "@/lib/api/adminNotifications";
+} from "@/lib/api";
 
 export function useAdminNotifications() {
   const [items, setItems] = useState<AdminNotifRow[]>([]);
