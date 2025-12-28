@@ -1,10 +1,13 @@
 // front/src/components/layout/AppLayout.tsx
 
-import type { Props } from "@/shared/types";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { BottomNav } from "./BottomNav";
+import type { ReactNode } from "react";
 
+export type Props = { 
+  children: ReactNode 
+};
 
 export function AppLayout({ children }: Props) {
   return (

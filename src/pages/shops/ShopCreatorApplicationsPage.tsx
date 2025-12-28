@@ -3,7 +3,7 @@
 import { ApiError } from "@/lib/api";
 import { useShopCreatorApplications } from "@/hooks";
 import { StatusBadge } from "@/components";
-import { fmtDate } from "@/shared/utils";
+import { fmtDate } from "@/utils";
 
 
 export function ShopCreatorApplicationsPage() {

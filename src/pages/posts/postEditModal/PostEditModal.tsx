@@ -2,9 +2,19 @@
 import { MediaEditor } from "./MediaEditor";
 import { PublishSettings } from "./PublishSettings";
 import { useAuth, usePostEditForm } from "@/hooks";
-import type { PostProps } from "@/shared";
 import { isAdminRole } from "@/lib/authz";
 import { deletePostMedia } from "@/lib/api"; // ✅ 追加
+import type { PostEditValues } from "@/shared";
+
+type PostProps = {
+  post: any | null;
+  open: boolean;
+  saving: boolean;
+  onClose: () => void;
+  onSubmit: (payload: PostEditValues) => void;
+  onAddMedia: (files: FileList) => void;
+  onRemoveMedia: (mediaId: string) => void;
+};
 
 export function PostEditModal({
   post,

@@ -1,7 +1,7 @@
 // front/src/pages/shops/ShopDashboardPage.tsx
 import { KpiCard, ProtectedRoute } from "@/components";
+import { getErrorMessage, getStatus, yen } from "@/features/shops/shopsUtils";
 import { useShopDashboardSummary } from "@/hooks";
-import { getErrorMessage, getStatus, yen } from "@/shared/utils";
 import { Link } from "react-router-dom";
 
 export function ShopDashboardPage() {

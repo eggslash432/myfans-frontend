@@ -1,6 +1,6 @@
 // front/src/pages/admin/announcements/AnnouncementEditModal.tsx
 import { useEffect, useMemo, useState } from "react";
-import { isImage, type AnnouncementMedia, type EditState } from "@/shared";
+import { isImage, type AnnouncementMedia, type AnnouncementEditState } from "@/shared";
 import {
   listAnnouncementMedia,
   uploadAnnouncementMedia,
@@ -13,9 +13,9 @@ export function AnnouncementEditModal({
   onClose,
   onSave,
 }: {
-  editing: EditState;
+  editing: AnnouncementEditState;
   saving: boolean;
-  onChange: (next: EditState) => void;
+  onChange: (next: AnnouncementEditState) => void;
   onClose: () => void;
   onSave: () => void;
 }) {

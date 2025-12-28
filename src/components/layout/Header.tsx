@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
-import type { SubTitleRule } from "../../shared/types";
+import { useAuth } from "@/hooks";
+import type { SubTitleRule } from "@/shared";
 
 const SUB_TITLE_RULES: SubTitleRule[] = [
   // --- Creator ---

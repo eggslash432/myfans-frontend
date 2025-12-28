@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { 
   AdminPost,
-  PostStatus, 
+  PublishedStatus, 
   ReportItem
 } from "@/shared";
 import { 
@@ -65,7 +65,7 @@ export function useAdminPostsPage() {
   );
 
   const updateStatus = useCallback(
-    async (id: string, status: PostStatus, statusLabel: string) => {
+    async (id: string, status: PublishedStatus, statusLabel: string) => {
       if (!confirm(`この投稿の状態を「${statusLabel}」に変更しますか？`)) return;
       try {
         await adminUpdatePostStatus(id, status);

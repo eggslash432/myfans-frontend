@@ -14,7 +14,7 @@ import {
   pickCreatedId, 
   toLocalInputValue, 
   type Announcement, 
-  type EditState 
+  type AnnouncementEditState 
 } from "@/shared";
 import { AnnouncementTable } from "@/components";
 
@@ -23,7 +23,7 @@ export function AdminAnnouncementsPage() {
   const [items, setItems] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
-  const [editing, setEditing] = useState<EditState | null>(null);
+  const [editing, setEditing] = useState<AnnouncementEditState | null>(null);
   const [saving, setSaving] = useState(false);
 
   const load = async () => {
