@@ -7,4 +7,7 @@ export type {
   Visibility,
   CreatorApprovalStatus,
   PayoutStatus,
+  NotificationSource,
+  NotificationType,
+  ShopMemberRole,
 } from "../prisma-enums";

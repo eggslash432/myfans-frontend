@@ -1,6 +1,6 @@
 // front/src/shared/types/shops.ts
 
-import type { ShopMemberRole } from "../prisma-enums";
+import type { ShopMemberRole } from "../prisma";
 
 export type ShopRole = "owner" | "admin" | "staff";
 
@@ -11,6 +11,13 @@ export type ShopSalesRange = "today" | "month" | "all";
 export type ShopMe = {
   shopId: string;
   role: ShopMemberRole;
+};
+
+export type ShopDashboardSummary = {
+  todayGross: number;
+  monthGross: number;
+  activeSubscribers: number;
+  pendingCreatorApplications: number;
 };
 
 export type ShopCreatorApplication = {

@@ -1,2 +1,3 @@
-// front/src/components/features/announcements/index.ts
-export * from './AnnouncementTable';
+// front/src/features/announcements/index.ts
+export * from './api';
+export * from './components';

@@ -1,20 +1,9 @@
 // front/src/hooks/useShopDashboardSummary.ts
 import { useQuery } from "@tanstack/react-query";
-import { request } from "../lib/api/apiClient";
+import { request } from "@/lib/api";
+import type { ShopDashboardSummary, ShopMe } from "@/shared";
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === "1";
-
-export type ShopMe = {
-  shopId: string;
-  role: "owner" | "admin" | "staff";
-};
-
-export type ShopDashboardSummary = {
-  todayGross: number;
-  monthGross: number;
-  activeSubscribers: number;
-  pendingCreatorApplications: number;
-};
 
 function toNumber(v: unknown): number {
   const n = typeof v === "number" ? v : Number(v ?? 0);

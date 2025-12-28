@@ -4,14 +4,13 @@
 export * from "./apiClient";
 
 // フォルダ
-export * from './admin';
-export * from './announcements';
-export * from './shops';
+export * from '../../features/admin/api';
+export * from '../../features/announcements/api';
+export * from '../../features/shops/api';
 
 //単体
 export * from './auth';
 export * from './posts';
-export * from './creators';
 export * from './plans';
 export * from './axiosLike';
 export * from './payments';

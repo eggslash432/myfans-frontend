@@ -8,7 +8,7 @@ import {
   adminDeleteShopMember,
   adminRestoreShopOwner,
   adminSearchUsers,
-} from "@/lib/api/admin";
+} from "@/features/admin/api";
 import type { SelectedUser, ShopRole } from "@/shared";
 
 

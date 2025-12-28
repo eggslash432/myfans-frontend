@@ -2,7 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { 
   shopListCreatorApplications,
-} from "@/lib/api/shops";
+} from "@/features/shops/api";
 import type { ShopCreatorApplicationsRes, ShopCreatorApplicationStatus } from "@/shared/types";
 
 export function useShopCreatorApplications(status: ShopCreatorApplicationStatus = "pending") {

@@ -1,2 +1,3 @@
-// front/src/components/features/kyc/index.ts
-export { KycStatusBadge } from './KycStatusBadge';
+//
+export * from './components';
+export * from './domain';

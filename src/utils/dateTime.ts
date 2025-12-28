@@ -51,3 +51,20 @@ export function toTime(v: any) {
   const t = new Date(v).getTime();
   return Number.isFinite(t) ? t : 0;
 }
+
+export function toLocalInputValue(iso: string | null) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
+    d.getHours(),
+  )}:${pad(d.getMinutes())}`;
+}
+
+export function fromLocalInputValue(v: string) {
+  if (!v) return null;
+  const d = new Date(v); // datetime-local をローカル時刻として解釈
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toISOString();
+}

@@ -1,4 +1,3 @@
-// front/src/components/home/index.ts
-
-
-export { GenreGridSection } from './GenreGridSection';
+//
+export * from './components';
+export * from './hooks';

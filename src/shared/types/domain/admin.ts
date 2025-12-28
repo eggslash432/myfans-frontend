@@ -1,5 +1,7 @@
 // front/src/shared/types/admin.ts
 import type { 
+  NotificationSource,
+  NotificationType,
   PublishedStatus, 
   Visibility 
 } from "../prisma";
@@ -39,6 +41,31 @@ export type AdminSummary = {
   salesMonthly: number;
   newUsersMonthly: number;
   reportsPending: number;
+};
+
+export type AdminNotifRow = {
+  id: string;
+  userId: string;
+  type: NotificationType;
+  source: NotificationSource | null;
+  title: string;
+  body: string;
+  readAt: string | null;
+  createdAt: string;
+};
+
+export type AdminNotifListParams = {
+  userId?: string;
+  type?: NotificationType;
+  source?: NotificationSource;
+  unreadOnly?: boolean;
+  take: number;
+  skip: number;
+};
+
+export type AdminNotifListRes = {
+  items: AdminNotifRow[];
+  total?: number;
 };
 
 export type AdminPayout = {

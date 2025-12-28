@@ -1,12 +1,12 @@
 //front/src/shared/utils/posts.ts
-
 import type { 
   AdminPost, 
+  PostDetail, 
   PostSummary, 
   PostVisibility, 
   PublishedStatus, 
   Visibility 
-} from "../types";
+} from "@/shared";
 
 export function unwrapPost(post: any) {
   return post?.data ?? post?.post ?? post;
@@ -79,4 +79,16 @@ export function normalizeVisibility(v: any): PostVisibility {
   if (v === "plan") return "plan";
   if (v === "paid_single") return "paid_single";
   return "free";
+}
+
+export function normalizePostDetail(raw: any): PostDetail {
+  if (!raw) return raw;
+  if (raw.visibility === 'free') {
+    return {
+      ...raw,
+      isLocked: false,
+      canView: true,
+    };
+  }
+  return raw;
 }
