@@ -1,8 +1,8 @@
-// front/src/pages/shared/utils/reportView.ts
-
+//
+import type { ReportStatus } from "@/shared";
 import type React from "react";
 
-export function getStatusMeta(status?: string | null) {
+export function getStatusMeta(status?: ReportStatus | string | null) {
   if (status === "reviewed") {
     return {
       text: "対応済み",
@@ -13,6 +13,7 @@ export function getStatusMeta(status?: string | null) {
       } as React.CSSProperties,
     };
   }
+
   if (status === "dismissed") {
     return {
       text: "却下",
@@ -23,6 +24,7 @@ export function getStatusMeta(status?: string | null) {
       } as React.CSSProperties,
     };
   }
+
   return {
     text: "未対応",
     style: {
@@ -31,8 +33,4 @@ export function getStatusMeta(status?: string | null) {
       color: "#9A3412",
     } as React.CSSProperties,
   };
-}
-
-export function isDone(status?: string | null) {
-  return status === "reviewed" || status === "dismissed";
 }

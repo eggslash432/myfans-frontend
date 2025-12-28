@@ -1,6 +1,6 @@
-// front/src/shared/types/posts.ts
+// front/src/shared/types/domain/posts.ts
 
-import type { AgeRating, MediaType, PublishedStatus, Visibility } from "./prisma";
+import type { AgeRating, MediaType, PublishedStatus, Visibility } from "@/shared";
 
 export type Post = {
   id: string;
@@ -96,6 +96,10 @@ export type PostDetail = {
     sortOrder: number;
   }[];
   canView?: boolean;
+};
+
+export type PostDetailUi = PostDetail & {
+  isLocked: boolean;
 };
 
 export type PostItem = {

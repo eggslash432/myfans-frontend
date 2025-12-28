@@ -135,6 +135,11 @@ export type ApprovePayoutResult = {
   [key: string]: unknown 
 };
 
+export type AdminCreateShopRes = {
+  ok: true;
+  shop: { id: string; name: string };
+};
+
 export type AdminSalesBreakdown = {
   month: string; // YYYY-MM
   // 支払総額（paid）

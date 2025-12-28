@@ -1,5 +1,5 @@
-// front/src/pages/creator/CreatorPayoutsPage/payouts.types.ts
-import type { PayoutStatus } from "../types/prisma";
+// front/src/features/payouts/domain/payoutsUtils.ts
+import type { PayoutStatus } from "@/shared/types";
 
 export function renderPayoutStatusLabel(s: PayoutStatus) {
   switch (s) {

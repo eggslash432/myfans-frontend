@@ -1,11 +1,11 @@
-// front/src/lib/api/payments.ts
+// front/src/features/payments/api/paymentsApi.ts
 import type {
   CheckoutReq,
   CheckoutRes,
   CheckoutSessionResponse,
   PaymentRecord,
-} from "../../shared/types";
-import { request } from "./apiClient";
+} from "@/shared/types";
+import { request } from "@/lib/api";
 
 function buildReturnUrls(extra?: Record<string, string | number | boolean | null | undefined>) {
   const origin = window.location.origin;

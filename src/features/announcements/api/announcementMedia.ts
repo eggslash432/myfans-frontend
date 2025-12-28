@@ -1,4 +1,4 @@
-// front/src/lib/api/announcementMedia.ts
+// front/src/features/announcements/api/announcementMedia.ts
 import { request } from "@/lib/api";
 import type { AnnouncementMedia } from "@/shared";
 

@@ -1,5 +1,5 @@
-// front/src/shared/utils/plans.ts
-import type { Plan } from "../types";
+// front/src/features/plans/domain/plansUtils.ts
+import type { Plan } from "@/shared/types";
 
 export function planPriceYen(p: Plan): number {
   // shared の実態に合わせて吸収（price が無い問題の解決）
@@ -13,6 +13,6 @@ export function planPriceYen(p: Plan): number {
 }
 
 export function planInterval(p: Plan): 'month' | 'year' {
-  const anyPlan = p as any;
-  return (anyPlan.billingInterval ?? anyPlan.interval ?? 'month') as 'month' | 'year';
+  const v = (p as any).billingInterval ?? (p as any).interval ?? 'month';
+  return v === 'year' ? 'year' : 'month';
 }

@@ -1,4 +1,4 @@
-import type { PublishedStatus } from "../prisma-enums";
+import type { PublishedStatus } from "../prisma";
 
 // front/src/shared/types/reports.ts
 export type ReportItem = {
@@ -14,5 +14,6 @@ export type ReportItem = {
   createdAt: string;
 };
 
+export type ReportStatus = "pending" | "reviewed" | "dismissed";
 
 
