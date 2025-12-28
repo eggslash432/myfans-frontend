@@ -2,8 +2,8 @@
 
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { adminGetSummary } from '@/lib/api/admin';
-import type { AdminSummary } from '@/shared/types';
+import { adminGetSummary } from '@/lib/api';
+import type { AdminSummary } from '@/shared';
 
 function AdminInner() {
   const { data, isLoading, error } = useQuery<AdminSummary>({
@@ -180,6 +180,6 @@ function AdminInner() {
   );
 }
 
-export default function AdminDashboard() {
+export function AdminDashboard() {
   return <AdminInner />;
 }

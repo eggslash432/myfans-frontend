@@ -1,4 +1,4 @@
-// front/src/pages/admin/reports/components/ReportCard.tsx
+// front/src/components/features/reports/ReportCard.tsx
 
 import { Link } from "react-router-dom";
 import { 
@@ -9,7 +9,7 @@ import {
   type ReportStatus 
 } from "@/shared";
 
-export default function ReportCard(props: {
+export function ReportCard(props: {
   report: ReportItem;
   busyKey: string | null;
   onResolve: (id: string, action: ReportStatus) => void;

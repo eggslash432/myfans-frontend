@@ -1,6 +1,6 @@
-// front/src/pages/admin/components/ReportsModal.tsx
+// front/src/components/features/reports/ReportsModal.tsx
 
-import type { ReportItem } from "../../../shared/types";
+import type { ReportItem } from "@/shared";
 
 export function ReportsModal(props: {
   postId: string;

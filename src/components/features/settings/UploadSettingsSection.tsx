@@ -1,6 +1,6 @@
-// front/src/pages/admin/components/UploadSettingsSection.tsx
+// front/src/components/features/settings/UploadSettingsSection.tsx
 
-import type { UploadSetting } from "../../../shared/types";
+import type { UploadSetting } from "@/shared";
 
 export function UploadSettingsSection(props: {
   uploadSettings: UploadSetting;

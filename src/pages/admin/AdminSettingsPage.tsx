@@ -6,14 +6,11 @@ import {
   adminUpdateFeeSettings,
   adminUpdateUploadSettings,
 } from "@/lib/api";
-
-import { AdminRoleSection } from "./components/AdminRoleSection";
-import { FeeSettingsSection } from "./components/FeeSettingsSection";
-import { UploadSettingsSection } from "./components/UploadSettingsSection";
 import { 
   useAdminSettingsData, 
   useAuth 
 } from "@/hooks";
+import { AdminRoleSection, FeeSettingsSection, UploadSettingsSection } from "@/components";
 
 export function AdminSettingsPage() {
   const { user } = useAuth();

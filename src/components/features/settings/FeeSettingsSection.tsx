@@ -1,4 +1,4 @@
-// front/src/components/features/admin/FeeSettingsSection.tsx
+// front/src/components/features/settings/FeeSettingsSection.tsx
 
 import type { FeeSettings } from "@/shared";
 

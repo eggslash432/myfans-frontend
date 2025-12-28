@@ -12,3 +12,5 @@ export * from './mypage';
 export * from './payments';
 export * from './payouts';
 export * from './posts';
+export * from './reports';
+export * from './settings';

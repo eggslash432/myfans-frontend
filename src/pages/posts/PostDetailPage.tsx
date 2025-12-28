@@ -9,16 +9,14 @@ import {
   createPpvCheckoutSession,
   getPostDetail,
   reportPost,
-} from '../../lib/api';
-import type { PostDetail } from '../../shared/types';
-import { useAuth } from '../../hooks/useAuth';
-
-import { useSampleLock } from './postDetail/useSampleLock';
+} from '@/lib/api';
 import { PostHeader } from './postDetail/PostHeader';
 import { SampleSection } from './postDetail/SampleSection';
 import { MediaGallery } from './postDetail/MediaGallery';
 import { LockedPanel } from './postDetail/LockedPanel';
 import { ReportButton } from './postDetail/ReportButton';
+import { useAuth, useSampleLock } from '@/hooks';
+import type { PostDetail } from '@/shared';
 
 export function PostDetailPage() {
   const { id } = useParams<{ id: string }>();

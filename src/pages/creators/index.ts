@@ -1,8 +1,8 @@
 // front/src/pages/creators/index.ts
 
 // ディレクトリ
-export {} from './CreatorPayoutsPage';
-export { CreatorPlansPage } from './CreatorPlansPage'; 
+export * from './CreatorPayoutsPage';
+export * from './CreatorPlansPage'; 
 
 //単体
 export { CreatorAnalyticsPage } from './CreatorAnalyticsPage';

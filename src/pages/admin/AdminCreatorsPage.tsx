@@ -1,11 +1,6 @@
 // front/src/pages/admin/AdminCreatorsPage.tsx
 import { useEffect, useMemo, useState } from "react";
-
-import CreatorApplicationsFilter from "./components/CreatorApplicationsFilter";
-import CreatorApplicationCard from "./components/CreatorApplicationCard";
-import CreatorRejectModal from "./components/CreatorRejectModal";
 import { filterByKeyword } from "./domain/creatorsAdminView";
-
 import type { 
   CreatorApplication, 
   CreatorApprovalStatusFilter 
@@ -16,6 +11,7 @@ import {
   adminRejectCreatorApplication, 
   ApiError 
 } from "@/lib/api";
+import { CreatorApplicationCard, CreatorApplicationsFilter, CreatorRejectModal } from "@/components";
 
 
 export function AdminCreatorsPage() {

@@ -2,6 +2,7 @@
 
 //ディレクトリ
 export * from './announcements';
+export * from './domain';
 
 //単体
 export * from './AdminCreatorsPage';

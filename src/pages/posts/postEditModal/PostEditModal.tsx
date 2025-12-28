@@ -1,11 +1,10 @@
 // front/src/pages/posts/PostEditModal/PostEditModal.tsx
-import { usePostEditForm } from "./usePostEditForm";
 import { MediaEditor } from "./MediaEditor";
 import { PublishSettings } from "./PublishSettings";
-import { useAuth } from "@/hooks/useAuth";
-import type { PostProps } from "@/shared/types";
+import { useAuth, usePostEditForm } from "@/hooks";
+import type { PostProps } from "@/shared";
 import { isAdminRole } from "@/lib/authz";
-import { deletePostMedia } from "@/lib/api/media"; // ✅ 追加
+import { deletePostMedia } from "@/lib/api"; // ✅ 追加
 
 export function PostEditModal({
   post,

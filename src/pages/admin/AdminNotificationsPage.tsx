@@ -1,12 +1,10 @@
 // front/src/pages/admin/AdminNotificationsPage.tsx
 
-import { AdminNotificationsComposer } from "./components/AdminNotificationsComposer";
-import { AdminNotificationsFilters } from "./components/AdminNotificationsFilters";
-import { AdminNotificationsList } from "./components/AdminNotificationsList";
+import { AdminNotificationsComposer, AdminNotificationsFilters, AdminNotificationsList } from "@/components";
 import { useAdminNotifications } from "@/hooks";
 
 
-export default function AdminNotificationsPage() {
+export function AdminNotificationsPage() {
   const n = useAdminNotifications();
 
   const onClickUnread = async (id: string) => {

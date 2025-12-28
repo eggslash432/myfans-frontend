@@ -8,4 +8,3 @@ export * from './AdminPostsCards';
 export * from './AdminPostsFilters';
 export * from './AdminPostsTable';
 export * from './AdminRoleSection';
-export * from './FeeSettingsSection';

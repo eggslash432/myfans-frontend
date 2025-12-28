@@ -1,7 +1,7 @@
 // front/src/pages/admin/AdminReportsPage.tsx
 
 import { useAdminReports } from "@/hooks";
-import ReportCard from "./components/ReportCard";
+import {ReportCard} from "@/components";
 
 
 export function AdminReportsPage() {

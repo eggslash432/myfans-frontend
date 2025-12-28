@@ -12,6 +12,7 @@ export * from './useGenresData';
 export * from './useHomeData';
 export * from './useMeSummary';
 export * from './useMyPageData';
+export * from './useNewPostForm';
 export * from './usePlans';
 export * from './usePostEditForm';
 export * from './usePostEditor';

@@ -1,14 +1,14 @@
 // front/src/pages/posts/NewPostPage.tsx
 
 import React from 'react';
-import { useAuth } from '../../hooks/useAuth';
-import { useNewPostForm } from './newPost/useNewPostForm';
 import { MediaPicker } from './newPost/MediaPicker';
 import { PlanModal } from './newPost/PlanModal';
 import { VisibilitySection } from './newPost/VisibilitySection';
 import { AgeRatingSection } from './newPost/AgeRatingSection';
 import { PublishStatusSection } from './newPost/PublishStatusSection';
 import { isAdminRole } from '@/lib/authz';
+import { useAuth } from '@/hooks';
+import { useNewPostForm } from '@/hooks';
 
 export function NewPostPage() {
   const { user } = useAuth();
