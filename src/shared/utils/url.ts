@@ -1,0 +1,8 @@
+// front/src/shared/utils/url.ts
+
+export function safeNext(next: string | null): string {
+  if (!next) return "/";
+  if (!next.startsWith("/")) return "/";
+  if (next.startsWith("//")) return "/";
+  return next;
+}

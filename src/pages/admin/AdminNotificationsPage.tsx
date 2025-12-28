@@ -3,7 +3,7 @@
 import { AdminNotificationsComposer } from "./components/AdminNotificationsComposer";
 import { AdminNotificationsFilters } from "./components/AdminNotificationsFilters";
 import { AdminNotificationsList } from "./components/AdminNotificationsList";
-import { useAdminNotifications } from "./hooks/useAdminNotifications";
+import { useAdminNotifications } from "@/hooks";
 
 
 export default function AdminNotificationsPage() {

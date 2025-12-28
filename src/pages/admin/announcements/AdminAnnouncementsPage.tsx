@@ -5,27 +5,21 @@ import {
   adminDeleteAnnouncement,
   adminListAnnouncements,
   adminUpdateAnnouncement,
-  type Announcement,
 } from "@/lib/api";
-import { AnnouncementTable } from "./AnnouncementTable";
 import { AnnouncementEditModal } from "./AnnouncementEditModal";
-import { fromLocalInputValue, isActiveNow, toLocalInputValue } from "./announcementUtils";
-import { emptyEdit, type EditState } from "./types";
+import { 
+  emptyEdit, 
+  fromLocalInputValue, 
+  isActiveNow, 
+  pickCreatedId, 
+  toLocalInputValue, 
+  type Announcement, 
+  type EditState 
+} from "@/shared";
+import { AnnouncementTable } from "@/components";
 
-function pickCreatedId(res: any): number | null {
-  // 返却形式が揺れても拾えるように保険
-  const candidates = [
-    res?.data?.id,
-    res?.data?.data?.id,
-    res?.data?.item?.id,
-    res?.data?.announcement?.id,
-    res?.id,
-  ];
-  const v = candidates.find((x) => typeof x === "number");
-  return v ?? null;
-}
 
-export default function AdminAnnouncementsPage() {
+export function AdminAnnouncementsPage() {
   const [items, setItems] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");

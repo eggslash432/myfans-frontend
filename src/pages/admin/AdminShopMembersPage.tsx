@@ -9,16 +9,11 @@ import {
   adminRestoreShopOwner,
   adminSearchUsers,
 } from "@/lib/api/admin";
+import type { SelectedUser, ShopRole } from "@/shared";
 
-type ShopRole = "owner" | "admin" | "staff";
 
-type SelectedUser = {
-  id: string;
-  email: string;
-  displayName?: string | null;
-};
 
-export default function AdminShopMembersPage() {
+export function AdminShopMembersPage() {
   const qc = useQueryClient();
 
   // ----------------------------

@@ -1,6 +1,8 @@
 // front/src/pages/index.ts
 
 //ディレクトリ
+export * from './admin';
+export * from './auth';
 export * from './creators';
 export * from './genres';
 export * from './home';

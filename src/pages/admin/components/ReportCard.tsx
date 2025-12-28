@@ -1,8 +1,13 @@
 // front/src/pages/admin/reports/components/ReportCard.tsx
 
 import { Link } from "react-router-dom";
-import type { ReportItem, ReportStatus } from "@/shared";
-import { getStatusMeta, isDone, postStatusLabel } from "../domain/reportView";
+import { 
+  getStatusMeta,
+  isDone,
+  postStatusLabel,
+  type ReportItem, 
+  type ReportStatus 
+} from "@/shared";
 
 export default function ReportCard(props: {
   report: ReportItem;

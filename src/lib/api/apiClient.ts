@@ -72,6 +72,19 @@ export async function request<T = unknown>(
   return data as T;
 }
 
+export async function fetchJson<T>(path: string): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'GET',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!res.ok) {
+    const txt = await res.text().catch(() => '');
+    throw new Error(`HTTP ${res.status}: ${txt}`);
+  }
+  return (await res.json()) as T;
+}
+
 function safeJsonParse(text: string) {
   try {
     return JSON.parse(text);

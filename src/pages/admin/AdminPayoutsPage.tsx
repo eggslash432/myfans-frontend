@@ -1,34 +1,19 @@
 import { useEffect, useState } from 'react';
-import { ApiError } from '../../lib/api/apiClient';
 import {
   adminApprovePayout,
   adminListPayoutRequests,
   adminDownloadPayoutCsv,
+  ApiError,
 } from '@/lib/api';
-import type { AdminPayout } from '../../shared/types';
+import { 
+  approvalStatusLabel, 
+  targetLabel, 
+  targetName, 
+  type AdminPayout 
+} from '@/shared';
 
-function statusLabel(s: string) {
-  switch (s) {
-    case 'requested': return '申請中';
-    case 'approved': return '承認済み';
-    case 'paid': return '送金済み';
-    case 'rejected': return '却下';
-    default: return s;
-  }
-}
 
-function targetLabel(p: AdminPayout) {
-  return p.targetType === 'SHOP' ? 'SHOP' : 'CREATOR';
-}
-
-function targetName(p: AdminPayout) {
-  if (p.targetType === 'SHOP') {
-    return p.shop?.name ?? p.shopId ?? '-';
-  }
-  return p.creator?.publicName ?? p.creatorId ?? '-';
-}
-
-export default function AdminPayoutsPage() {
+export function AdminPayoutsPage() {
   const [payouts, setPayouts] = useState<AdminPayout[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
@@ -150,7 +135,7 @@ export default function AdminPayoutsPage() {
                       <td>¥{Number(p.amountJpy).toLocaleString()}</td>
                       <td>
                         <span className={`admin-status admin-status--${p.payoutStatus}`}>
-                          {statusLabel(p.payoutStatus)}
+                          {approvalStatusLabel(p.payoutStatus)}
                         </span>
                       </td>
                       <td>{new Date(p.requestedAt).toLocaleString()}</td>
@@ -182,7 +167,7 @@ export default function AdminPayoutsPage() {
 
                   <div className="admin-post-meta">
                     <span className={`admin-status admin-status--${p.payoutStatus}`}>
-                      {statusLabel(p.payoutStatus)}
+                      {approvalStatusLabel(p.payoutStatus)}
                     </span>
                     <span>{new Date(p.requestedAt).toLocaleString()}</span>
                   </div>

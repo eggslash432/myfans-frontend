@@ -1,7 +1,8 @@
 // front/src/components/ui/index.ts
 
 export { Badge } from './Badge';
-export { CreatorMonetizationStatus } from './CreatorMonetizationStatus';
-export { KycStatusBadge } from './KycStatusBadge';
+export { KpiCard } from './KpiCard';
+export { PasswordField } from './PasswordField';
+export { RangeButton } from './RangeButton';
 export { StatusBadge } from './StatusBadge';
 export { SubStatusBadge } from './SubStatusBadge';

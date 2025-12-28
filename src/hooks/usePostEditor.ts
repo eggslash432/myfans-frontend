@@ -24,8 +24,8 @@ export function usePostEditor(params: {
 
   const openEdit = useCallback(async (summaryPost: any) => {
     try {
-      const res = await getPost(summaryPost.id);
-      const full = unwrapPost(res);
+      const post = await getPost(summaryPost.id);
+      const full = unwrapPost(post);
       setEditingPost(full);
       setEditOpen(true);
     } catch (e: any) {

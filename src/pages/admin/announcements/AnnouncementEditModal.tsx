@@ -1,16 +1,10 @@
 // front/src/pages/admin/announcements/AnnouncementEditModal.tsx
 import { useEffect, useMemo, useState } from "react";
-import type { EditState } from "./types";
+import { isImage, type AnnouncementMedia, type EditState } from "@/shared";
 import {
   listAnnouncementMedia,
   uploadAnnouncementMedia,
-  type AnnouncementMedia,
-} from "@/lib/api/announcementMedia";
-
-function isImage(m: AnnouncementMedia) {
-  const t = (m.mediaType ?? "").toLowerCase();
-  return t.includes("image");
-}
+} from "@/lib/api";
 
 export function AnnouncementEditModal({
   editing,

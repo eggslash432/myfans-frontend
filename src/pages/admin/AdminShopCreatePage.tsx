@@ -7,47 +7,13 @@ import { ProtectedRoute } from "@/components";
 import { 
   adminCreateShop,
   adminSearchUsers,
-  ApiError,
 } from "@/lib/api";
+import type { PickUser } from "@/shared";
+import { getErrMsg } from "@/lib";
+import { unwrapUserSearchItems } from "./domain/unwrap";
 
-type PickUser = {
-  id: string;
-  email: string;
-  displayName?: string | null;
-  role?: string | null;
-};
 
-function normalizeMsg(msg: unknown): string {
-  if (!msg) return "";
-  if (Array.isArray(msg)) return msg.map((x) => String(x)).join("\n");
-  if (typeof msg === "string") return msg;
-  return String(msg);
-}
-
-function getErrMsg(e: unknown) {
-  if (!e) return "";
-  if (e instanceof ApiError) {
-    const m = normalizeMsg((e as any).body?.message);
-    return m || String(e.message ?? "");
-  }
-  if (e instanceof Error) return e.message;
-  return String(e);
-}
-
-function unwrapUserSearchItems(data: any): PickUser[] {
-  if (!data) return [];
-  // 返り値の揺れ吸収: {items: []} / {users: []} / [] など
-  const items = Array.isArray(data) ? data : (data.items ?? data.users ?? []);
-  if (!Array.isArray(items)) return [];
-  return items.map((u: any) => ({
-    id: String(u.id ?? ""),
-    email: String(u.email ?? ""),
-    displayName: u.displayName ?? u.publicName ?? u.name ?? null,
-    role: u.role ?? null,
-  })).filter((u) => u.id && u.email);
-}
-
-export default function AdminShopCreatePage() {
+export function AdminShopCreatePage() {
   const [name, setName] = useState("");
   const [userQuery, setUserQuery] = useState("");
   const [selectedOwner, setSelectedOwner] = useState<PickUser | null>(null);

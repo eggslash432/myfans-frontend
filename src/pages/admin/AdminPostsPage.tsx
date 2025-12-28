@@ -1,14 +1,16 @@
 // front/src/pages/admin/AdminPostsPage.tsx
 
 import { useMemo, useState } from "react";
-import { useAdminPostsPage } from "./hooks/useAdminPostsPage";
 import { AdminPostsFilters } from "./components/AdminPostsFilters";
 import { AdminPostsCards } from "./components/AdminPostsCards";
 import { AdminPostsTable } from "./components/AdminPostsTable";
 import { ReportsModal } from "./components/ReportsModal";
-import { buildViewList, type SortKey, type VisibilityFilter } from "./domain/adminPostsView";
+import { useAdminPostsPage } from "@/hooks";
+import type { SortKey, VisibilityFilter } from "@/shared";
+import { buildViewList } from "./domain/adminPostsView";
 
-export default function AdminPostsPage() {
+
+export function AdminPostsPage() {
   const {
     list,
     loading,

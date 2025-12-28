@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks';
 import { useNavigate, Link } from 'react-router-dom';
 import { PasswordField } from '@/components';
 
-export default function Signup() {
+export function Signup() {
   const { signup } = useAuth();
   const nav = useNavigate();
 

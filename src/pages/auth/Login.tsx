@@ -3,16 +3,9 @@ import { useState } from "react";
 import { useAuth } from "@/hooks";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { PasswordField } from "@/components";
+import { safeNext } from "@/shared";
 
-function safeNext(next: string | null): string {
-  // 外部URLや怪しい値を弾く（オープンリダイレクト対策）
-  if (!next) return "/";
-  if (!next.startsWith("/")) return "/";
-  if (next.startsWith("//")) return "/";
-  return next;
-}
-
-export default function Login() {
+export function Login() {
   const { login } = useAuth();
   const nav = useNavigate();
   const location = useLocation();

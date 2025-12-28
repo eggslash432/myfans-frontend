@@ -1,8 +1,10 @@
 // front/src/pages/admin/AdminReportsPage.tsx
-import ReportCard from "./components/ReportCard";
-import { useAdminReports } from "./hooks/useAdminReports";
 
-export default function AdminReportsPage() {
+import { useAdminReports } from "@/hooks";
+import ReportCard from "./components/ReportCard";
+
+
+export function AdminReportsPage() {
   const { reports, loading, err, busyKey, load, resolve, makePrivate } = useAdminReports();
 
   return (

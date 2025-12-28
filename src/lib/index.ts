@@ -6,3 +6,4 @@ export * from './domain';
 
 //単体
 export * from './authz';
+export * from './error';

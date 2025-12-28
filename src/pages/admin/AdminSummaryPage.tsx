@@ -2,128 +2,30 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { adminGetSummary } from '../../lib/api/admin';
-import type { AdminSummary } from '../../shared/types';
+import { 
+  adminGetFeeSetting,
+  adminGetSalesBreakdown,
+  adminGetSummary, 
+  adminListPayments
+} from '@/lib/api';
+import type { 
+  AdminPaymentRow, 
+  AdminSalesBreakdown, 
+  AdminSummary, 
+  FeeSettings 
+} from '@/shared';
+import { 
+  currentMonthStr, 
+  isoToLocal, 
+  yen
+} from '@/shared';
 
-type FeeSetting = {
-  managerPercent: number;
-  shopPercent: number;
-  creatorPercent: number;
-  updatedAt?: string;
-};
 
-type AdminSalesBreakdown = {
-  month: string; // YYYY-MM
-  // 支払総額（paid）
-  grossAmountJpy: number;
-
-  // 分配（Paymentスナップショット集計）
-  platformAmountJpy: number;
-  shopAmountJpy: number;
-  creatorAmountJpy: number;
-
-  // 任意（あれば）
-  stripeFeeJpy?: number;
-
-  // 件数
-  paidCount: number;
-};
-
-type AdminPaymentRow = {
-  id: string;
-  paidAt: string | null;
-  amountJpy: number;
-
-  // スナップショット
-  platformAmountJpy: number | null;
-  shopAmountJpy: number | null;
-  creatorAmountJpy: number | null;
-  stripeFeeJpy: number | null;
-
-  // 紐づけ
-  creatorId: string | null; // ※現状は creator.userId 想定
-  shopId: string | null;
-
-  externalTxId: string | null;
-};
-
-function yen(n: number) {
-  return new Intl.NumberFormat('ja-JP', {
-    style: 'currency',
-    currency: 'JPY',
-  }).format(n);
-}
-
-function isoToLocal(iso: string) {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return new Intl.DateTimeFormat('ja-JP', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(d);
-}
-
-/**
- * ここはプロジェクトのAPI設計に合わせて調整してOK：
- * - VITE_API_BASE_URL があればそれを使う
- * - 無ければ同一オリジン前提
- */
-const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? '';
-
-async function fetchJson<T>(path: string): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    method: 'GET',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-  });
-  if (!res.ok) {
-    const txt = await res.text().catch(() => '');
-    throw new Error(`HTTP ${res.status}: ${txt}`);
-  }
-  return (await res.json()) as T;
-}
-
-/**
- * 追加：手数料設定を取得（例）
- * - もし既に admin/settings で使ってるAPIがあるなら、ここをその関数に差し替えてOK
- */
-async function adminGetFeeSetting(): Promise<FeeSetting> {
-  return await fetchJson<FeeSetting>('/admin/fee-setting');
-}
-
-/**
- * 追加：月次の分配内訳（例）
- * - Payment(paymentStatus=paid & month) を集計して返すAPIを想定
- */
-async function adminGetSalesBreakdown(month: string): Promise<AdminSalesBreakdown> {
-  const q = new URLSearchParams({ month });
-  return await fetchJson<AdminSalesBreakdown>(`/admin/sales/breakdown?${q.toString()}`);
-}
-
-/**
- * 追加：月次の支払い一覧（例）
- * - 最新N件だけ返すAPIを想定
- */
-async function adminListPayments(month: string, limit = 30): Promise<AdminPaymentRow[]> {
-  const q = new URLSearchParams({ month, limit: String(limit) });
-  return await fetchJson<AdminPaymentRow[]>(`/admin/payments?${q.toString()}`);
-}
-
-function currentMonthStr() {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  return `${y}-${m}`;
-}
-
-export default function AdminSummaryPage() {
+export function AdminSummaryPage() {
   const [month, setMonth] = useState<string>(currentMonthStr());
 
   const [summary, setSummary] = useState<AdminSummary | null>(null);
-  const [fee, setFee] = useState<FeeSetting | null>(null);
+  const [fee, setFee] = useState<FeeSettings | null>(null);
   const [breakdown, setBreakdown] = useState<AdminSalesBreakdown | null>(null);
   const [payments, setPayments] = useState<AdminPaymentRow[] | null>(null);
 

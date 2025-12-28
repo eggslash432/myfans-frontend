@@ -2,6 +2,8 @@
 
 import type { ShopMemberRole } from "../prisma-enums";
 
+export type ShopRole = "owner" | "admin" | "staff";
+
 export type ShopCreatorApplicationStatus = "pending" | "approved" | "rejected";
 
 export type ShopSalesRange = "today" | "month" | "all";

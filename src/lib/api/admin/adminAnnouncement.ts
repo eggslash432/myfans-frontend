@@ -1,18 +1,6 @@
 // front/src/lib/api/adminAnnouncement.ts
 import { apiGet, apiPost, apiPatch, apiDelete } from "@/lib/api";
-
-export type Announcement = {
-  id: number;
-  title: string;
-  body: string;
-  linkUrl: string | null;
-  bannerImageUrl: string | null;
-  startsAt: string | null;
-  endsAt: string | null;
-  isEnabled: boolean;
-  createdAt: string;
-  updatedAt: string;
-};
+import type { Announcement } from "@/shared";
 
 // API返却が { items } / { item } / { ok } の想定
 export type AdminListAnnouncementsRes = { items: Announcement[] };

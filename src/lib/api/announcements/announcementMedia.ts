@@ -1,12 +1,6 @@
 // front/src/lib/api/announcementMedia.ts
 import { request } from "@/lib/api";
-
-export type AnnouncementMedia = {
-  id: number;
-  url: string;
-  mediaType: string; // "image" | "video" など
-  sortOrder: number;
-};
+import type { AnnouncementMedia } from "@/shared";
 
 export function uploadAnnouncementMedia(announcementId: number, files: File[]) {
   const form = new FormData();

@@ -1,5 +1,8 @@
 // front/src/lib/api/admin.ts
-import { request } from '@/lib/api/apiClient';
+import { 
+  fetchJson, 
+  request 
+} from '@/lib/api';
 import type {
   CreatorApprovalStatus, 
   KycStatus, 
@@ -14,12 +17,11 @@ import type {
   AdminUser,
   ListItems,
   UploadSetting,  
-  CreatorApplication,  
+  CreatorApplication,
+  AdminSalesBreakdown,
+  AdminPaymentRow,  
 } from '@/shared';
 
-//
-// API
-//
 
 export function adminGetSummary(): Promise<AdminSummary> {
   return request<AdminSummary>('/admin/summary');
@@ -222,4 +224,24 @@ export async function adminSearchUsers(params: { q: string; take?: number; curso
   if (params.take != null) qs.set("take", String(params.take));
   if (params.cursor) qs.set("cursor", params.cursor);
   return request<any>(`/admin/users/search?${qs.toString()}`, { method: "GET" });
+}
+
+
+export async function adminGetFeeSetting(): Promise<FeeSettings> {
+  return fetchJson('/admin/fee-setting');
+}
+
+export async function adminGetSalesBreakdown(
+  month: string
+): Promise<AdminSalesBreakdown> {
+  const q = new URLSearchParams({ month });
+  return fetchJson(`/admin/sales/breakdown?${q}`);
+}
+
+export async function adminListPayments(
+  month: string,
+  limit = 30
+): Promise<AdminPaymentRow[]> {
+  const q = new URLSearchParams({ month, limit: String(limit) });
+  return fetchJson(`/admin/payments?${q}`);
 }

@@ -1,6 +1,9 @@
 // front/src/shred/postLabels.ts
 import type { 
+  AdminPost,
+  PostStatus,
   PostSummary,
+  PostVisibility,
   Visibility,
 } from '@/shared';
 
@@ -16,6 +19,12 @@ export function statusLabel(p: Pick<PostSummary, "publishedStatus">): string {
     default:
       return "非公開";
   }
+}
+
+export function statusLabel2(s: PostStatus) {
+  if (s === "published") return "公開";
+  if (s === "private") return "非公開";
+  return "下書き";
 }
 
 /** 公開範囲ラベル */
@@ -34,6 +43,12 @@ export function visibilityLabel(
   }
 }
 
+export function visibilityLabel2(v: PostVisibility) {
+  if (v === "plan") return "プラン";
+  if (v === "paid_single") return "PPV";
+  return "無料";
+}
+
 /** UI表示用（状態＋公開範囲） */
 export function postStatusText(p: Pick<PostSummary, "publishedStatus" | "visibility">): string {
   const s = statusLabel(p);
@@ -50,3 +65,29 @@ export function getPostStatusLabel(p: PostSummary) {
   // それ以外は「非公開」扱い（unlisted/private等）
   return "非公開";
 }
+
+// StatusBadge に渡す “合成status”
+export function toPostBadgeStatus(p: AdminPost): string {
+  const st = normalizeStatus((p as any).publishedStatus);
+  const vis = normalizeVisibility((p as any).visibility);
+  return `${st}:${vis}`; // 例: "published:plan"
+}
+
+export function postStatusLabel(s?: string | null) {
+  if (s === "published") return "公開";
+  if (s === "private") return "非公開";
+  return "下書き";
+}
+
+export function normalizeStatus(s: any): PostStatus {
+  if (s === "published") return "published";
+  if (s === "private") return "private";
+  return "draft";
+}
+
+export function normalizeVisibility(v: any): PostVisibility {
+  if (v === "plan") return "plan";
+  if (v === "paid_single") return "paid_single";
+  return "free";
+}
+

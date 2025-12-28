@@ -1,19 +1,24 @@
 // front/src/pages/admin/AdminCreatorsPage.tsx
 import { useEffect, useMemo, useState } from "react";
-import { ApiError } from "../../lib/api/apiClient";
-import {
-  adminApproveCreatorApplication,
-  adminListCreatorApplications,
-  adminRejectCreatorApplication,
-} from "../../lib/api/admin";
-import type { CreatorApplication } from "../../shared/types";
 
 import CreatorApplicationsFilter from "./components/CreatorApplicationsFilter";
 import CreatorApplicationCard from "./components/CreatorApplicationCard";
 import CreatorRejectModal from "./components/CreatorRejectModal";
-import { filterByKeyword, type CreatorApprovalStatusFilter } from "./domain/creatorsAdminView";
+import { filterByKeyword } from "./domain/creatorsAdminView";
 
-export default function AdminCreatorsPage() {
+import type { 
+  CreatorApplication, 
+  CreatorApprovalStatusFilter 
+} from "@/shared";
+import { 
+  adminApproveCreatorApplication, 
+  adminListCreatorApplications, 
+  adminRejectCreatorApplication, 
+  ApiError 
+} from "@/lib/api";
+
+
+export function AdminCreatorsPage() {
   const [list, setList] = useState<CreatorApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");

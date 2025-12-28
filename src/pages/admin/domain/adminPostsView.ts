@@ -1,71 +1,14 @@
 // front/src/pages/admin/domain/adminPostsView.ts
 
-import type { AdminPost } from "../../../shared/types";
-
-export type PostStatus = "draft" | "published" | "private";
-
-// 投稿データ側の visibility（"all" は混ぜない）
-export type PostVisibility = "free" | "plan" | "paid_single";
-
-// フィルタUI側（"all" を含む）
-export type VisibilityFilter = "all" | PostVisibility;
-
-export type StatusFilter = "all" | PostStatus;
-
-export type SortKey =
-  | "createdAt"
-  | "publishedAt"
-  | "title"
-  | "reportsCount"
-  | "creatorName"
-  | "status";
-
-export function normalizeStatus(s: any): PostStatus {
-  if (s === "published") return "published";
-  if (s === "private") return "private";
-  return "draft";
-}
-
-export function normalizeVisibility(v: any): PostVisibility {
-  if (v === "plan") return "plan";
-  if (v === "paid_single") return "paid_single";
-  return "free";
-}
-
-export function creatorLabel(p: AdminPost): string {
-  const name = (p as any).creatorName?.trim?.() ? (p as any).creatorName : "";
-  if (name) return name;
-
-  const creatorId = (p as any).creatorId;
-  if (creatorId) return `(${String(creatorId).slice(0, 8)}…)`;
-
-  return "管理者";
-}
-
-export function statusLabel(s: PostStatus) {
-  if (s === "published") return "公開";
-  if (s === "private") return "非公開";
-  return "下書き";
-}
-
-export function visibilityLabel(v: PostVisibility) {
-  if (v === "plan") return "プラン";
-  if (v === "paid_single") return "PPV";
-  return "無料";
-}
-
-// StatusBadge に渡す “合成status”
-export function toPostBadgeStatus(p: AdminPost): string {
-  const st = normalizeStatus((p as any).publishedStatus);
-  const vis = normalizeVisibility((p as any).visibility);
-  return `${st}:${vis}`; // 例: "published:plan"
-}
-
-function toTime(v: any) {
-  if (!v) return 0;
-  const t = new Date(v).getTime();
-  return Number.isFinite(t) ? t : 0;
-}
+import { 
+  normalizeStatus,
+  normalizeVisibility,
+  toTime,
+  type AdminPost, 
+  type SortKey, 
+  type StatusFilter,
+  type VisibilityFilter
+} from "@/shared";
 
 export function buildViewList(params: {
   list: AdminPost[];

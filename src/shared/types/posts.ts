@@ -115,6 +115,11 @@ export type PostItem = {
   creatorName?: string | null;
 };
 
+export type PostStatus = "draft" | "published" | "private";
+
+// 投稿データ側の visibility（"all" は混ぜない）
+export type PostVisibility = "free" | "plan" | "paid_single";
+
 /** 一覧系の共通レスポンス */
 export type ListResponse<T> = { items: T[] };
 

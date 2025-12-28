@@ -1,7 +1,7 @@
 //front/src/shared/utils/posts.ts
 
-export function unwrapPost(res: any) {
-  return res?.data ?? res?.post ?? res;
+export function unwrapPost(post: any) {
+  return post?.data ?? post?.post ?? post;
 }
 
 export function toArrayUploaded(res: any): any[] {

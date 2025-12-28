@@ -5,14 +5,17 @@ import {
   adminUpdateAdminRole,
   adminUpdateFeeSettings,
   adminUpdateUploadSettings,
-} from "../../lib/api/admin";
-import { useAuth } from "../../hooks/useAuth";
-import { useAdminSettingsData } from "./hooks/useAdminSettingsData";
+} from "@/lib/api";
+
 import { AdminRoleSection } from "./components/AdminRoleSection";
 import { FeeSettingsSection } from "./components/FeeSettingsSection";
 import { UploadSettingsSection } from "./components/UploadSettingsSection";
+import { 
+  useAdminSettingsData, 
+  useAuth 
+} from "@/hooks";
 
-export default function AdminSettingsPage() {
+export function AdminSettingsPage() {
   const { user } = useAuth();
 
   const {
