@@ -1,8 +1,10 @@
-// front/src/hooks/useMeSummary.ts
+// features/users/hooks/useMeSummary.ts
+
 import { useEffect, useState } from "react";
-import { useAuth } from "./useAuth";
-import { getMe } from "../lib/api/auth"; // 実際の置き場所に合わせて
-import type { Me } from "../shared/types";
+import { getMe } from "@/lib/api";
+import type { Me } from "@/shared";
+import { useAuth } from "@/features/auth/hooks";
+import { getErrMsg } from "@/lib/error";
 
 export function useMeSummary() {
   const { user, ready } = useAuth();
@@ -12,6 +14,7 @@ export function useMeSummary() {
 
   useEffect(() => {
     if (!ready) return;
+
     if (!user) {
       setSummary(null);
       setErr(null);
@@ -19,21 +22,24 @@ export function useMeSummary() {
     }
 
     let alive = true;
-    (async () => {
+
+    const run = async () => {
       try {
         setLoading(true);
         setErr(null);
-        const s = await getMe();
-        if (alive) setSummary(s);
-      } catch (e: any) {
-        const msg = e?.body?.message ?? e?.message ?? "Failed to fetch";
-        if (alive) setErr(String(msg));
+        const me = await getMe();
+        if (alive) setSummary(me);
+      } catch (e) {
+        if (alive) setErr(getErrMsg(e));
       } finally {
         if (alive) setLoading(false);
       }
-    })();
+    };
 
-    return () => { alive = false; };
+    void run();
+    return () => {
+      alive = false;
+    };
   }, [ready, user?.id]);
 
   return { summary, loading, err };

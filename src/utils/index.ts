@@ -1,4 +1,4 @@
-// front/src/shared/utils/index.ts
+// front/src/utils/index.ts
 
 //単体
 export * from './dateTime';
