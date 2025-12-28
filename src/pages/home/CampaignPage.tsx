@@ -1,21 +1,10 @@
+//front/src/pages/home/CampaignPage.tsx
+
 import { useEffect, useMemo, useState } from "react";
 import { apiGet } from "@/lib/api";
+import { excerpt, type Announcement } from "@/shared";
 
-type Announcement = {
-  id: number;
-  title: string;
-  body: string;
-  linkUrl: string | null;
-  bannerImageUrl: string | null;
-};
-
-function excerpt(text: string, max = 80) {
-  const t = (text ?? "").replace(/\s+/g, " ").trim();
-  if (!t) return "";
-  return t.length > max ? t.slice(0, max) + "…" : t;
-}
-
-export default function CampaignPage() {
+export function CampaignPage() {
   const [items, setItems] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");

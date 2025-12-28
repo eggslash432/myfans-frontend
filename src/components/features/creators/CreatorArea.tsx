@@ -1,4 +1,4 @@
-// front/src/pages/mypage/mypage/sections/CreatorArea.tsx
+// front/src/components/CreatorArea.tsx
 
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -6,9 +6,14 @@ import {
   applyCreator,
   createStripeOnboardingLink,
 } from '@/lib/api';
-import type { CreatorMeResponse } from '@/shared/types';
-import { creatorMenuItems } from '../creatorMenu';
-import { CreatorMonetizationStatus, KycStatusBadge } from '@/components';
+import { 
+  creatorMenuItems, 
+  type CreatorMeResponse 
+} from '@/shared';
+import { 
+  CreatorMonetizationStatus, 
+  KycStatusBadge 
+} from '@/components';
 
 type Props = {
   user: any;

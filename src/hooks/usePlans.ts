@@ -1,20 +1,13 @@
+// front/src/hooks/usePlans.ts
+
 import { useQuery } from '@tanstack/react-query';
-import { getMyPlans, getCreatorPlans } from '../lib/api/plans';
-import type { PlansResponse } from '../shared/types';
+import { getMyPlans } from '@/lib/api';
+import type { PlansResponse } from '@/shared';
 
 // 自分のプラン
 export function useMyPlans() {
   return useQuery<PlansResponse>({
     queryKey: ['plans', 'me'],
     queryFn: () => getMyPlans(),
-  });
-}
-
-// クリエイターのプラン
-export function useCreatorPlans(creatorId: string) {
-  return useQuery<PlansResponse>({
-    queryKey: ['plans', 'creator', creatorId],
-    queryFn: () => getCreatorPlans(creatorId),
-    enabled: !!creatorId,
   });
 }

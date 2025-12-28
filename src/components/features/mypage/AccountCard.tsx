@@ -1,5 +1,4 @@
-// front/src/pages/mypage/mypage/sections/AccountCard.tsx
-import React from 'react';
+// front/src/components/AccountCard.tsx
 
 export function AccountCard({ email }: { email: string }) {
   return (

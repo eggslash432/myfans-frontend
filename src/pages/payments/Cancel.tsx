@@ -1,7 +1,7 @@
 // front/src/pages/payments/Cancel.tsx
 import { Link, useSearchParams } from "react-router-dom";
 
-export default function Cancel() {
+export function Cancel() {
   const [params] = useSearchParams();
   const from = params.get("from"); // "plan" | "ppv"
   const postId = params.get("postId");

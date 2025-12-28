@@ -1,4 +1,4 @@
-// front/src/pages/mypage/mypage/sections/SubscriptionsSection.tsx
+// front/src/components/SubscriptionsSection.tsx
 
 import { SubStatusBadge } from '@/components';
 import type { MeSummary } from '@/shared';

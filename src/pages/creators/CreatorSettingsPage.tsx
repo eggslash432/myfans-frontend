@@ -2,12 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getCreatorMe, startCreatorKyc } from '../../lib/api';
-import type { CreatorMeResponse } from '../../shared/types';
+import { getCreatorMe, startCreatorKyc } from '@/lib/api';
+import type { CreatorMeResponse, KycStatusFront } from '@/shared';
 
-type KycStatusFront = 'approved' | 'pending' | 'rejected';
-
-export default function CreatorSettingsPage() {
+export function CreatorSettingsPage() {
   const [creator, setCreator] = useState<CreatorMeResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string>('');

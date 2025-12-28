@@ -1,17 +1,13 @@
 // front/src/pages/payments/Success.tsx
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { getUserMe } from "../../lib/api";
-import type { MeSummary } from "../../shared/types";
+import { getUserMe } from "@/lib/api";
+import { 
+  formatDate, 
+  type MeSummary 
+} from "@/shared";
 
-function formatDate(d?: string | null) {
-  if (!d) return "-";
-  const dt = new Date(d);
-  if (Number.isNaN(dt.getTime())) return String(d);
-  return dt.toLocaleString("ja-JP");
-}
-
-export default function Success() {
+export function Success() {
   const [params] = useSearchParams();
   const [summary, setSummary] = useState<MeSummary | null>(null);
   const [msg, setMsg] = useState("反映中...");

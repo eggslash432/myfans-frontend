@@ -1,16 +1,21 @@
 // front/src/pages/CreatorPage.tsx
 import { useEffect, useState } from 'react';
-import { API_ORIGIN, ApiError } from '../../lib/api/apiClient';
-import { createPlanCheckoutSession } from '../../lib/api/payments';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
-import type { Creator, PostSummary } from '../../shared/types';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '@/hooks';
 import { 
+  API_ORIGIN, 
+  ApiError,
+  createPlanCheckoutSession,
   getCreatorPosts, 
-  getCreatorPublicProfile 
-} from '../../lib/api/creators';
+  getCreatorPublicProfile,  
+} from '@/lib/api';
+import type { 
+  Creator, 
+  PostSummary 
+} from '@/shared';
 
-export default function CreatorPage() {
+
+export function CreatorPage() {
   const { id } = useParams();
   const [creator, setCreator] = useState<Creator | null>(null);
   const [posts, setPosts] = useState<PostSummary[]>([]);

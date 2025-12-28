@@ -11,7 +11,7 @@ import {
 import type { 
   UiCreator, 
   UiAdminPost 
-} from "./types";
+} from "@/shared";
 
 export function GenreDetailPage() {
   const { genreId } = useParams<{ genreId: string }>();

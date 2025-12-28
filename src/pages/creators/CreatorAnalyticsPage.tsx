@@ -5,7 +5,7 @@ import {
   creatorAnalyticsRevenueTrend,
   creatorAnalyticsPostRanking,
   creatorAnalyticsSubscriberTrend,
-} from "@/lib/api/creators";
+} from "@/lib/api";
 
 import {
   ResponsiveContainer,
@@ -19,39 +19,15 @@ import {
   Bar,
   Legend,
 } from "recharts";
+import { 
+  toYmd, 
+  type PostRevenueRow, 
+  type RevenueTrendPoint, 
+  type SimpleSummary, 
+  type SubscriberTrendPoint 
+} from "@/shared";
 
-type SimpleSummary = {
-  totalRevenueJpy: number;
-  totalSubscribers: number;
-};
-
-type RevenueTrendPoint = {
-  date: string; // "2025-12-01" or "2025-12"
-  revenueJpy: number;
-};
-
-type PostRevenueRow = {
-  postId: string;
-  title: string;
-  revenueJpy: number;
-  buyers: number;
-};
-
-type SubscriberTrendPoint = {
-  date: string; // "2025-12-01" or "2025-12"
-  newSubs: number;
-  canceledSubs: number;
-  net: number;
-};
-
-function toYmd(d: Date) {
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
-}
-
-export default function CreatorAnalyticsPage() {
+export function CreatorAnalyticsPage() {
   // フィルタ
   const [granularity, setGranularity] = useState<"day" | "month">("day");
   const [from, setFrom] = useState<string>(() => {

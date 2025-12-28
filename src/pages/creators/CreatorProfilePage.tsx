@@ -6,9 +6,9 @@ import {
   getCreatorMe, 
   updateCreatorProfile, 
   uploadCreatorAvatar 
-} from '../../lib/api';
+} from '@/lib/api';
 
-export default function CreatorProfilePage() {
+export function CreatorProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState('');

@@ -1,6 +1,5 @@
-// front/src/pages/mypage/mypage/sections/PaymentsSection.tsx
-import React from 'react';
-import type { MeSummary } from '../../../../shared/types';
+// front/src/components/PaymentsSection.tsx
+import type { MeSummary } from '@/shared';
 
 export function PaymentsSection({ summary }: { summary: MeSummary }) {
   const payments = summary.payments ?? [];

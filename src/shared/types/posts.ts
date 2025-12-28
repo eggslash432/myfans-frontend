@@ -26,6 +26,10 @@ export type Post = {
   canViewSample?: boolean;
 };
 
+export type UiPost = {
+  genreId: string;
+};
+
 export type PostMedia = {
   id: string;
   postId: string;

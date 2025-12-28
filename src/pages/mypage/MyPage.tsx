@@ -1,15 +1,18 @@
 // front/src/pages/mypage/MyPage.tsx
 import { useState } from 'react';
-import { PostEditModal } from '../posts/postEditModal/PostEditModal';
+import { 
+  useMyPageData,
+  usePostEditor, 
+} from '@/hooks';
+import { PostEditModal } from '@/pages';
 
-import { useMyPageData } from './mypage/useMyPageData';
-import { usePostEditor } from './mypage/usePostEditor';
-
-import { AccountCard } from './mypage/sections/AccountCard';
-import { CreatorArea } from './mypage/sections/CreatorArea';
-import { MyPostsSection } from './mypage/sections/MyPostsSection';
-import { SubscriptionsSection } from './mypage/sections/SubscriptionsSection';
-import { PaymentsSection } from './mypage/sections/PaymentsSection';
+import { 
+  AccountCard,
+  CreatorArea,
+  MyPostsSection,
+  SubscriptionsSection,
+  PaymentsSection,
+} from '@/components';
 
 export function MyPage() {
   const {

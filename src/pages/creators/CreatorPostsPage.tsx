@@ -12,10 +12,10 @@ import type {
   PublishedStatus 
 } from "@/shared";
 import { StatusBadge }from "@/components";
-import { PostEditModal } from "../posts/postEditModal/PostEditModal";
+import { PostEditModal } from "@/pages";
 
 
-export default function CreatorPostsPage() {
+export function CreatorPostsPage() {
   const [items, setItems] = useState<PostSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");

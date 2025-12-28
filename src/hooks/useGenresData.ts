@@ -1,7 +1,7 @@
-// front/src/pages/genres/useGenresData.ts
+// front/src/hooks/useGenresData.ts
 
 import { useMemo } from "react";
-import type { Genre } from "@/pages/home/types";
+import type { Genre } from "@/shared";
 
 export function useGenresData() {
   // 今は Home と同じ固定ジャンルでOK

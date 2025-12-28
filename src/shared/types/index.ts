@@ -1,14 +1,17 @@
 // front/src/shared/types/index.ts
 
-export * from "./ui";
+export * from './announcements';
 export * from "./auth";
-export * from "./me";
-export * from "./posts";
-export * from "./creators";
-export * from "./plans";
-export * from "./payments";
-export * from "./reports";
 export * from "./admin";
-export * from "./shops";
 export * from "./badge";
+export * from "./creators";
+export * from './genre';
+export * from './kyc';
+export * from "./me";
 export * from './media';
+export * from "./payments";
+export * from "./plans";
+export * from "./posts";
+export * from "./reports";
+export * from "./shops";
+export * from "./ui";

@@ -1,21 +1,19 @@
 // front/src/pages/mypage/mypage/useMyPageData.ts
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getUserMe, getCreatorMe, myPosts } from '../../../lib/api';
-import { useAuth } from '../../../hooks/useAuth';
-import { isAdminRole } from "../../../lib/authz";
-import type { CreatorMeResponse, MeSummary, PostSummary } from '../../../shared/types';
-
-function unwrapCreator(res: any): CreatorMeResponse | null {
-  const c = res?.data ?? res?.creator ?? res?.item ?? res;
-  if (!c || typeof c !== 'object') return null;
-
-  if (typeof (c as any).approvalStatus === 'string') {
-    return c as CreatorMeResponse;
-  }
-
-  return null;
-}
+import { 
+  getUserMe, 
+  getCreatorMe, 
+  myPosts 
+} from '@/lib/api';
+import { useAuth } from '@/hooks';
+import { isAdminRole } from "@/lib";
+import { 
+  unwrapCreator,
+  type CreatorMeResponse, 
+  type MeSummary, 
+  type PostSummary 
+} from '@/shared';
 
 export function useMyPageData() {
   const { user, ready } = useAuth();

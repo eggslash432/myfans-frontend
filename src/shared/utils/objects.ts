@@ -13,3 +13,4 @@ export function prune<T>(obj: T): T {
   }
   return obj;
 }
+

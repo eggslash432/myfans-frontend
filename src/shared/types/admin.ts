@@ -23,6 +23,13 @@ export type AdminPost = {
   reportsCount: number;
 };
 
+export type UiAdminPost = {
+  id: string;
+  title: string;
+  body: string;
+  dateStr: string;
+};
+
 export type AdminSummary = {
   salesMonthly: number;
   newUsersMonthly: number;

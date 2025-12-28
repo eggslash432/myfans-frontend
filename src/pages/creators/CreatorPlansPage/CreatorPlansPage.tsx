@@ -1,11 +1,10 @@
 // front/src/pages/creators/CreatorPlansPage/index.tsx
 import { useMemo } from "react";
-import { useCreatorPlans } from "./useCreatorPlans";
-import { CreatorPlanList } from "./CreatorPlanList";
-import { CreatorPlanModal } from "./CreatorPlanModal";
-import { friendlyCreatorPlansError } from "./creatorPlans.types";
+import { useCreatorPlans } from "@/hooks";
+import { friendlyCreatorPlansError } from "@/shared";
+import { CreatorPlanList, CreatorPlanModal } from "@/pages";
 
-export default function CreatorPlansPage() {
+export function CreatorPlansPage() {
   const vm = useCreatorPlans();
 
   const friendlyErr = useMemo(

@@ -6,22 +6,12 @@ import {
   updateMyPost,
   uploadPostMedia,
 } from '@/lib/api';
-import type { 
-  PublishedStatus,
-  PostSummary, 
+import { 
+  type PublishedStatus,
+  type PostSummary,
+  unwrapPost,
+  toArrayUploaded, 
 } from '@/shared';
-
-function unwrapPost(res: any) {
-  return res?.data ?? res?.post ?? res;
-}
-
-function toArrayUploaded(res: any): any[] {
-  // uploadPostMedia の戻りがブレても吸収
-  if (!res) return [];
-  if (Array.isArray(res)) return res;
-  if (Array.isArray(res.items)) return res.items;
-  return [res];
-}
 
 export function usePostEditor(params: {
   onUpdateList: (postId: string, patch: Partial<PostSummary>) => void;

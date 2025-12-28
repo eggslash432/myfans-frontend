@@ -6,26 +6,17 @@ import { useState } from 'react';
 import { 
   getCreatorPublicProfile,
   createCheckoutSession, 
-} from '../../lib/api';
-import type { Creator, Plan } from '../../shared/types';
+} from '@/lib/api';
+import type { 
+  Creator, 
+  Plan 
+} from '@/shared';
+import { 
+  planInterval, 
+  planPriceYen, 
+} from '@/shared';
 
-function planPriceYen(p: Plan): number {
-  // shared の実態に合わせて吸収（price が無い問題の解決）
-  const anyPlan = p as any;
-  return (
-    anyPlan.priceJpy ??
-    anyPlan.price ??
-    anyPlan.amountJpy ??
-    0
-  );
-}
-
-function planInterval(p: Plan): 'month' | 'year' {
-  const anyPlan = p as any;
-  return (anyPlan.billingInterval ?? anyPlan.interval ?? 'month') as 'month' | 'year';
-}
-
-export default function Plans() {
+export function Plans() {
   const { id } = useParams();
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -50,7 +41,7 @@ export default function Plans() {
       const cancelUrl = `${window.location.origin}/creators/${id}`;
 
       // ✅ createCheckoutSession は「url文字列」を返す + 引数必須
-      const url = await createCheckoutSession({
+      const { url } = await createCheckoutSession({
         planId,
         successUrl,
         cancelUrl,
