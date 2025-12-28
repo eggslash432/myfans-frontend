@@ -1,10 +1,14 @@
 // front/src/hooks/useAuth.tsx
 
+import type { Role } from "@/shared";
+import type { Me } from "@/shared/types";
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
-
-import type { Me } from "../shared/types";
-import type { Role } from "../shared/prisma-enums";
-import { getMe, login as apiLogin, signup as apiSignup, logout as apiLogout } from "../lib/api/auth";
+import { getMe } from "../api/me";
+import {
+  login as apiLogin,
+  signup as apiSignup,
+  logout as apiLogout,
+} from "../api/session";
 
 type AuthContextType = {
   user: Me | null;

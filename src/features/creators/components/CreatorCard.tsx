@@ -1,6 +1,7 @@
 // front/src/components/home/CreatorCard.tsx
 
-import type { UiCreator } from "../../pages/home/types";
+import type { UiCreator } from "@/shared";
+
 
 export function CreatorCard({
   creator,

@@ -1,10 +1,10 @@
 // front/src/pages/posts/PostEditModal/usePostEditForm.ts
 import { useEffect, useMemo, useState } from "react";
 import { 
-  unwrapPost, 
   type PublishedStatus, 
   type Visibility 
 } from "@/shared";
+import { unwrapPost } from "../domain";
 
 export function usePostEditForm(params: {
   post: any;

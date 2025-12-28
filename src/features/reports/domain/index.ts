@@ -1,2 +1,3 @@
 //
-export * from './reportView';
+export * from './reportStatus';
+export * from './reportStatusMeta';

@@ -5,8 +5,8 @@ import { Navigate } from "react-router-dom";
 import { ProtectedRoute } from "@/components";
 import { 
   useAuth,
-  useCreatorMe,
- } from "@/hooks";
+ } from "@/features/auth";
+import { useCreatorMe } from "@/features/creators";
 
 export default function CreatorOrAdminRoute({ children }: { children: ReactNode }) {
   // まずログイン必須

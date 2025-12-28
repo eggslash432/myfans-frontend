@@ -1,10 +1,11 @@
 // front/src/pages/posts/PostEditModal/PostEditModal.tsx
+import { useAuth } from "@/features/auth";
 import { MediaEditor } from "./MediaEditor";
 import { PublishSettings } from "./PublishSettings";
-import { useAuth, usePostEditForm } from "@/hooks";
 import { isAdminRole } from "@/lib/authz";
-import { deletePostMedia } from "@/lib/api"; // ✅ 追加
 import type { PostEditValues } from "@/shared";
+import { usePostEditForm } from "@/features/posts";
+import { deletePostMedia } from "@/features/media";
 
 type PostProps = {
   post: any | null;

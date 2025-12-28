@@ -3,17 +3,14 @@
 import { Link, useNavigate } from 'react-router-dom';
 import {
   API_ORIGIN,
-  applyCreator,
-  createStripeOnboardingLink,
 } from '@/lib/api';
 import { 
   creatorMenuItems, 
   type CreatorMeResponse 
 } from '@/shared';
-import { 
-  CreatorMonetizationStatus, 
-  KycStatusBadge 
-} from '@/components';
+import { applyCreator, createStripeOnboardingLink } from '../api';
+import { KycStatusBadge } from '@/features/kyc';
+import { CreatorMonetizationStatus } from './CreatorMonetizationStatus';
 
 type Props = {
   user: any;

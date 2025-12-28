@@ -1,22 +1,13 @@
 // front/src/pages/admin/announcements/AdminAnnouncementsPage.tsx
 import { useEffect, useMemo, useState } from "react";
-import {
-  adminCreateAnnouncement,
-  adminDeleteAnnouncement,
-  adminListAnnouncements,
-  adminUpdateAnnouncement,
-} from "@/lib/api";
 import { AnnouncementEditModal } from "./AnnouncementEditModal";
 import { 
-  emptyEdit, 
-  fromLocalInputValue, 
-  isActiveNow, 
-  pickCreatedId, 
-  toLocalInputValue, 
   type Announcement, 
   type AnnouncementEditState 
 } from "@/shared";
-import { AnnouncementTable } from "@/components";
+import { adminCreateAnnouncement, adminDeleteAnnouncement, adminListAnnouncements, adminUpdateAnnouncement, emptyEdit, isActiveNow, pickCreatedId } from "@/features/admin";
+import { fromLocalInputValue, toLocalInputValue } from "@/utils";
+import { AnnouncementTable } from "@/features/announcements";
 
 
 export function AdminAnnouncementsPage() {

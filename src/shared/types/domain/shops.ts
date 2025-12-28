@@ -42,3 +42,9 @@ export type ShopSalesSummary = {
   net: number; // 入金対象
   transactions: number; // 取引数
 };
+
+export type ShopInvite = {
+  code: string;
+  role: ShopMemberRole;
+  expiresAt?: string | null;
+};

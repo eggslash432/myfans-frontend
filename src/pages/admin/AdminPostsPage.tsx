@@ -1,10 +1,11 @@
 // front/src/pages/admin/AdminPostsPage.tsx
 
 import { useMemo, useState } from "react";
-import { useAdminPostsPage } from "@/hooks";
 import type { SortKey, VisibilityFilter } from "@/shared";
 import { buildViewList } from "./domain/adminPostsView";
-import { AdminPostsCards, AdminPostsFilters, AdminPostsTable, ReportsModal } from "@/components";
+import { AdminPostsCards, AdminPostsFilters, AdminPostsTable, useAdminPostsPage } from "@/features/admin";
+import { ReportsModal } from "@/features/reports";
+
 
 
 export function AdminPostsPage() {

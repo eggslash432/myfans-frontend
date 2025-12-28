@@ -1,19 +1,15 @@
 // front/src/pages/mypage/mypage/useMyPageData.ts
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  getUserMe, 
-  getCreatorMe, 
-  myPosts 
-} from '@/lib/api';
-import { useAuth } from '@/hooks';
 import { isAdminRole } from "@/lib";
 import { 
-  unwrapCreator,
   type CreatorMeResponse, 
   type MeSummary, 
   type PostSummary 
 } from '@/shared';
+import { getUserMe, useAuth } from '@/features/auth';
+import { getCreatorMe, unwrapCreator } from '@/features/creators';
+import { myPosts } from '@/features/posts';
 
 export function useMyPageData() {
   const { user, ready } = useAuth();

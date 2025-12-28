@@ -1,4 +1,6 @@
-// front/src/lib/api/shops/index.ts
-
-export * from './shops';
-export * from './shopDashboard';
+// front/src/features/shops/api/index.ts
+export * from "./creatorApplications";
+export * from "./sales";
+export * from "./invites";
+export * from "./me";
+export * from "./dashboard";

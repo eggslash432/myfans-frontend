@@ -1,6 +1,6 @@
 // front/src/pages/genres/GenresPage.tsx
 import { useNavigate } from "react-router-dom";
-import { useGenresData } from "@/hooks";
+import { useGenresData } from "@/features/genres";
 
 export function GenresPage() {
   const navigate = useNavigate();

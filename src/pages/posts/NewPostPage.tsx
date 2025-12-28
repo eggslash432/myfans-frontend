@@ -7,8 +7,8 @@ import { VisibilitySection } from './newPost/VisibilitySection';
 import { AgeRatingSection } from './newPost/AgeRatingSection';
 import { PublishStatusSection } from './newPost/PublishStatusSection';
 import { isAdminRole } from '@/lib/authz';
-import { useAuth } from '@/hooks';
-import { useNewPostForm } from '@/hooks';
+import { useAuth } from '@/features/auth';
+import { useNewPostForm } from '@/features/posts';
 
 export function NewPostPage() {
   const { user } = useAuth();

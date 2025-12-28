@@ -1,5 +1,5 @@
 // front/src/components/features/announcements/AnnouncementTable.tsx
-import { campaignBadgeClass, campaignBadgeText } from "@/components";
+import { campaignBadgeClass, campaignBadgeText } from "@/features/campaigns";
 import type { Announcement } from "@/shared";
 
 export function AnnouncementTable({

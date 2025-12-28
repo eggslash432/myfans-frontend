@@ -1,18 +1,15 @@
 // front/src/pages/mypage/MyPage.tsx
 import { useState } from 'react';
 import { 
-  useMyPageData,
-  usePostEditor, 
-} from '@/hooks';
-import { PostEditModal } from '@/pages';
-
-import { 
   AccountCard,
+  useMyPageData,
+} from '@/features/mypage';
+import { PostEditModal } from '../posts';
+import { 
   CreatorArea,
-  MyPostsSection,
-  SubscriptionsSection,
-  PaymentsSection,
-} from '@/components';
+} from '@/features/creators';
+import { MyPostsSection, usePostEditor } from '@/features/posts';
+import { PaymentsSection, SubscriptionsSection } from '@/features/payments';
 
 export function MyPage() {
   const {

@@ -1,16 +1,10 @@
 // front/src/pages/creator/CreatorPayoutsPage/useCreatorPayouts.ts
 import { useEffect, useMemo, useState } from "react";
-import {
-  getCreatorMe,
-  getCreatorPayoutBalance,
-  listCreatorPayouts,
-  requestCreatorPayout,
-  createStripeOnboardingLink,
-} from "@/lib/api";
 import type { 
   CreatorMeResponse, 
   Payout 
 } from "@/shared/types";
+import { createStripeOnboardingLink, getCreatorMe, getCreatorPayoutBalance, listCreatorPayouts, requestCreatorPayout } from "../api";
 
 export function useCreatorPayouts() {
   const [creator, setCreator] = useState<CreatorMeResponse | null>(null);

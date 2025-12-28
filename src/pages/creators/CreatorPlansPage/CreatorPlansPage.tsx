@@ -1,8 +1,7 @@
 // front/src/pages/creators/CreatorPlansPage/index.tsx
 import { useMemo } from "react";
-import { useCreatorPlans } from "@/hooks";
-import { friendlyCreatorPlansError } from "@/shared";
 import { CreatorPlanList, CreatorPlanModal } from "@/pages";
+import { friendlyCreatorPlansError, useCreatorPlans } from "@/features/creators";
 
 export function CreatorPlansPage() {
   const vm = useCreatorPlans();

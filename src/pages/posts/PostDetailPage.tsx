@@ -2,21 +2,17 @@
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-
-import {
-  ApiError,
-  createPlanCheckoutSession,
-  createPpvCheckoutSession,
-  getPostDetail,
-  reportPost,
-} from '@/lib/api';
 import { PostHeader } from './postDetail/PostHeader';
 import { SampleSection } from './postDetail/SampleSection';
 import { MediaGallery } from './postDetail/MediaGallery';
 import { LockedPanel } from './postDetail/LockedPanel';
 import { ReportButton } from './postDetail/ReportButton';
-import { useAuth, useSampleLock } from '@/hooks';
 import type { PostDetail } from '@/shared';
+import { useAuth } from '@/features/auth';
+import { useSampleLock } from '@/features/media';
+import { getPostDetail, reportPost } from '@/features/posts';
+import { ApiError } from '@/lib/api';
+import { createPlanCheckoutSession, createPpvCheckoutSession } from '@/features/payments';
 
 export function PostDetailPage() {
   const { id } = useParams<{ id: string }>();

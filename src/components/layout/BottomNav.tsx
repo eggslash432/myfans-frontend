@@ -1,7 +1,6 @@
 // front/src/components/layout/BottomNav.tsx
 
 import { Link, useLocation } from "react-router-dom";
-import { useAuth, useShopMe } from "@/hooks";
 import { isAdminRole } from "@/lib/authz";
 import {
   HomeIcon,
@@ -12,6 +11,8 @@ import {
   Cog6ToothIcon,
   BuildingStorefrontIcon,
 } from "@heroicons/react/24/outline";
+import { useAuth } from "@/features/auth";
+import { useShopMe } from "@/features/shops";
 
 export function BottomNav() {
   const location = useLocation();

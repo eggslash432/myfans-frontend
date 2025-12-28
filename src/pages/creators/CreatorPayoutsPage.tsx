@@ -1,12 +1,7 @@
 // front/src/pages/creator/CreatorPayoutsPage/index.tsx
-import { 
-  CreatorKycCard, 
-  PayoutBalanceCard, 
-  PayoutHistoryTable, 
-  PayoutRequestForm 
-} from "@/components";
-import { useCreatorPayouts } from "@/hooks";
-import { isCreatorNotFoundError } from "@/shared";
+
+import { CreatorKycCard, isCreatorNotFoundError, useCreatorPayouts } from "@/features/creators";
+import { PayoutBalanceCard, PayoutHistoryTable, PayoutRequestForm } from "@/features/payouts";
 import { useMemo } from "react";
 
 

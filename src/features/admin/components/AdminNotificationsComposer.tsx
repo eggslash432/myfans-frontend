@@ -1,7 +1,7 @@
 // front/src/components/features/admin/AdminNotificationsComposer.tsx
 import { useState } from "react";
 import type { NotificationType } from "@/shared";
-import { adminSendNotification } from "@/lib/api";
+import { adminSendNotification } from "../api/notifications";
 
 export function AdminNotificationsComposer(props: { onSent?: () => void }) {
   const { onSent } = props;

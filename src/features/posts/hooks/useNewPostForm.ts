@@ -1,23 +1,18 @@
 // front/src/pages/posts/newPost/useNewPostForm.ts
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  createPostSmart,
-  getCreatorMe,
-  getMyPlans,
-  createPlan as createPlanApi,
-  uploadPostMedia,
-} from '@/lib/api';
 import type { 
   AgeRating, 
   Visibility, 
   Plan,
   MediaPreview, 
 } from '@/shared';
-import { 
-  prune, 
-  recalcIsSample,  
-} from '@/shared';
+import { getMyPlans } from '@/features/plans';
+import { getCreatorMe } from '@/features/creators';
+import { recalcIsSample, uploadPostMedia } from '@/features/media';
+import { prune } from '@/utils';
+import { createPostSmart } from '../api';
+import { createPlan as createPlanApi } from '@/features/plans';
 
 async function fetchMyPlans(): Promise<Plan[]> {
   try {

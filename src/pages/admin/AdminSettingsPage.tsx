@@ -1,16 +1,11 @@
 // front/src/pages/admin/AdminSettingsPage.tsx
 
+import { AdminRoleSection, adminUpdateAdminRole, adminUpdateFeeSettings, adminUpdateUploadSettings, useAdminSettingsData } from "@/features/admin";
+import { useAuth } from "@/features/auth";
+import { FeeSettingsSection, UploadSettingsSection } from "@/features/settings";
 import { useState } from "react";
-import {
-  adminUpdateAdminRole,
-  adminUpdateFeeSettings,
-  adminUpdateUploadSettings,
-} from "@/lib/api";
-import { 
-  useAdminSettingsData, 
-  useAuth 
-} from "@/hooks";
-import { AdminRoleSection, FeeSettingsSection, UploadSettingsSection } from "@/components";
+
+;
 
 export function AdminSettingsPage() {
   const { user } = useAuth();

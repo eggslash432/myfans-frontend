@@ -1,9 +1,10 @@
 // front/src/pages/shops/ShopSalesPage.tsx
 import { useMemo, useState } from "react";
-import { ApiError } from "../../lib/api/apiClient";
-import { useShopSalesSummary } from "../../hooks/useShopSalesSummary";
-import { yen, type ShopSalesRange } from "@/shared";
+import { ApiError } from "@/lib/api";
+import { useShopSalesSummary } from "@/features/shops";
+import { type ShopSalesRange } from "@/shared";
 import { RangeButton } from "@/components";
+import { yen } from "@/utils/money";
 
 export function ShopSalesPage() {
   const [range, setRange] = useState<ShopSalesRange>("month");

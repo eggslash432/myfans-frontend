@@ -1,13 +1,8 @@
 // front/src/pages/home/HomePage.tsx
 
+import { AdminNewsSection, CampaignBanner, CreatorListSection, GenreGridSection, useHomeData } from "@/features";
 import { useNavigate } from "react-router-dom";
-import { 
-  AdminNewsSection, 
-  CampaignBanner, 
-  CreatorListSection, 
-  GenreGridSection 
-} from '@/components';
-import { useHomeData } from "@/hooks";
+
 
 export function HomePage() {
   const navigate = useNavigate();

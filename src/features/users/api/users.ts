@@ -1,5 +1,5 @@
 // front/src/lib/api/users.ts
-import { request } from "./apiClient";
+import { request } from "@/lib/api";
 
 export function changePassword(input: {
   oldPassword: string;

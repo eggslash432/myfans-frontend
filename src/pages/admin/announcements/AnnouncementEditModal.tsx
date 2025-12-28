@@ -1,10 +1,9 @@
 // front/src/pages/admin/announcements/AnnouncementEditModal.tsx
 import { useEffect, useMemo, useState } from "react";
-import { isImage, type AnnouncementMedia, type AnnouncementEditState } from "@/shared";
-import {
-  listAnnouncementMedia,
-  uploadAnnouncementMedia,
-} from "@/lib/api";
+import { type AnnouncementMedia, type AnnouncementEditState } from "@/shared";
+import { listAnnouncementMedia, uploadAnnouncementMedia } from "@/features/announcements";
+import { isImage } from "@/features/admin";
+
 
 export function AnnouncementEditModal({
   editing,

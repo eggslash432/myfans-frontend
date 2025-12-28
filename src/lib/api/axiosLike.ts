@@ -1,4 +1,4 @@
-// front/src/lib/axiosLike.ts
+// front/src/lib/api/axiosLike.ts
 
 import { request } from './apiClient';
 

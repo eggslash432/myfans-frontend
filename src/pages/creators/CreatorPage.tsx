@@ -1,18 +1,17 @@
 // front/src/pages/CreatorPage.tsx
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
-import { useAuth } from '@/hooks';
+import { useAuth } from '@/features/auth';
 import { 
   API_ORIGIN, 
-  ApiError,
-  createPlanCheckoutSession,
-  getCreatorPosts, 
-  getCreatorPublicProfile,  
+  ApiError,  
 } from '@/lib/api';
 import type { 
   Creator, 
   PostSummary 
 } from '@/shared';
+import { getCreatorPosts, getCreatorPublicProfile } from '@/features/creators';
+import { createPlanCheckoutSession } from '@/features/payments';
 
 
 export function CreatorPage() {

@@ -1,7 +1,7 @@
 // front/src/pages/settings/PasswordChangePage.tsx
+import { changePassword } from "@/features";
+import { ApiError } from "@/lib";
 import { useState } from "react";
-import { ApiError } from "../../lib/api/apiClient";
-import { changePassword } from "../../lib/api/users";
 
 export function PasswordChangePage() {
   const [oldPassword, setOld] = useState("");

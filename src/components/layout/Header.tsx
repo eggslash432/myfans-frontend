@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks";
+import { useAuth } from "@/features/auth";
 import type { SubTitleRule } from "@/shared";
 
 const SUB_TITLE_RULES: SubTitleRule[] = [

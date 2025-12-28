@@ -1,10 +1,9 @@
 // front/src/pages/admin/components/CreatorApplicationCard.tsx
 
 import { 
-  creatorApprovalBadgeClass, 
-  creatorApprovalStatusLabel,
   type CreatorApplication 
 } from "@/shared";
+import { creatorApprovalBadgeClass, creatorApprovalStatusLabel } from "../domain";
 
 
 export function CreatorApplicationCard(props: {

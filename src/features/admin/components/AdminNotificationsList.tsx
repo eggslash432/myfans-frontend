@@ -1,6 +1,8 @@
 // front/src/components/features/admin/AdminNotificationsList.tsx
-import type { AdminNotifRow } from "@/lib/api";
-import { fmt } from "@/shared";
+
+import type { AdminNotifRow } from "@/shared";
+import { fmt } from "@/utils";
+
 
 export function AdminNotificationsList(props: {
   items: AdminNotifRow[];

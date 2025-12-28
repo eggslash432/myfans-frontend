@@ -1,6 +1,7 @@
 // front/src/components/ui/CreatorMonetizationStatus.tsx
 
-import {Badge, KycStatusBadge } from "@/components";
+import {Badge } from "@/components";
+import { KycStatusBadge } from "@/features/kyc";
 import type { BadgeTone } from "@/shared";
 
 type Props = {

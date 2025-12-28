@@ -1,7 +1,7 @@
 // front/src/components/layout/Footer.tsx
 import { Link } from "react-router-dom";
-import { useAuth } from "@/hooks";  // パスはプロジェクトに合わせて
 import { isAdminRole } from "@/lib";
+import { useAuth } from "@/features/auth";
 
 export function Footer() {
   const { user } = useAuth();  // { id, email, role, ... } みたいなのが入っている想定

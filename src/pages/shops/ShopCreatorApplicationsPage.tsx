@@ -1,7 +1,7 @@
 // front/src/pages/shops/ShopCreatorApplicationsPage.tsx
 
 import { ApiError } from "@/lib/api";
-import { useShopCreatorApplications } from "@/hooks";
+import { useShopCreatorApplications } from "@/features/shops";
 import { StatusBadge } from "@/components";
 import { fmtDate } from "@/utils";
 

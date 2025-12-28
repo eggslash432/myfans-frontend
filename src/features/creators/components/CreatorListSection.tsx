@@ -1,6 +1,6 @@
 // front/src/components/home/CreatorListSection.tsx
 
-import type { UiCreator } from "../../pages/home/types";
+import type { UiCreator } from "@/shared";
 import { CreatorCard } from "./CreatorCard";
 
 export function CreatorListSection({

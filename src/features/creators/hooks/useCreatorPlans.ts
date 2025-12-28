@@ -1,22 +1,14 @@
 // front/src/pages/creators/CreatorPlansPage/useCreatorPlans.ts
 import { useEffect, useMemo, useState } from "react";
-import {
-  getMyPlans,
-  reorderPlans,
-  deactivatePlan,
-  reactivatePlan,
-  createPlan,
-  updatePlan,
-  getCreatorMe,
-} from "@/lib/api";
-
 import { 
   type Plan, 
   type PlansResponse, 
   type CreatorMeResponse,
   type PlanModalMode,
-  unwrapCreator,
 } from "@/shared";
+import { getCreatorMe } from "../api";
+import { unwrapCreator } from "../domain";
+import { createPlan, deactivatePlan, getMyPlans, reactivatePlan, reorderPlans, updatePlan } from "@/features/plans";
 
 export function useCreatorPlans() {
   const [data, setData] = useState<PlansResponse | null>(null);

@@ -1,9 +1,9 @@
 // front/src/pages/admin/components/CreatorApplicationsFilter.tsx
 
 import { 
-  creatorApprovalStatusLabel, 
   type CreatorApprovalStatusFilter 
 } from "@/shared";
+import { creatorApprovalStatusLabel } from "../domain";
 
 export function CreatorApplicationsFilter(props: {
   status: CreatorApprovalStatusFilter;

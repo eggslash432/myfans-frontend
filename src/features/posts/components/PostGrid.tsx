@@ -1,6 +1,6 @@
 // PostGrid.tsx
 import type { PostItem } from '@/shared';  
-import { PostCard } from '@/components';
+import { PostCard } from './PostCard';
 
 export type { PostItem }; // ← 再エクスポートも「type」扱い
 

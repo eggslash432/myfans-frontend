@@ -1,17 +1,12 @@
 // front/src/pages/mypage/mypage/usePostEditor.ts
 import { useCallback, useState } from 'react';
-import {
-  deleteMyPostMedia,
-  getPost,
-  updateMyPost,
-  uploadPostMedia,
-} from '@/lib/api';
 import { 
   type PublishedStatus,
   type PostSummary,
-  unwrapPost,
-  toArrayUploaded, 
 } from '@/shared';
+import { deleteMyPostMedia, getPost, updateMyPost } from '../api';
+import { toArrayUploaded, unwrapPost } from '../domain';
+import { uploadPostMedia } from '@/features/media';
 
 export function usePostEditor(params: {
   onUpdateList: (postId: string, patch: Partial<PostSummary>) => void;

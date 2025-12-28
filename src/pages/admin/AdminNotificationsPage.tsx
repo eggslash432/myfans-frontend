@@ -1,7 +1,7 @@
 // front/src/pages/admin/AdminNotificationsPage.tsx
 
-import { AdminNotificationsComposer, AdminNotificationsFilters, AdminNotificationsList } from "@/components";
-import { useAdminNotifications } from "@/hooks";
+import { AdminNotificationsComposer, AdminNotificationsFilters, AdminNotificationsList, useAdminNotifications } from "@/features/admin";
+
 
 
 export function AdminNotificationsPage() {

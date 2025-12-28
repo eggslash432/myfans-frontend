@@ -1,9 +1,9 @@
 // front/src/pages/auth/Login.tsx
 import { useState } from "react";
-import { useAuth } from "@/hooks";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { PasswordField } from "@/components";
-import { safeNext } from "@/shared";
+import { useAuth } from "@/features/auth";
+import { safeNext } from "@/utils";
 
 export function Login() {
   const { login } = useAuth();

@@ -2,12 +2,9 @@
 
 import type { AdminPost } from "@/shared";
 import { StatusBadge } from "@/components";
-import { 
-  creatorLabel, 
-  normalizeStatus, 
-  postStatusLabel,  
-  toPostBadgeStatus 
-} from "@/shared";
+import { normalizeStatus, postStatusLabel, toPostBadgeStatus } from "@/features/posts";
+import { creatorLabel } from "@/features/creators";
+
 
 export function AdminPostsCards(props: {
   viewList: AdminPost[];

@@ -1,6 +1,7 @@
 // front/src/hooks/useCreatorMe.ts
+import { request } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
-import { request } from "../lib/api/apiClient";
+
 
 export type CreatorMe = {
   approvalStatus: "pending" | "approved" | "rejected";
