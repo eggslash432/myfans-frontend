@@ -1,6 +1,6 @@
 // front/src/features/plans/api/myPlans.ts
 import { request } from "@/lib/api";
-import type { PlansResponse, CreatePlanPayload, UpdatePlanPayload } from "@/shared/types";
+import type { PlansResponse, CreatePlanPayload, UpdatePlanPayload } from "@/types";
 
 export function getMyPlans(): Promise<PlansResponse> {
   return request<PlansResponse>("/plans/me");

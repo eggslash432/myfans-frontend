@@ -1,3 +1,4 @@
+// front/src/features/admin/api/announcements.ts
 import { request } from "@/lib/api";
 import type { Announcement } from "@/shared";
 

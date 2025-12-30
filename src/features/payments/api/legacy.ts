@@ -1,5 +1,5 @@
 // front/src/features/payments/api/legacy.ts
-import type { CheckoutSessionResponse } from "@/shared/types";
+import type { CheckoutSessionResponse } from "@/types";
 import { createCheckoutSession } from "./checkout";
 import { buildReturnUrls } from "./returnUrls";
 

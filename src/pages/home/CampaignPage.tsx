@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { apiGet } from "@/lib/api";
-import { excerpt, type Announcement } from "@/shared";
+import { type Announcement } from "@/shared";
+import { excerpt } from "@/utils";
 
 export function CampaignPage() {
   const [items, setItems] = useState<Announcement[]>([]);

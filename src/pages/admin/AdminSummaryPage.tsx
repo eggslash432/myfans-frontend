@@ -2,23 +2,15 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  adminGetFeeSetting,
-  adminGetSalesBreakdown,
-  adminGetSummary, 
-  adminListPayments
-} from '@/lib/api';
 import type { 
   AdminPaymentRow, 
   AdminSalesBreakdown, 
   AdminSummary, 
   FeeSettings 
 } from '@/shared';
-import { 
-  currentMonthStr, 
-  isoToLocal, 
-  yen
-} from '@/shared';
+import { currentMonthStr, isoToLocal } from '@/utils';
+import { adminGetFeeSetting, adminGetSalesBreakdown, adminGetSummary, adminListPayments } from '@/features/admin';
+import { yen } from '@/utils/money';
 
 
 export function AdminSummaryPage() {

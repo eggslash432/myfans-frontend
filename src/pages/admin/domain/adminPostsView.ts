@@ -1,14 +1,13 @@
 // front/src/pages/admin/domain/adminPostsView.ts
 
+import { normalizeStatus, normalizeVisibility } from "@/features/posts";
 import { 
-  normalizeStatus,
-  normalizeVisibility,
-  toTime,
   type AdminPost, 
   type SortKey, 
   type StatusFilter,
   type VisibilityFilter
 } from "@/shared";
+import { toTime } from "@/utils";
 
 export function buildViewList(params: {
   list: AdminPost[];

@@ -1,9 +1,11 @@
 // front/src/pages/home/useHomeData.ts
 
 import { useEffect, useMemo, useState } from "react";
-import { listCreators, getOfficialPosts } from "@/lib/api";
 import { normalizeList } from "@/lib/domain";
-import { type UiAdminPost, type UiCreator, type Genre, toCreatorUi, toAdminPostUi } from "@/shared";
+import { type UiAdminPost, type UiCreator, type Genre, } from "@/shared";
+import { listCreators } from "@/features/creators";
+import { getOfficialPosts } from "@/features/posts";
+import { toAdminPostUi, toCreatorUi } from "@/utils";
 
 export function useHomeData() {
   const [creators, setCreators] = useState<UiCreator[]>([]);

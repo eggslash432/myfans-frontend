@@ -1,11 +1,9 @@
 // front/src/components/features/admin/AdminPostsTable.tsx
 
 import { StatusBadge } from "@/components";
+import { creatorLabel } from "@/features/creators";
+import { normalizeStatus, postStatusLabel, toPostBadgeStatus } from "@/features/posts";
 import { 
-  creatorLabel, 
-  normalizeStatus, 
-  postStatusLabel, 
-  toPostBadgeStatus, 
   type AdminPost, 
   type SortKey 
 } from "@/shared";

@@ -3,14 +3,12 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   ApiError,
-  adminListReports,
-  adminResolveReport,
-  adminUpdatePostStatus,
 } from "@/lib";
 import type { 
   ReportItem,
   ReportStatus, 
 } from "@/shared";
+import { adminListReports, adminResolveReport, adminUpdatePostStatus } from "../api";
 
 type BusyKey = string | null; // reportId or `post:${postId}`
 

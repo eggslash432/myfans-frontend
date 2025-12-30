@@ -1,10 +1,6 @@
 // front/src/pages/home/GenreDetailPage.tsx
 
 import { 
-  CreatorCard, 
-  PostCard 
-} from "@/components";
-import { 
   useParams, 
   useNavigate 
 } from "react-router-dom";
@@ -12,6 +8,8 @@ import type {
   UiCreator, 
   UiAdminPost 
 } from "@/shared";
+import { CreatorCard } from "@/features/creators";
+import { PostCard } from "@/features/posts";
 
 export function GenreDetailPage() {
   const { genreId } = useParams<{ genreId: string }>();

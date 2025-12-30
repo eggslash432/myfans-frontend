@@ -1,5 +1,5 @@
 // front/src/features/plans/domain/plansUtils.ts
-import type { Plan } from "@/shared/types";
+import type { Plan } from "@/types";
 
 export function planPriceYen(p: Plan): number {
   // shared の実態に合わせて吸収（price が無い問題の解決）

@@ -2,19 +2,14 @@
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-
-import { 
-  getCreatorPublicProfile,
-  createCheckoutSession, 
-} from '@/lib/api';
 import type { 
   Creator, 
   Plan 
 } from '@/shared';
-import { 
-  planInterval, 
-  planPriceYen, 
-} from '@/shared';
+import { getCreatorPublicProfile } from '@/features/creators';
+import { createCheckoutSession } from '@/features/payments';
+import { planInterval, planPriceYen } from '@/features/plans';
+
 
 export function Plans() {
   const { id } = useParams();

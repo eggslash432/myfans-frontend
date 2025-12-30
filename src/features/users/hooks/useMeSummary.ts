@@ -1,10 +1,10 @@
 // features/users/hooks/useMeSummary.ts
 
 import { useEffect, useState } from "react";
-import { getMe } from "@/lib/api";
 import type { Me } from "@/shared";
 import { useAuth } from "@/features/auth/hooks";
-import { getErrMsg } from "@/lib/error";
+import { getMe } from "@/features/auth";
+import { getErrorMessage } from "@/lib";
 
 export function useMeSummary() {
   const { user, ready } = useAuth();
@@ -30,7 +30,7 @@ export function useMeSummary() {
         const me = await getMe();
         if (alive) setSummary(me);
       } catch (e) {
-        if (alive) setErr(getErrMsg(e));
+        if (alive) setErr(getErrorMessage(e));
       } finally {
         if (alive) setLoading(false);
       }

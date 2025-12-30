@@ -1,13 +1,6 @@
 // front/src/pages/creators/CreatorAnalyticsPage.tsx
 import { useEffect, useMemo, useState } from "react";
 import {
-  creatorAnalyticsMe,
-  creatorAnalyticsRevenueTrend,
-  creatorAnalyticsPostRanking,
-  creatorAnalyticsSubscriberTrend,
-} from "@/lib/api";
-
-import {
   ResponsiveContainer,
   LineChart,
   Line,
@@ -20,12 +13,13 @@ import {
   Legend,
 } from "recharts";
 import { 
-  toYmd, 
   type PostRevenueRow, 
   type RevenueTrendPoint, 
   type SimpleSummary, 
   type SubscriberTrendPoint 
 } from "@/shared";
+import { toYmd } from "@/utils";
+import { creatorAnalyticsMe, creatorAnalyticsPostRanking, creatorAnalyticsRevenueTrend, creatorAnalyticsSubscriberTrend } from "@/features/creators";
 
 export function CreatorAnalyticsPage() {
   // フィルタ

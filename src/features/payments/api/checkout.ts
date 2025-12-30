@@ -1,6 +1,6 @@
 // front/src/features/payments/api/checkout.ts
 import { request } from "@/lib/api";
-import type { CheckoutReq, CheckoutRes, CheckoutSessionResponse } from "@/shared/types";
+import type { CheckoutReq, CheckoutRes, CheckoutSessionResponse } from "@/types";
 
 /** ✅ 本体：/payments/checkout */
 export async function createCheckoutSession(input: CheckoutReq): Promise<CheckoutSessionResponse> {

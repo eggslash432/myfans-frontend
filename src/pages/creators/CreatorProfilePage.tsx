@@ -3,10 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { 
   API_ORIGIN,
-  getCreatorMe, 
-  updateCreatorProfile, 
-  uploadCreatorAvatar 
 } from '@/lib/api';
+import { getCreatorMe, updateCreatorProfile, uploadCreatorAvatar } from '@/features/creators';
 
 export function CreatorProfilePage() {
   const [loading, setLoading] = useState(true);

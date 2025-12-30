@@ -1,6 +1,6 @@
 // front/src/features/creators/api/legacy.ts
 import { request } from "@/lib/api";
-import type { CreatorMeResponse } from "@/shared/types";
+import type { CreatorMeResponse } from "@/types";
 
 // ==============================
 // 後方互換（api_old.ts）

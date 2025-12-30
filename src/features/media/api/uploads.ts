@@ -1,6 +1,6 @@
 // front/src/features/media/api/uploads.ts
 import { request } from "@/lib/api";
-import type { PostMedia, UploadPostMediaResponse } from "@/shared/types";
+import type { PostMedia, UploadPostMediaResponse } from "@/types";
 
 function buildMediaForm(files: File[], sampleIndex?: number) {
   const form = new FormData();

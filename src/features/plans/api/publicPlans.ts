@@ -1,6 +1,6 @@
 // front/src/features/plans/api/publicPlans.ts
 import { request } from "@/lib/api";
-import type { PlansResponse } from "@/shared/types";
+import type { PlansResponse } from "@/types";
 
 /** クリエイターの公開プラン一覧 */
 export function getCreatorPlans(creatorId: string): Promise<PlansResponse> {

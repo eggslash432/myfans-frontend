@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getCreatorMe, startCreatorKyc } from '@/lib/api';
-import type { CreatorMeResponse, KycStatusFront } from '@/shared';
+import type { CreatorMeResponse, KycStatus } from '@/shared';
+import { getCreatorMe, startCreatorKyc } from '@/features/creators';
 
 export function CreatorSettingsPage() {
   const [creator, setCreator] = useState<CreatorMeResponse | null>(null);
@@ -54,10 +54,10 @@ export function CreatorSettingsPage() {
   const hasStartedKyc = !!(creator as any).stripeAccountId;
 
   // DB上の enum: 'pending' | 'approved' | 'rejected' | null
-  const rawStatus = creator.stripeKycStatus as KycStatusFront | null | undefined;
+  const rawStatus = creator.stripeKycStatus as KycStatus | null | undefined;
 
   // ✅ 未開始なら status は null 扱いで固定（pending にしない！）
-  const kycStatus: KycStatusFront | null = hasStartedKyc ? (rawStatus ?? 'pending') : null;
+  const kycStatus: KycStatus | null = hasStartedKyc ? (rawStatus ?? 'pending') : null;
 
   const isKycOk = kycStatus === 'approved';
   const disabledReason = creator.stripeKycDisabledReason ?? null;

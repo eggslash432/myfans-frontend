@@ -1,5 +1,5 @@
 // front/src/pages/creators/CreatorPlansPage/CreatorPlanList.tsx
-import type { Plan } from "@/shared/types";
+import type { Plan } from "@/types";
 
 export function CreatorPlanList(props: {
   plans: Plan[];

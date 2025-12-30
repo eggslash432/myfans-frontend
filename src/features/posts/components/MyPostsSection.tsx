@@ -1,5 +1,5 @@
 // front/src/components/MyPostsSection.tsx
-import type { PostSummary } from '@/shared/types';
+import type { PostSummary } from '@/types';
 import { PostsList } from './PostsList';
 
 type Props = {

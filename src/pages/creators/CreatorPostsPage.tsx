@@ -1,18 +1,13 @@
 import { useEffect, useMemo, useState, useCallback} from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-  myPosts,
-  getPost, 
-  updateMyPost, 
-  uploadPostMedia, 
-  deleteMyPostMedia 
-} from "@/lib/api";
 import type { 
   PostSummary, 
   PublishedStatus 
 } from "@/shared";
 import { StatusBadge }from "@/components";
 import { PostEditModal } from "@/pages";
+import { deleteMyPostMedia, getPost, myPosts, updateMyPost } from "@/features/posts";
+import { uploadPostMedia } from "@/features/media";
 
 
 export function CreatorPostsPage() {

@@ -2,12 +2,11 @@
 
 import { Link } from "react-router-dom";
 import { 
-  getStatusMeta,
-  isDone,
-  postStatusLabel,
   type ReportItem, 
   type ReportStatus 
 } from "@/shared";
+import { getStatusMeta, isDone } from "../domain";
+import { postStatusLabel } from "@/features/posts";
 
 export function ReportCard(props: {
   report: ReportItem;

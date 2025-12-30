@@ -1,6 +1,6 @@
 // front/src/features/posts/api/detail.ts
 import { request } from "@/lib/api";
-import type { PostDetail } from "@/shared/types";
+import type { PostDetail } from "@/types";
 import { normalizePostDetail } from "../domain";
 
 export async function getPostDetail(postId: string): Promise<PostDetail> {

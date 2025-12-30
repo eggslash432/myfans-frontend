@@ -4,7 +4,7 @@ import type {
   CreatorMeResponse,
   UpdateCreatorProfileInput,
   UploadCreatorAvatarResponse,
-} from "@/shared/types";
+} from "@/types";
 
 export function uploadCreatorAvatar(file: File): Promise<UploadCreatorAvatarResponse> {
   const formData = new FormData();

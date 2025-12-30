@@ -1,3 +1,4 @@
+// front/src/components/layout/Header.tsx
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/features/auth";
 import type { SubTitleRule } from "@/shared";

@@ -1,11 +1,11 @@
 // front/src/pages/payments/Success.tsx
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { getUserMe } from "@/lib/api";
 import { 
-  formatDate, 
   type MeSummary 
 } from "@/shared";
+import { getUserMe } from "@/features/auth";
+import { formatDate } from "@/utils";
 
 export function Success() {
   const [params] = useSearchParams();

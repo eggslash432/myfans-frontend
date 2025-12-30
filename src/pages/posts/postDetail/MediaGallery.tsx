@@ -1,9 +1,5 @@
 // front/src/pages/posts/postDetail/MediaGallery.tsx
-import { 
-  resolveMediaUrl,
-  isAudio, 
-  isVideo,
-} from '@/shared';
+import { isAudio, isVideo, resolveMediaUrl } from '@/features/media';
 import type { Asset } from '@/shared';
 
 type Props = {

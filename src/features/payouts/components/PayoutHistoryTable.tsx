@@ -3,7 +3,8 @@ import type {
   Payout,
   PayoutStatus, 
 } from "@/shared";
-import { renderPayoutStatusLabel } from "@/shared";
+import { renderPayoutStatusLabel } from "../domain";
+
 
 export function PayoutHistoryTable(props: {
   items: Payout[];

@@ -3,7 +3,7 @@ import type {
   AdminPost, 
   CreatorApprovalStatus, 
   CreatorApprovalStatusFilter, 
-} from "@/shared/types";
+} from "@/types";
 
 export function creatorLabel(p: AdminPost): string {
   const name = (p as any).creatorName?.trim?.() ? (p as any).creatorName : "";

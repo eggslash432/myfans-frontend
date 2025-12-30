@@ -1,6 +1,6 @@
 // front/src/components/MediaUploader.tsx
 
-import type { PostMedia } from "@/shared/types";
+import type { PostMedia } from "@/types";
 import React, { useState } from "react";
 import { uploadPostMediaBatch } from "../api/uploads";
 

@@ -1,4 +1,4 @@
-// front/src/components/KpiCard.tsx
+// front/src/components/ui/KpiCard.tsx
 import type { ReactNode } from "react";
 
 type Props = {

@@ -1,7 +1,7 @@
 // front/src/hooks/useAuth.tsx
 
 import type { Role } from "@/shared";
-import type { Me } from "@/shared/types";
+import type { Me } from "@/types";
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { getMe } from "../api/me";
 import {

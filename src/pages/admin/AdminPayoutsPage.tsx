@@ -1,16 +1,18 @@
+// front/src/pages/admin/AdminPayoutsPage.tsx
 import { useEffect, useState } from 'react';
 import {
-  adminApprovePayout,
-  adminListPayoutRequests,
-  adminDownloadPayoutCsv,
   ApiError,
 } from '@/lib/api';
-import { 
-  approvalStatusLabel, 
-  targetLabel, 
-  targetName, 
+import {  
   type AdminPayout 
 } from '@/shared';
+import { 
+  adminApprovePayout, 
+  adminDownloadPayoutCsv, 
+  adminListPayouts
+} from '@/features/admin';
+import { targetLabel, targetName } from '@/utils';
+import { approvalStatusLabel } from '@/features/kyc';
 
 
 export function AdminPayoutsPage() {
@@ -23,7 +25,7 @@ export function AdminPayoutsPage() {
     try {
       setLoading(true);
       setErr('');
-      const data = await adminListPayoutRequests();
+      const data = await adminListPayouts();
       setPayouts(data ?? []);
     } catch (e: any) {
       if (e instanceof ApiError) {

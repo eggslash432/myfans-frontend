@@ -1,6 +1,6 @@
 // front/src/features/posts/api/legacy.ts
 import { apiDelete } from "@/lib/api";
-import type { CreatePostPayload, CreatePostResponse, PostDetail, } from "@/shared/types";
+import type { CreatePostPayload, CreatePostResponse, PostDetail, } from "@/types";
 import { createPost, getMyPosts } from "./me";
 import { getPostDetail } from "./detail";
 

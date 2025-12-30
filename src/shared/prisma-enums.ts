@@ -26,7 +26,7 @@ export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
 
 export type PayoutTargetType = 'CREATOR' | 'SHOP';
 
-export type SubStatus = 'active' | 'trialing' | 'past_due' | 'incomplete' | 'canceled';
+export type SubscriptionStatus = 'trialing' | 'active' | 'past_due' | 'unpaid' | 'canceled' | 'incomplete' | 'incomplete_expired' | 'paused';
 
 export type TransferKind = 'platform' | 'shop' | 'creator';
 

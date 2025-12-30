@@ -1,6 +1,6 @@
 // front/src/features/creators/api/kyc.ts
 import { request } from "@/lib/api";
-import type { StartCreatorKycResponse } from "@/shared/types";
+import type { StartCreatorKycResponse } from "@/types";
 
 export function startCreatorKyc(): Promise<StartCreatorKycResponse> {
   return request<StartCreatorKycResponse>("/creators/me/kyc/start", { method: "POST" });

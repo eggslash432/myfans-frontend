@@ -9,9 +9,7 @@ import {
   adminRestoreShopOwner,
   adminSearchUsers,
 } from "@/features/admin/api";
-import type { SelectedUser, ShopRole } from "@/shared";
-
-
+import type { PickUser, ShopRole } from "@/shared";
 
 export function AdminShopMembersPage() {
   const qc = useQueryClient();
@@ -44,7 +42,7 @@ export function AdminShopMembersPage() {
   // ユーザー検索 → 選択
   // ----------------------------
   const [userQuery, setUserQuery] = useState("");
-  const [selectedUser, setSelectedUser] = useState<SelectedUser | null>(null);
+  const [selectedUser, setSelectedUser] = useState<PickUser | null>(null);
   const [role, setRole] = useState<ShopRole>("staff");
 
   const usersQ = useQuery({

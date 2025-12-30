@@ -1,6 +1,6 @@
 // front/src/features/creators/api/public.ts
 import { request } from "@/lib/api";
-import type { Creator, PostSummary } from "@/shared/types";
+import type { Creator, PostSummary } from "@/types";
 
 export function getCreatorPublicProfile(id: string): Promise<Creator> {
   return request<Creator>(`/creators/${id}`, { method: "GET" });

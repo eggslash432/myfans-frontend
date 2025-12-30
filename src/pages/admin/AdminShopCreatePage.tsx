@@ -4,13 +4,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
 import { ProtectedRoute } from "@/components";
-import { 
-  adminCreateShop,
-  adminSearchUsers,
-} from "@/lib/api";
 import type { PickUser } from "@/shared";
-import { getErrMsg } from "@/lib";
 import { unwrapUserSearchItems } from "./domain/unwrap";
+import { adminCreateShop, adminSearchUsers } from "@/features/admin";
+import { getErrorMessage } from "@/lib";
 
 
 export function AdminShopCreatePage() {
@@ -86,7 +83,7 @@ export function AdminShopCreatePage() {
 
             {usersQ.isError && (
               <div className="text-xs text-red-600" style={{ whiteSpace: "pre-wrap" }}>
-                検索に失敗しました：{getErrMsg((usersQ as any).error)}
+                検索に失敗しました：{getErrorMessage((usersQ as any).error)}
               </div>
             )}
 
@@ -174,7 +171,7 @@ export function AdminShopCreatePage() {
 
                   void res;
                 } catch (e) {
-                  setErr(getErrMsg(e) || "作成に失敗しました");
+                  setErr(getErrorMessage(e) || "作成に失敗しました");
                 } finally {
                   setSubmitting(false);
                 }

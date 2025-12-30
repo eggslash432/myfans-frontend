@@ -1,14 +1,12 @@
 // front/src/hooks/useAdminNotifications.ts
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { 
+  AdminNotifRow,
   NotificationSource, 
   NotificationType 
 } from "@/shared";
-import {
-  adminListNotifications,
-  markNotificationAsRead,
-  type AdminNotifRow,
-} from "@/lib/api";
+import { adminListNotifications, markNotificationAsRead } from "../api";
+
 
 export function useAdminNotifications() {
   const [items, setItems] = useState<AdminNotifRow[]>([]);

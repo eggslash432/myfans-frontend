@@ -7,7 +7,7 @@ import type {
   PostEditValues,
   PostSummary,
   UpdatePostResponse,
-} from "@/shared/types";
+} from "@/types";
 
 export function getMyPosts(): Promise<ListResponse<PostSummary>> {
   return request<ListResponse<PostSummary>>("/posts/me", { method: "GET" });

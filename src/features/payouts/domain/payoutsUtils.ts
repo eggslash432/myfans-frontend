@@ -1,5 +1,5 @@
 // front/src/features/payouts/domain/payoutsUtils.ts
-import type { PayoutStatus } from "@/shared/types";
+import type { PayoutStatus } from "@/types";
 
 export function renderPayoutStatusLabel(s: PayoutStatus) {
   switch (s) {

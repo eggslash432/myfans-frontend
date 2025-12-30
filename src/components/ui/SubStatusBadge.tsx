@@ -2,19 +2,9 @@
 
 import { Badge } from "@/components";
 import type { BadgeTone } from "@/shared";
+import type { SubscriptionStatus } from "@/types/prisma";
 
-type SubStatus =
-  | "trialing"
-  | "active"
-  | "past_due"
-  | "unpaid"
-  | "canceled"
-  | "incomplete"
-  | "incomplete_expired"
-  | "paused"
-  | string;
-
-function meta(status: SubStatus): { label: string; tone: BadgeTone } {
+function meta(status: SubscriptionStatus): { label: string; tone: BadgeTone } {
   switch (status) {
     case "active":
       return { label: "有効", tone: "success" };
@@ -37,7 +27,7 @@ function meta(status: SubStatus): { label: string; tone: BadgeTone } {
   }
 }
 
-export function SubStatusBadge({ status }: { status: SubStatus }) {
+export function SubStatusBadge({ status }: { status: SubscriptionStatus }) {
   const m = meta(status);
   return <Badge tone={m.tone}>{m.label}</Badge>;
 }

@@ -1,6 +1,6 @@
 // front/src/features/creators/api/analytics.ts
 import { request, apiGet } from "@/lib/api";
-import type { CreatorAnalyticsMeResponse } from "@/shared/types";
+import type { CreatorAnalyticsMeResponse } from "@/types";
 
 export function creatorAnalyticsMe(): Promise<CreatorAnalyticsMeResponse> {
   return request<CreatorAnalyticsMeResponse>("/creators/me/analytics", { method: "GET" });

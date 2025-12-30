@@ -1,14 +1,18 @@
 // front/src/pages/admin/announcements/AdminAnnouncementsPage.tsx
 import { useEffect, useMemo, useState } from "react";
 import { AnnouncementEditModal } from "./AnnouncementEditModal";
-import { 
-  type Announcement, 
-  type AnnouncementEditState 
-} from "@/shared";
-import { adminCreateAnnouncement, adminDeleteAnnouncement, adminListAnnouncements, adminUpdateAnnouncement, emptyEdit, isActiveNow, pickCreatedId } from "@/features/admin";
+import { type Announcement, type AnnouncementEditState } from "@/shared";
+import {
+  adminCreateAnnouncement,
+  adminDeleteAnnouncement,
+  adminListAnnouncements,
+  adminUpdateAnnouncement,
+  emptyEdit,
+  isActiveNow,
+  pickCreatedId,
+} from "@/features/admin";
 import { fromLocalInputValue, toLocalInputValue } from "@/utils";
 import { AnnouncementTable } from "@/features/announcements";
-
 
 export function AdminAnnouncementsPage() {
   const [items, setItems] = useState<Announcement[]>([]);
@@ -21,8 +25,17 @@ export function AdminAnnouncementsPage() {
     try {
       setLoading(true);
       setErr("");
+
       const res = await adminListAnnouncements();
-      setItems(res.data.items);
+
+      // ✅ AdminListAnnouncementsRes に data が無いので、直下 items を読む
+      // もし実装ゆれがあるなら fallback も入れておく
+      const list =
+        (res as any)?.items ??
+        (res as any)?.data?.items ??
+        [];
+
+      setItems(list);
     } catch (e) {
       console.error(e);
       setErr("告知一覧の取得に失敗しました。");
@@ -42,7 +55,6 @@ export function AdminAnnouncementsPage() {
       body: a.body ?? "",
       linkUrl: a.linkUrl ?? "",
       bannerImageUrl: a.bannerImageUrl ?? "",
-      // ✅ 追加してるならここも
       bannerMediaId: (a as any).bannerMediaId ?? null,
       startsAt: toLocalInputValue(a.startsAt),
       endsAt: toLocalInputValue(a.endsAt),
@@ -68,7 +80,6 @@ export function AdminAnnouncementsPage() {
       body,
       linkUrl: editing.linkUrl.trim() || null,
       bannerImageUrl: editing.bannerImageUrl.trim() || null,
-      // ✅ APIが受けるなら送りたい（受けないならこの行は消してOK）
       bannerMediaId: editing.bannerMediaId ?? null,
       startsAt,
       endsAt,
@@ -80,18 +91,12 @@ export function AdminAnnouncementsPage() {
 
       if (editing.id) {
         await adminUpdateAnnouncement(editing.id, payload);
-        setEditing(null); // 編集は保存したら閉じる運用でOK
+        setEditing(null);
       } else {
         const created = await adminCreateAnnouncement(payload);
-
-        // ✅ 新規作成は「閉じない」。idを入れて継続編集可にする
         const createdId = pickCreatedId(created);
-        if (!createdId) {
-          // idが取れない場合は仕方ないので閉じる（or 一覧から再度編集してね、でもOK）
-          setEditing(null);
-        } else {
-          setEditing({ ...editing, id: createdId });
-        }
+        if (!createdId) setEditing(null);
+        else setEditing({ ...editing, id: createdId });
       }
 
       await load();
@@ -99,9 +104,8 @@ export function AdminAnnouncementsPage() {
       console.error(e);
 
       let msg = "保存に失敗しました。";
-      if (e instanceof Error && e.message) {
-        msg = e.message;
-      } else if (typeof e === "object" && e !== null) {
+      if (e instanceof Error && e.message) msg = e.message;
+      else if (typeof e === "object" && e !== null) {
         const anyE = e as any;
         msg =
           anyE?.response?.data?.message ||

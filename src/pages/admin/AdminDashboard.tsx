@@ -2,8 +2,8 @@
 
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { adminGetSummary } from '@/lib/api';
 import type { AdminSummary } from '@/shared';
+import { adminGetSummary } from '@/features/admin';
 
 function AdminInner() {
   const { data, isLoading, error } = useQuery<AdminSummary>({

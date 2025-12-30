@@ -1,11 +1,7 @@
 // front/src/pages/posts/postDetail/SampleSection.tsx
+import { resolveMediaUrl } from '@/features/media';
+import type { SampleAsset } from '@/types';
 import React from 'react';
-import { resolveMediaUrl } from '@/shared';
-
-type SampleAsset = {
-  id?: string;
-  url: string;
-};
 
 type Props = {
   visible: boolean;

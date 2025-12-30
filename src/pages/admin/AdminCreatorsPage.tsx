@@ -6,12 +6,10 @@ import type {
   CreatorApprovalStatusFilter 
 } from "@/shared";
 import { 
-  adminApproveCreatorApplication, 
-  adminListCreatorApplications, 
-  adminRejectCreatorApplication, 
   ApiError 
 } from "@/lib/api";
-import { CreatorApplicationCard, CreatorApplicationsFilter, CreatorRejectModal } from "@/components";
+import { adminApproveCreatorApplication, adminListCreatorApplications, adminRejectCreatorApplication } from "@/features/admin";
+import { CreatorApplicationCard, CreatorApplicationsFilter, CreatorRejectModal } from "@/features/creators";
 
 
 export function AdminCreatorsPage() {

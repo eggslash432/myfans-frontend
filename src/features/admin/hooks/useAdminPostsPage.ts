@@ -7,13 +7,9 @@ import type {
   ReportItem
 } from "@/shared";
 import { 
-  adminListPosts, 
   ApiError, 
-  adminDeletePost, 
-  adminUpdatePostStatus, 
-  adminListReports, 
-  adminResolveReport 
 } from "@/lib";
+import { adminDeletePost, adminListPosts, adminListReports, adminResolveReport, adminUpdatePostStatus } from "../api";
 
 export function useAdminPostsPage() {
   const [list, setList] = useState<AdminPost[]>([]);

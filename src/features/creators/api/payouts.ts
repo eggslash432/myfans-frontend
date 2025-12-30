@@ -1,6 +1,6 @@
 // front/src/features/creators/api/payouts.ts
 import { request } from "@/lib/api";
-import type { CreatorPayoutBalanceResponse, Payout } from "@/shared/types";
+import type { CreatorPayoutBalanceResponse, Payout } from "@/types";
 
 export function getCreatorPayoutBalance(): Promise<CreatorPayoutBalanceResponse> {
   return request<CreatorPayoutBalanceResponse>("/creators/me/payouts/balance", { method: "GET" });

@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { 
   CreatorMeResponse, 
   Payout 
-} from "@/shared/types";
+} from "@/types";
 import { createStripeOnboardingLink, getCreatorMe, getCreatorPayoutBalance, listCreatorPayouts, requestCreatorPayout } from "../api";
 
 export function useCreatorPayouts() {

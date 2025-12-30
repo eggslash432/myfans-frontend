@@ -1,6 +1,6 @@
 // front/src/features/posts/api/public.ts
 import { request } from "@/lib/api";
-import type { ListResponse, PostSummary, PostItem } from "@/shared/types";
+import type { ListResponse, PostSummary, PostItem } from "@/types";
 
 export function getPublicPosts(): Promise<ListResponse<PostSummary>> {
   return request<ListResponse<PostSummary>>("/posts", { method: "GET" });

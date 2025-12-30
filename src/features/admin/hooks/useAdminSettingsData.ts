@@ -1,16 +1,12 @@
 // front/src/pages/admin/hooks/useAdminSettingsData.ts
 
 import { useEffect, useState } from "react";
-import {
-  adminGetFeeSettings,
-  adminGetUploadSettings,
-  adminListAdminUsers,
-} from "@/lib/api";
 import type { 
   AdminUser, 
   FeeSettings, 
   UploadSetting 
 } from "@/shared";
+import { adminGetFeeSettings, adminGetUploadSettings, adminListAdminUsers } from "../api";
 
 export function useAdminSettingsData() {
   const [loading, setLoading] = useState(true);
