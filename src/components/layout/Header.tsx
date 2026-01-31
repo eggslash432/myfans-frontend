@@ -2,6 +2,8 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/features/auth";
 import type { SubTitleRule } from "@/shared";
+import { useEffect, useState } from "react";
+import { getMyNotifications } from "@/features/notifications";
 
 const SUB_TITLE_RULES: SubTitleRule[] = [
   // --- Creator ---
@@ -33,7 +35,29 @@ export function Header() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, ready, logout } = useAuth();
+  const [unreadCount, setUnreadCount] = useState<number>(0);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    const run = async () => {
+      if (!ready || !user) return;
+      try {
+        const res = await getMyNotifications({ unreadOnly: true, take: 1, skip: 0 });
+        if (!cancelled) setUnreadCount(res.data.total ?? 0);
+      } catch (e) {
+        console.error("getUnreadCount failed", e);
+        if (!cancelled) setUnreadCount(0);
+      }
+    };
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [ready, user?.id, location.pathname]);
+
+  const emailShort = user?.email?.split("@")[0] ?? "";
   const subTitle =
     SUB_TITLE_RULES.find((r) => r.match(location.pathname))?.label ?? "";
 
@@ -65,9 +89,36 @@ export function Header() {
             <span className="header-loading">…</span>
           ) : isLoggedIn ? (
             <>
+              <Link to="/notifications" className="header-link">
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  通知
+                  {unreadCount > 0 && (
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        minWidth: 18,
+                        height: 18,
+                        padding: "0 6px",
+                        borderRadius: 999,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        background: "#ff3b30",
+                        color: "#fff",
+                        lineHeight: "18px",
+                      }}
+                    >
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  )}
+                </span>
+              </Link>
+
               <span className="header-user">
-                {user!.email} {user!.role ? `(${user!.role})` : ""}
+                {emailShort} {user!.role ? `(${user!.role})` : ""}
               </span>
+
               <button
                 type="button"
                 className="btn btn-outline btn-sm"

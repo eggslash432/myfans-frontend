@@ -7,6 +7,7 @@ export * from './creators';
 export * from './genres';
 export * from './home';
 export * from './mypage';
+export * from './notifications';
 export * from './payments';
 export * from './plans';
 export * from './posts';

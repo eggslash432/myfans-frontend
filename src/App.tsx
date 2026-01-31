@@ -42,13 +42,15 @@ import {
   CreatorPayoutsPage,
   Plans,
   HomePage,
-  ShopBusinessLicensePage
+  ShopBusinessLicensePage,
+  NotificationSettingsPage
 } from "./pages";
 import AdminAuditLogsPage from "./pages/admin/AdminAuditLogsPage";
 import GuidePage from "./pages/public/GuidePage";
 import FaqPage from "./pages/public/FaqPage";
 import AdminHelpArticlesPage from "./pages/admin/AdminHelpArticlesPage";
 import AdminHelpArticleEditPage from "./pages/admin/AdminHelpArticleEditPage";
+import NotificationsPage from "./pages/notifications/NotificationsPage";
 
 
 export default function App() {
@@ -200,6 +202,9 @@ export default function App() {
         <Route path="/payments/success" element={<Success />} />
         <Route path="/payments/cancel" element={<Cancel />} />
 
+        {/*通知 */}
+        <Route path="/notifications" element={<NotificationsPage />} />
+
         {/* ✅ 設定配下もネストに統一 */}
         <Route
           path="/settings"
@@ -211,6 +216,7 @@ export default function App() {
         >
           <Route index element={<SettingsHomePage />} />
           <Route path="password" element={<PasswordChangePage />} />
+          <Route path="notifications" element={<NotificationSettingsPage />} />
         </Route>
       </Routes>
     </AppLayout>

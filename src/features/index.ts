@@ -12,6 +12,7 @@ export * from './home';
 export * from './kyc';
 export * from './media';
 export * from './mypage';
+export * from './notifications';
 export * from './payments';
 export * from './payouts';
 export * from './plans';

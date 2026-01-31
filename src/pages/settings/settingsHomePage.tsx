@@ -17,8 +17,18 @@ export function SettingsHomePage() {
           <span className="settings-item-arrow">›</span>
         </Link>
 
+        {/* ✅ 追加：通知設定 */}
+        <Link to="/settings/notifications" className="settings-item">
+          <div className="settings-item-main">
+            <span className="settings-item-title">通知設定</span>
+            <span className="settings-item-sub">
+              アプリ内通知・メール通知のON/OFFを設定します
+            </span>
+          </div>
+          <span className="settings-item-arrow">›</span>
+        </Link>
+
         {/* 今後ここに項目を増やせる */}
-        {/* <Link to="/settings/profile" className="settings-item"> ... </Link> */}
       </div>
     </div>
   );
