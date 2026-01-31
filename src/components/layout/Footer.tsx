@@ -4,15 +4,22 @@ import { isAdminRole } from "@/lib";
 import { useAuth } from "@/features/auth";
 
 export function Footer() {
-  const { user } = useAuth();  // { id, email, role, ... } みたいなのが入っている想定
-
-  // ここの条件はプロジェクトの仕様に合わせて調整
+  const { user } = useAuth();
   const isAdmin = isAdminRole(user?.role);
 
   return (
     <footer className="footer-root">
-      <div className="footer-main">
-        © {new Date().getFullYear()} Himefan
+      <div className="footer-main" style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <span>© {new Date().getFullYear()} Himefan</span>
+
+        <nav
+          className="footer-links"
+          aria-label="フッターリンク"
+          style={{ display: "flex", gap: 12, marginLeft: "auto" }}
+        >
+          <Link to="/guide" className="footer-link">ご利用ガイド</Link>
+          <Link to="/faq" className="footer-link">FAQ</Link>
+        </nav>
       </div>
 
       {isAdmin && (
@@ -25,3 +32,4 @@ export function Footer() {
     </footer>
   );
 }
+

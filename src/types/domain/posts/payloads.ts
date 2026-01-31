@@ -1,21 +1,23 @@
 // front/src/shared/types/domain/posts/payloads.ts
-import type { AgeRating, PublishedStatus, Visibility } from "@/shared";
+import type { AgeRating, PostPublishedStatus, PostVisibility } from "@/shared";
 
 export type CreatePostPayload = {
   title: string;
   body?: string;
-  visibility: Visibility;
+  visibility: PostVisibility;
   planId?: string | null;
   priceJpy?: number | null;
   ageRating?: AgeRating;
-  publishedStatus?: PublishedStatus;
+  publishedStatus?: PostPublishedStatus;
   isSample?: boolean;
+
+  genreIds?: string[];
 };
 
 export type PostEditValues = {
   title: string;
   body: string;
-  visibility: Visibility;
+  visibility: PostVisibility;
   priceJpy: number | null;
-  publishedStatus: PublishedStatus;
+  publishedStatus: PostPublishedStatus;
 };

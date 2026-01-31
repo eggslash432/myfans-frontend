@@ -1,19 +1,20 @@
 // front/src/shared/types/domain/posts/detail.ts
 import type { 
+  Genre,
   PostMedia, 
-  PublishedStatus, 
-  Visibility 
+  PostPublishedStatus, 
+  PostVisibility 
 } from "@/shared";
 
 export type PostDetail = {
   id: string;
   title: string;
   body?: string | null;
-  visibility: Visibility;
+  visibility: PostVisibility;
   priceJpy?: number | null;
   planId?: string | null;
 
-  publishedStatus: PublishedStatus;
+  publishedStatus: PostPublishedStatus;
   publishedAt?: string | null;
   createdAt: string;
 
@@ -21,6 +22,8 @@ export type PostDetail = {
   creator?: { publicName?: string | null };
 
   media: PostMedia[];
+
+  genres?: Genre[];
 
   canView?: boolean;
 };

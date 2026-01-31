@@ -5,6 +5,7 @@ export * from './announcements';
 export * from './domain';
 
 //単体
+export * from './AdminAuditLogsPage';
 export * from './AdminCreatorsPage';
 export * from './AdminDashboard';
 export * from './AdminNotificationsPage';

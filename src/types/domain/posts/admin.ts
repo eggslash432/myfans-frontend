@@ -1,12 +1,12 @@
 // front/src/shared/types/domain/posts/admin.ts
-import type { PublishedStatus, Visibility } from "@/shared";
+import type { PostPublishedStatus, PostVisibility } from "@/shared";
 
 export type PostSummary = {
   id: string;
   title: string;
-  visibility: Visibility;
+  visibility: PostVisibility;
   priceJpy?: number | null;
-  publishedStatus: PublishedStatus;
+  publishedStatus: PostPublishedStatus;
   publishedAt?: string | null;
   createdAt: string;
 

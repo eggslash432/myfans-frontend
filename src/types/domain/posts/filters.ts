@@ -1,5 +1,5 @@
 //front/src/types/domain/posts/filters.ts
-import type { PublishedStatus, Visibility } from "@/shared";
+import type { PostPublishedStatus, PostVisibility } from "@/shared";
 
-export type VisibilityFilter = "all" | Visibility;
-export type PublishedStatusFilter = "all" | PublishedStatus;
+export type VisibilityFilter = "all" | PostVisibility;
+export type PublishedStatusFilter = "all" | PostPublishedStatus;

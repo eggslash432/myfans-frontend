@@ -3,6 +3,7 @@
 //ディレクトリ
 export * from './admin';
 export * from './announcements';
+export * from './audit';
 export * from './auth';
 export * from './campaigns';
 export * from './creators';

@@ -1,5 +1,5 @@
 // front/src/shared/types/domain/posts/post.ts
-import type { MediaType, Visibility } from "@/shared";
+import type { PostVisibility } from "@/shared";
 import type { PostMedia } from "./media";
 
 export type Post = {
@@ -13,7 +13,7 @@ export type Post = {
   isPpv: boolean;
   isPlan: boolean;
 
-  visibility: Visibility;
+  visibility: PostVisibility;
 
   creatorId: string;
   creator?: { publicName?: string | null };
@@ -41,6 +41,6 @@ export type PostItem = {
   isAccessible?: boolean | null;
   excerpt?: string | null;
   debugFlags?: string;
-  visibility?: Visibility;
+  visibility?: PostVisibility;
   creatorName?: string | null;
 };

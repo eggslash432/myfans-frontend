@@ -77,6 +77,30 @@ function AdminInner() {
           </div>
         </Link>
 
+        <Link to="/admin/audit-logs" className="card card-link">
+          <div className="flex justify-between items-center">
+            <div>
+              <div className="font-semibold text-sm">監査ログ</div>
+              <div className="text-xs text-gray-500 mt-1">
+                管理操作（凍結・権限変更など）の履歴確認
+              </div>
+            </div>
+            <span className="text-lg text-gray-400">›</span>
+          </div>
+        </Link>
+
+        <Link to="/admin/help/articles" className="card card-link">
+          <div className="flex justify-between items-center">
+            <div>
+              <div className="font-semibold text-sm">ヘルプ・FAQ管理</div>
+              <div className="text-xs text-gray-500 mt-1">
+                ご利用ガイド / FAQ の編集・公開設定
+              </div>
+            </div>
+            <span className="text-lg text-gray-400">›</span>
+          </div>
+        </Link>
+
         <Link to="/admin/settings" className="card card-link">
           <div className="flex justify-between items-center">
             <div>

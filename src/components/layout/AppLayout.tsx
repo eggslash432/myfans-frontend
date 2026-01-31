@@ -22,7 +22,6 @@ export function AppLayout({ children }: Props) {
         <main className="app-main">
           {children}
         </main>
-
         <Footer />
         <BottomNav />
       </div>

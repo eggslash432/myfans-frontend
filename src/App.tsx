@@ -41,8 +41,14 @@ import {
   AdminCreatorsPage,
   CreatorPayoutsPage,
   Plans,
-  HomePage
+  HomePage,
+  ShopBusinessLicensePage
 } from "./pages";
+import AdminAuditLogsPage from "./pages/admin/AdminAuditLogsPage";
+import GuidePage from "./pages/public/GuidePage";
+import FaqPage from "./pages/public/FaqPage";
+import AdminHelpArticlesPage from "./pages/admin/AdminHelpArticlesPage";
+import AdminHelpArticleEditPage from "./pages/admin/AdminHelpArticleEditPage";
 
 
 export default function App() {
@@ -54,6 +60,8 @@ export default function App() {
 
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/guide" element={<GuidePage />} />
+        <Route path="/faq" element={<FaqPage />} />
 
         {/* ✅ Admin 配下（/admin, /admin/creators ...） */}
         <Route
@@ -65,6 +73,9 @@ export default function App() {
           }
         >
           <Route index element={<AdminDashboard />} />
+          <Route path="audit-logs" element={<AdminAuditLogsPage/>}/>
+          <Route path="help/articles" element={<AdminHelpArticlesPage />} />
+          <Route path="help/articles/:id" element={<AdminHelpArticleEditPage />} />
           <Route path="creators" element={<AdminCreatorsPage />} />
           <Route path="payouts" element={<AdminPayoutsPage />} />
           <Route path="summary" element={<AdminSummaryPage/>}/>
@@ -81,7 +92,7 @@ export default function App() {
         <Route
           path="/shops"
           element={
-            <ProtectedRoute require="shop">
+            <ProtectedRoute require="auth">
               <Outlet />
             </ProtectedRoute>
           }
@@ -92,6 +103,15 @@ export default function App() {
           <Route path="membership" element={<ShopMembershipPage />} />
         </Route>
 
+        {/* ✅ 営業許可書（未承認でもアクセスできる導線） */}
+        <Route
+          path="/shops/me/license"
+          element={
+            <ProtectedRoute require="auth">
+              <ShopBusinessLicensePage />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/mypage"

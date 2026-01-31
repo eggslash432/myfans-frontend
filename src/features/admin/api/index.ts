@@ -7,6 +7,7 @@ export * from "./posts";
 export * from "./reports";
 export * from "./payouts";
 export * from "./feeSettings";
+export * from "./helpArticles";
 export * from "./uploadSettings";
 export * from "./adminUsers";
 export * from "./shops";

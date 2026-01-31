@@ -8,9 +8,9 @@ export type CreatorApprovalStatus = 'pending' | 'approved' | 'rejected';
 
 export type KycStatus = 'pending' | 'approved' | 'rejected';
 
-export type PublishedStatus = 'draft' | 'published' | 'private';
+export type PostPublishedStatus = 'draft' | 'published' | 'private';
 
-export type Visibility = 'free' | 'plan' | 'paid_single';
+export type PostVisibility = 'free' | 'plan' | 'paid_single';
 
 export type AgeRating = 'all' | 'r18';
 

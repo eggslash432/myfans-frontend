@@ -1,5 +1,4 @@
 // front/src/components/layout/BottomNav.tsx
-
 import { Link, useLocation } from "react-router-dom";
 import { isAdminRole } from "@/lib/authz";
 import {
@@ -12,7 +11,14 @@ import {
   BuildingStorefrontIcon,
 } from "@heroicons/react/24/outline";
 import { useAuth } from "@/features/auth";
-import { useShopMe } from "@/features/shops";
+import { useQuery } from "@tanstack/react-query";
+import { request } from "@/lib/api/apiClient";
+
+type ShopContext = {
+  shopId: string;
+  role: string;
+  businessLicenseStatus: "pending" | "approved" | "rejected" | string;
+};
 
 export function BottomNav() {
   const location = useLocation();
@@ -28,10 +34,18 @@ export function BottomNav() {
   const isSettings = path.startsWith("/settings");
   const isShop = path.startsWith("/shops");
 
-  // ✅ Shopタブ表示判定：所属していれば isSuccess
-  const shopMe = useShopMe({ enabled: !!user });
-  const canSeeShop = shopMe.isSuccess;
+  // ✅ Shopタブ表示判定：
+  //   - /shops/me は未承認で403になるので BottomNav では使わない
+  //   - 代わりに「所属確認だけ」できる /shops/me/context を叩く（未承認でも200想定）
+  const shopCtx = useQuery({
+    queryKey: ["shopContext"],
+    enabled: !!user, // ログインしてる時だけ
+    queryFn: () => request<ShopContext>("/shops/me/context", { method: "GET" }),
+    retry: false,
+    staleTime: 60_000, // 下部ナビのため無駄に叩かない
+  });
 
+  const canSeeShop = shopCtx.isSuccess; // 所属していればtrue（未承認でもtrue）
   const canSeeAdmin = isAdminRole(user?.role);
 
   return (
@@ -69,7 +83,7 @@ export function BottomNav() {
           <span className="bottom-nav-label">クリエイター</span>
         </Link>
 
-        {/* ✅ Shop（所属している人だけ表示） */}
+        {/* ✅ Shop（所属している人だけ表示。未承認でも表示はOK） */}
         {canSeeShop && (
           <Link
             to="/shops"
@@ -88,7 +102,6 @@ export function BottomNav() {
           <span className="bottom-nav-label">設定</span>
         </Link>
 
-        {/* ✅ 管理者タブ：admin/sub_admin のときだけ表示 */}
         {canSeeAdmin && (
           <Link
             to="/admin"

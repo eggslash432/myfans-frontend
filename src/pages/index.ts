@@ -10,5 +10,6 @@ export * from './mypage';
 export * from './payments';
 export * from './plans';
 export * from './posts';
+export * from './public';
 export * from './settings';
 export * from './shops';
